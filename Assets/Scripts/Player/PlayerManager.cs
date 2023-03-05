@@ -20,6 +20,11 @@ public class PlayerManager : MonoBehaviour {
     public GameObject PlayerGameObject { get; set; }
 
     public bool buildMode = false;
+    public int unitFollowIndex = 0;
+    
+    public bool IsFollowingPlayer() {
+        return target == PlayerGameObject.transform;
+    }
 
     public static void InitializePlayerManager() {
         // Instantiate Spectator Camera
@@ -45,6 +50,8 @@ public class PlayerManager : MonoBehaviour {
 
                 // Set new position
                 transform.position = targetPosition;
+            } else {
+                Follow(PlayerGameObject.transform);
             }
 
             // Update zoom
@@ -66,6 +73,8 @@ public class PlayerManager : MonoBehaviour {
             // Handle Build Mode
             if (Input.GetMouseButtonDown(0)) MapManager.Instance.HandlePlayerMouseInputDown(0);
             if (Input.GetMouseButtonDown(1)) MapManager.Instance.HandlePlayerMouseInputDown(1);
+            
+            if (!IsFollowingPlayer()) Follow(PlayerGameObject.transform);
 
         } else if (!buildMode) {
             if (Input.GetMouseButtonDown(0)) { 
@@ -78,6 +87,24 @@ public class PlayerManager : MonoBehaviour {
 
             if (Input.GetMouseButtonDown(1)) {
                 if (selectedBlock && selectedBlock.hasInventory) MapManager.Instance.AddItems(selectedBlock, new ItemStack(Items.silicon, 5));
+            }
+            
+            if (Input.GetKeyDown(KeyCode.Q)) {
+                // Follow the previous unit of the list
+                if (unitFollowIndex <= 0) unitFollowIndex = MapManager.units.Count - 1;
+                else unitFollowIndex--;
+                
+                Transform unitTransform = MapManager.units[unitFollowIndex];
+                Follow(unitTransform);
+            }
+            
+            if (Input.GetKeyCode(KeyCode.E)) {
+                // Follow the next unit of the list
+                if (unitFollowIndex >= MapManager.units.Count) unitFollowIndex = 0;
+                else unitFollowIndex++;
+                
+                Transform unitTransform = MapManager.units[unitFollowIndex];
+                Follow(unitTransform);
             }
         }
     }
