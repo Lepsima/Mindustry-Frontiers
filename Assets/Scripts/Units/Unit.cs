@@ -175,6 +175,7 @@ public class Unit : LoadableContent, IDamageable, IView, IInventory {
         if (PhotonView.IsMine && nextSyncTime <= Time.time + GetTimeCode()) Sync();
     }
 
+    // Checking if this works
     //Initialize the unit
     public virtual void Set(Vector2 position, Vector2 velocity, UnitType unitType, float timeCode, byte teamCode) {
         base.Set(timeCode, teamCode, true);
@@ -482,7 +483,7 @@ public class Unit : LoadableContent, IDamageable, IView, IInventory {
         isLanded = false;
         velocity = Vector2.zero;
 
-        //Allow free movement in ±3s
+        //Allow free movement in Â±3s
         Invoke(nameof(EndTakeOff), 3f);
 
         //Play particle system
