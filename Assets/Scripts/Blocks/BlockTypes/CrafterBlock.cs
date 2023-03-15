@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class CrafterBlock : ItemBlock {
     public ItemList outputInventory;
+    private List<ItemBlock> reciverBlocks = new List<ItemBlock>();
+    private int reciverIndex;
     private bool isCrafting;
 
     public override void SetInventory() {
@@ -38,6 +40,17 @@ public class CrafterBlock : ItemBlock {
             StartCrafting();
         }
     }
+    
+    protected virtual void OnOutputInventoryChange() {
+        TrySendOutputItems();
+    }
+    
+    protected virtual void TrySendOutputItems() {
+        ItemBlock reciverBlock = reciverBlocks[reciverIndex];
+        
+        reciverIndex++;
+        if (reciverIndex >= reciverBlocks.Count) reciverIndex = 0;
+    }
 
     protected virtual void StartCrafting() {
         Invoke(nameof(FinishCrafting), Type.craftPlan.craftTime);
@@ -53,5 +66,33 @@ public class CrafterBlock : ItemBlock {
 
         SubstractItems(Type.craftPlan.materialList);
         outputInventory.AddItem(Type.craftPlan.productStack);
+    }
+    
+    public ItemStack OutputAddItems(ItemStack value) {
+        ItemStack itemStack = outputInventory.AddItem(value);
+        OnOutputInventoryChange();
+        return itemStack;
+    }
+
+    public ItemList OutputAddItems(ItemStack[] value) {
+        ItemList itemList = outputInventory.AddItems(value);
+        OnOutputInventoryChange();
+        return itemList;
+    }
+
+    public ItemStack OutputSubstractItems(ItemStack value) {
+        ItemStack itemStack = outputInventory.SubstractItem(value);
+        OnOutputInventoryChange();
+        return itemStack;
+    }
+
+    public ItemList OutputSubstractItems(ItemStack[] value) {
+        ItemList itemList = outputInventory.SubstractItems(value);
+        OnOutputInventoryChange();
+        return itemList;
+    }
+
+    public ItemList OutputGetItemList() {
+        return outputInventory;
     }
 }
