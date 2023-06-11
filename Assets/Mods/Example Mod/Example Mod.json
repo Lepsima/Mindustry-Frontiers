@@ -1,0 +1,34 @@
+{
+  "mod": {
+    "name": "Example Mod",
+    "version": 1,
+    "items": {
+      "array": [
+        "plastanium"
+      ]
+    },
+    "bullets": {
+      "array": [
+        "bombBulletType"
+      ]
+    },
+    "weapons": {
+      "array": [
+        "horizon-weapon",
+        "duo-weapon"
+      ]
+    },
+    "units": {
+      "array": [
+        "horizon"
+      ]
+    },
+    "blocks": {
+      "array": [
+        "titanium-wall",
+        "titanium-wall-large",
+        "duo-turret"
+      ]
+    }
+  }
+}
