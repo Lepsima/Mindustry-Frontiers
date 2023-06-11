@@ -5,56 +5,42 @@ using Frontiers.Content;
 using Photon.Pun;
 
 public class UnitFactoryBlock : ItemBlock {
-    private bool isCrafting;
+    public new UnitFactoryBlockType Type { get => (UnitFactoryBlockType)base.Type; protected set => base.Type = value; }
+    private bool isProducing;
 
     public override void SetInventory() {
-        inventory = new ItemList(Type.itemCapacity, true);
-        isCrafting = false;
+        isProducing = false;
 
         // Set allowed input items
         Item[] allowedItems = new Item[Type.unitPlan.materialList.Length];
         for (int i = 0; i < allowedItems.Length; i++) allowedItems[i] = Type.unitPlan.materialList[i].item;
-        inventory.SetAllowedItems((Item[])allowedItems.Clone());
-
-        // Call base method
-        base.SetInventory();
+        inventory = new Inventory(Type.itemCapacity, -1f, allowedItems);
     }
 
-    public bool ContainsEnoughCraftingItems() => inventory.ContainsItemAmount(Type.unitPlan.materialList);
-
-    protected override void OnInventoryValueChange() {
+    public override void OnInventoryValueChange(object sender, System.EventArgs e) {
         // If has not enough items for the craft, stop crafting
-        if (isCrafting && !ContainsEnoughCraftingItems()) {
-            StopCrafting();
+        if (isProducing && !inventory.Has(Type.unitPlan.materialList)) {
+            StopProduction();
         }
 
         // If is not crafting and has enough items, start crafting
-        if (!isCrafting && ContainsEnoughCraftingItems()) {
-            StartCrafting();
+        if (!isProducing && inventory.Has(Type.unitPlan.materialList)) {
+            StartProduction();
         }
     }
 
-    protected virtual void StartCrafting() {
-        Invoke(nameof(FinishCrafting), Type.unitPlan.craftTime);
-        isCrafting = true;
+    protected virtual void StartProduction() {
+        Invoke(nameof(FinishProduction), Type.unitPlan.craftTime);
+        isProducing = true;
     }
 
-    protected virtual void StopCrafting() {
-        CancelInvoke(nameof(FinishCrafting));
+    protected virtual void StopProduction() {
+        CancelInvoke(nameof(FinishProduction));
     }
 
-    protected virtual void FinishCrafting() {
-        isCrafting = false;
-
-        SubstractItems(Type.unitPlan.materialList);
-
-        // If is the master client, spawn unit
-        if (PhotonNetwork.IsMasterClient) {
-            int unitViewID = MapManager.Instance.CreateUnit(GetPosition(), Type.unitPlan.unit, teamCode);
-
-            // Set unit mode to return
-            Unit unit = PhotonNetwork.GetPhotonView(unitViewID).gameObject.GetComponent<Unit>();
-            unit.SetMode(Unit.UnitMode.Return);
-        }
+    protected virtual void FinishProduction() {
+        isProducing = false;
+        inventory.Substract(Type.unitPlan.materialList);
+        Client.CreateUnit(GetPosition(), GetOrientation() * 90f, Type.unitPlan.GetUnit(), teamCode);
     }
 }

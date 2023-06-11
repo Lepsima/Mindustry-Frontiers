@@ -1,0 +1,11 @@
+﻿################################################################################
+# Este archivo .gitignore ha sido creado automáticamente por Microsoft(R) Visual Studio.
+################################################################################
+
+/Temp
+/ProjectSettings
+/Mindustry-Frontiers.sln
+/Logs
+/Library
+/Assets
+/.vs

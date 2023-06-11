@@ -1,134 +1,96 @@
-using System.Collections;
+using Frontiers.Assets;
+using Frontiers.Content;
+using Frontiers.Content.Maps;
+using Frontiers.Settings;
+using Frontiers.Teams;
+using Photon.Pun;
 using System.Collections.Generic;
 using UnityEngine;
-using Photon.Pun;
-using Photon.Realtime;
-using Photon.Pun.UtilityScripts;
-using Frontiers.Content;
-using Frontiers.Assets;
-using Frontiers.Teams;
-using Frontiers.Squadrons;
-using Frontiers.Settings;
+using UnityEngine.Experimental.Rendering.Universal;
 
-public class Unit : LoadableContent, IDamageable, IView, IInventory {
+public class Unit : Entity, IArmed {
+    public new UnitType Type { protected set; get; }
+    public TileType underTile;
 
     #region - References -
-    public PhotonView PhotonView { get; set; }
     protected Transform spriteHolder;
+    protected SpriteRenderer teamSpriteRenderer;
 
     TrailRenderer[] trailRenderers;
-    ParticleSystem takeOffEffect;
+    [SerializeField] ParticleSystem takeOffEffect, engineEffect, waterDeviationEffect;
 
-    readonly List<Weapon> weapons = new List<Weapon>();
-
-    #endregion
-
-
-    #region - Stats -
-    public UnitType Type { protected set; get; }
-
-    protected float velocityCap, accel, lowAccel, drag, bankAmount, bankSpeed, rotationSpeed;
-    protected bool canVTOL;
+    readonly List<Weapon> weapons = new();
+    public bool unarmed = true;
 
     #endregion
 
 
     #region - Current Status Vars -
-    private LoadableContent _target;
-    protected LoadableContent Target { get { return _target; }  set { if (_target != value) _target = value; } }
+    private Entity _target;
+    protected Entity Target { get { return _target; }  set { if (_target != value) _target = value; } }
     private LandPadBlock currentLandPadBlock;
+    private Shadow shadow;
 
-    protected UnitMode _mode, lastUnitMode;
+    protected UnitMode _mode = UnitMode.Return, lastUnitMode;
 
-    protected ItemList inventory;
-    protected UnitUI unitUI;
-
+    protected float gForce, angularGForce;
+    protected Vector2 acceleration;
     protected Vector2 velocity;
-    protected Vector2 patrolPosition = Vector2.zero;
+
+    protected Vector2 predictedTargetPosition;
     protected Vector2 homePosition;
+    public Vector2 patrolPosition = Vector2.zero;
 
-    protected float health, fuel, nextSyncTime, nextTargetSearchTime, landPadSearchTime, timeSinceTargetLost;
-    bool isTakingOff, isLanded;
+    protected float targetSpeed, targetHeight, enginePower, currentMass, lightPercent = 0f;
 
-    #endregion
+    protected float fuel, height, nextTargetSearchTime, landPadSearchTime, timeSinceTargetLost;
+    bool isTakingOff, isLanded, isFleeing;
 
+    // The target position used in behaviours for the next frame
+    Vector2 _position;
 
-    #region - Inventory - 
-
-    public void SetInventory() {
-        inventory = new ItemList(Type.itemCapacity, false);
-        OnInventoryValueChange();
-    }
-
-    public ItemStack AddItems(ItemStack value) {
-        ItemStack itemStack = inventory.AddItem(value);
-        OnInventoryValueChange();
-        return itemStack;
-    }
-
-    // Not abilable for units
-    public ItemList AddItems(ItemStack[] value) => null;
-    public ItemList SubstractItems(ItemStack[] value) => null;
-
-    public ItemStack SubstractItems(ItemStack value) {
-        ItemStack itemStack = inventory.SubstractItem(value);
-        OnInventoryValueChange();
-        return itemStack;
-    }
-
-    public ItemList GetItemList() {
-        return inventory;
-    }
-
-    protected void OnInventoryValueChange() {
-        unitUI.UpdateItem(inventory.GetStack());
-    }
-
-    protected void UpdateUISliders() {
-        unitUI.UpdateSliders(HealthPercent(), FuelPercent(), AmmoPercent());
-    }
+    // Conditions used ONLY on the next frame, then they are reseted
+    protected bool _rotate, _move;
 
     #endregion
 
 
     #region - Syncronization -
 
-    [PunRPC]
-    public void RPC_Takeoff() => TakeOff(false);
+    public override float[] GetSyncValues() {
+        float[] values = base.GetSyncValues();
+        values[2] = GetPosition().x;
+        values[3] = GetPosition().y;
+        values[4] = velocity.x;
+        values[5] = velocity.y;
+        values[6] = Target.SyncID;
+        return values;
+    }
 
-    [PunRPC]
-    public void RPC_UnitMode(int mode, bool registerPrev) {
-        if (registerPrev) lastUnitMode = (UnitMode)mode; 
+    public override void ApplySyncValues(float[] values) {
+        base.ApplySyncValues(values);
+        
+        transform.position = new(values[2], values[3]);
+        velocity = new(values[4], values[5]);
+
+        SyncronizableObject syncObject = Client.GetBySyncID((int)values[6]);
+        _target = syncObject ? syncObject as Entity : null;
+    }
+
+    public void ChangeMode(int mode, bool registerPrev) {
+        if ((UnitMode)mode == UnitMode.Attack && unarmed) mode = (int)UnitMode.Patrol;
+        if (registerPrev) lastUnitMode = (UnitMode)mode;
 
         Mode = (UnitMode)mode;
         Target = null;
+        isFleeing = false;
+
+        timeSinceTargetLost = 0;
+        landPadSearchTime = 0;
+        nextTargetSearchTime = 0;
+
         homePosition = GetPosition();
-        SetWeaponFullAuto(false);
-    }
-
-    public void SetMode(UnitMode mode, bool registerPrev = true) {
-        if (mode != Mode) PhotonView.RPC(nameof(RPC_UnitMode), RpcTarget.All, (int)mode, registerPrev);
-    }
-
-    public void Sync() {
-        nextSyncTime = Time.time + GetTimeCode() + State.SYNC_TIME;
-
-        Vector2 p = transform.position;
-        Vector2 v = velocity;
-
-        PhotonView.RPC(nameof(RPC_SyncStatus), RpcTarget.Others, p.x, p.y, v.x, v.y, health, fuel);
-    }
-
-    [PunRPC]
-    public void RPC_SyncStatus(float px, float py, float vx, float vy, float currentHealth, float currentFuel) {
-        transform.position = new Vector3(px, py, 0);
-        velocity = new Vector2(vx, vy);
-        health = currentHealth;
-        fuel = currentFuel;
-    }
-
-    public void SetNewPatrolPoint() {
-        PhotonView.RPC(nameof(RPC_NewPatrolPoint), RpcTarget.All, Random.insideUnitCircle * Type.range + homePosition);
+        SetWeaponsActive(false);
     }
 
     [PunRPC]
@@ -138,10 +100,15 @@ public class Unit : LoadableContent, IDamageable, IView, IInventory {
 
     #endregion
 
+
+    #region - Main -
+
     public enum UnitMode {
         Attack = 1,
         Patrol = 2,
-        Return = 3
+        Return = 3,
+        Assist = 4,
+        Idling = 5
     }
 
     public UnitMode Mode { 
@@ -155,154 +122,246 @@ public class Unit : LoadableContent, IDamageable, IView, IInventory {
         } 
     }
 
-    //Physics management, should move to custom function
-    protected virtual void FixedUpdate() {
+    protected virtual void Start() {
+        // Add temporal ammo
+        //inventory.Add(Items.missileX1, 10);
+    }
+
+    protected virtual void Update() {
         HandleBehaviour();
+
+        teamSpriteRenderer.color = CellColor();
 
         if (isLanded && fuel < Type.fuelCapacity) {
             if (fuel < Type.fuelCapacity) {
-                fuel += Type.fuelRefillRate * Time.fixedDeltaTime;
-                UpdateUISliders();
+                fuel += Type.fuelRefillRate * Time.deltaTime;
 
                 // When fuel is completely refilled, continue the previous mode
                 if (fuel > Type.fuelCapacity) {
                     fuel = Type.fuelCapacity;
-                    SetMode(lastUnitMode);
+                    Client.UnitChangeMode(this, (int)lastUnitMode);
                 }
             }
         }
 
-        if (PhotonView.IsMine && nextSyncTime <= Time.time + GetTimeCode()) Sync();
+        if (velocity.magnitude > 0) {
+            underTile = MapManager.Map.GetMapTileTypeAt(Map.MapLayer.Ground, shadow.transform.position);
+
+            if (underTile != null) {
+                ParticleSystem.EmissionModule emissionModule = waterDeviationEffect.emission;
+                emissionModule.rateOverDistanceMultiplier = underTile.isWater ? 5f : 0f;
+            }
+        }
     }
 
-    // Checking if this works
+    //Physics management
+    protected virtual void FixedUpdate() {
+        HandlePhysics();
+    }
+
     //Initialize the unit
-    public virtual void Set(Vector2 position, Vector2 velocity, UnitType unitType, float timeCode, byte teamCode) {
-        base.Set(timeCode, teamCode, true);
-        PhotonView = GetComponent<PhotonView>();
+    public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
+        Type = type as UnitType;
+
+        if (Type == null) {
+            Debug.LogError("Specified type: " + type + ", is not valid for a unit");
+            return;
+        }
+
+        name = "Unit Team : " + teamCode;
+        spriteHolder = transform.GetChild(0);
+        base.Set(position, rotation, type, id, teamCode);
+
+        transform.localScale = Vector3.one * Type.size;
+        size = Type.size;
         hasInventory = true;
 
-        Type = unitType;
-        transform.position = position;
-        this.velocity = velocity;
+        fuel = Type.fuelCapacity;
+        height = Type.flyHeight / 2;
+        health = Type.health;
 
-        health = unitType.health;
-        fuel = unitType.fuelCapacity;
-
-        velocityCap = unitType.velocityCap;
-        accel = unitType.accel;
-        lowAccel = unitType.accel / 3;
-        drag = unitType.drag;
-        rotationSpeed = unitType.rotationSpeed;
-
-        bankAmount = unitType.bankAmount;
-        bankSpeed = unitType.bankSpeed;
-
-        canVTOL = unitType.canVTOL;
-
-        spriteHolder = transform.GetChild(0);
-        trailRenderers = (TrailRenderer[])transform.GetComponentsInChildren<TrailRenderer>(true).Clone();
-        takeOffEffect = transform.GetComponentInChildren<ParticleSystem>();
-
-        unitUI = transform.GetComponentInChildren<UnitUI>(true);
-        unitUI.ShowUI(true);
-
-        name = "Unit Team : " + teamCode + " " + Random.Range(1, 100);
- 
-        SetInventory();
-        SetSprites();
+        SetEffects();
         SetWeapons();
 
         MapManager.units.Add(this);
+
+        transform.SetPositionAndRotation(position, rotation);
+        homePosition = transform.position;
+
+        syncValues = 7;
     }
 
-    private void SetSprites() {
+    protected override void SetSprites() {
         spriteHolder.GetComponent<SpriteRenderer>().sprite = Type.sprite;
 
-        SetOptionalSprite(spriteHolder.Find("Cell"), Type.cellSprite, out SpriteRenderer teamSpriteRenderer);
-        teamSpriteRenderer.color = teamCode == TeamUtilities.GetLocalPlayerTeam().Code ? TeamUtilities.LocalTeamColor : TeamUtilities.EnemyTeamColor;
-    } //Set the Unit's sprites 
+        SetOptionalSprite(spriteHolder.Find("Cell"), Type.cellSprite, out teamSpriteRenderer);
+        SetOptionalSprite(spriteHolder.Find("Outline"), Type.outlineSprite);
+        teamSpriteRenderer.color = teamCode == TeamUtilities.GetLocalTeam() ? TeamUtilities.LocalTeamColor : TeamUtilities.EnemyTeamColor;
+    }
 
+    //Set the Unit's weapons
     private void SetWeapons() {
-        foreach (WeaponMount weaponMount in Type.weapons) {
-            //Get weapon prefab
-            GameObject weaponPrefab = Assets.GetPrefab("weaponPrefab");
+        unarmed = Type.weapons.Length == 0;
 
-            //Create and initialize new weapon
-            GameObject weaponGameObject = Instantiate(weaponPrefab, transform.position + (Vector3)weaponMount.position, Quaternion.identity, spriteHolder);
-            Weapon weapon = (Weapon)weaponGameObject.AddComponent(weaponMount.weaponType.type);
-            weapon.Set(this, weaponMount.weaponType, false, timeCode, teamCode);
-            weapons.Add(weapon);
+        foreach (WeaponMount weaponMount in Type.weapons) {
+            SetWeapon(weaponMount);
 
             //If mirrored, repeat previous steps
-            if (weaponMount.mirrored) {
-                weaponGameObject = Instantiate(weaponPrefab, transform.position + new Vector3(-weaponMount.position.x, weaponMount.position.y, 0), Quaternion.identity, spriteHolder);
-                weapon = (Weapon)weaponGameObject.AddComponent(weaponMount.weaponType.type);
-                weapon.Set(this, weaponMount.weaponType, true, timeCode, teamCode);
-                weapons.Add(weapon);
-            }
+            if (weaponMount.mirrored) SetWeapon(weaponMount, true);     
         }
-    } //Set the Unit's weapons
+    }
+
+    private void SetWeapon(WeaponMount weaponMount, bool mirrored = false) {
+        //Get weapon prefab
+        GameObject weaponPrefab = AssetLoader.GetPrefab("weaponPrefab");
+        Vector3 offsetPos = mirrored ? new Vector3(-weaponMount.position.x, weaponMount.position.y, 0) : weaponMount.position;
+
+        //Create and initialize new weapon
+        GameObject weaponGameObject = Instantiate(weaponPrefab, transform.position, spriteHolder.transform.rotation);
+        weaponGameObject.transform.parent = spriteHolder;
+        weaponGameObject.transform.localPosition += offsetPos;
+        weaponGameObject.transform.localScale = Vector3.one;
+
+        Weapon weapon = (Weapon)weaponGameObject.AddComponent(weaponMount.weapon.type);
+        weapon.Set(this, weapons.Count, weaponMount.weapon, mirrored, weaponMount.onTop);
+        weapons.Add(weapon);
+    }
+
+    private void SetEffects() {
+        trailRenderers = (TrailRenderer[])transform.GetComponentsInChildren<TrailRenderer>(true).Clone();
+        shadow = transform.GetComponentInChildren<Shadow>();
+
+        foreach (ParticleSystem particleSystem in gameObject.GetComponentsInChildren<ParticleSystem>()) {
+            if (particleSystem.name == "TakeOffEffect") takeOffEffect = particleSystem;
+            if (particleSystem.name == "WaterDeviationEffect") waterDeviationEffect = particleSystem;
+            //if (particleSystem.name == "EngineEffect") engineEffect = particleSystem;
+        }
+
+        takeOffEffect.transform.localScale = Vector3.one * Type.size;
+
+        shadow.SetDistance(Type.flyHeight);
+        shadow.SetSprite(Type.spriteFull);
+
+        // frontLight = GetComponentInChildren<Light2D>();
+    }
 
     private void SetTrailTime(float time) {
         foreach (TrailRenderer tr in trailRenderers) tr.time = Mathf.Abs(time);
     } //Simulate drag trails
 
 
-    #region - Behaviour -
+    public void SetVelocity(Vector2 velocity) => this.velocity = velocity;
 
-    private float HandleFuelUse(float power) {
-        fuel -= power * Type.fuelConsumption * Time.fixedDeltaTime;
-        UpdateUISliders();
+    public override void SetInventory() {
+        inventory = new Inventory(Type.itemCapacity, Type.itemMass);
+        hasInventory = true;
 
-        // On 10s fuel, go back to land
-        if (fuel / Type.fuelConsumption < 10f) SetMode(UnitMode.Return, false);
-
-        return fuel > 0 ? (1 - (Type.fuelCapacity / (Type.fuelCapacity * 0.5f * fuel))) * power : 0f;
+        base.SetInventory();
     }
 
-    public void MoveTo(Vector2 position, float maxPower = 1) {
-        float distance = Vector2.Distance(position, transform.position);
-        float power = 1;
+    public override void OnInventoryValueChange(object sender, System.EventArgs e) {
+        // Update inventory things
+    }
 
-        //Reduce power as it gets closer
-        if (distance >= 15) power = 1 - (1 / Mathf.Sqrt(distance + 1));
+    public override EntityType GetEntityType() => Type;
 
-        //Clamp power, 0 to 1 and apply fuel things
-        power = HandleFuelUse(Mathf.Clamp(power, 0, maxPower));
+    #endregion
 
-        //If isn't landed or taking off, calculate normal physics
-        if (!isLanded && !isTakingOff) {
-            RotateTowards(position, power);
 
-            //Set the direction
-            Vector2 direction = transform.up;
-            float gForce = Vector2.Angle(direction, velocity.normalized) / 90;
+    #region - Behaviour -
+    /// <summary>
+    /// The main function to handle the unit physics
+    /// Handles: Movement, Rotation, Height and Fuel Consumption
+    /// </summary>
+    public void HandlePhysics() {
+        // Get distance to behaviour target
+        float distance = Vector2.Distance(_position, transform.position);
 
-            //Get acceleration and drag values based on direction
-            Vector2 accelDir = accel * power * Time.fixedDeltaTime * direction.normalized;
-            Vector2 dragDir = drag * Time.fixedDeltaTime * (Vector2.Dot(direction, velocity) * 2 + 0.5f) * -velocity.normalized;
+        // A value from 0 to 1 that indicates the power output percent of the engines
+        enginePower = Mathf.Clamp01(fuel > 0f ? 1f : 0f) * targetSpeed;
 
-            //Tilt the unit according to accelDot
-            spriteHolder.localEulerAngles = new Vector3(0, Mathf.LerpAngle(spriteHolder.localEulerAngles.y, gForce * bankAmount, bankSpeed * Time.fixedDeltaTime), 0);
+        // If the current height is higher than should be, lower engine power on purpose
+        if (height > targetHeight) enginePower *= 0.75f;
+        enginePower *= height / Type.flyHeight;
 
-            //Set trail renderer time
-            SetTrailTime(Vector2.Dot(Quaternion.AngleAxis(90, Vector3.forward) * direction, velocity));
+        // Consume fuel based on fuelConsumption x enginePower
+        fuel -= Type.fuelConsumption * enginePower * Time.fixedDeltaTime;
 
-            //Calculate the final velocity
-            velocity = Vector2.ClampMagnitude(velocity + accelDir + dragDir, velocityCap);
-            transform.position += (Vector3)velocity;
+        float fuelMass = FuelPercent() * Type.fuelMass;
+        float cargoMass = 0;
+        currentMass = Type.emptyMass + fuelMass + cargoMass;
+
+        // If only 10s of fuel left, enable return mode
+        if (fuel / Type.fuelConsumption < 10f) Client.UnitChangeMode(this, (int)UnitMode.Return, true);
+
+        if (_rotate) {
+            // Power is reduced if: g-forces are high, is close to the target or if the behavoiur is fleeing
+            float rotationPower = Mathf.Clamp01(2 / gForce);
+            if (distance < 5f || isFleeing) rotationPower *= Mathf.Clamp01(distance / 10);
+
+            // Quirky quaternion stuff to make the unit rotate slowly -DO NOT TOUCH-
+            Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, (_position - GetPosition()).normalized);
+            desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
+
+            float prevRotation = transform.eulerAngles.z;
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRotation, Type.rotationSpeed * rotationPower * Time.fixedDeltaTime);
+            angularGForce = (transform.eulerAngles.z - prevRotation) * Time.deltaTime * 10f;
         }
+
+        if (_move) {
+            // If isn't landed or taking off, calculate normal movement physics
+            if (!isLanded && !isTakingOff) {
+
+                // Get the direction
+                Vector2 direction = GetDirection(_position);
+                Vector2 targetDirection = (_position - GetPosition()).normalized;
+
+                // Get acceleration and drag values based on direction
+                float similarity = GetSimilarity(transform.up, targetDirection);
+                enginePower *= isFleeing ? 1 : (similarity > 0.5f ? similarity : 0.1f);
+
+                acceleration += enginePower * Type.force / currentMass * direction.normalized;
+
+                // Tilt the unit according to accelDot
+                spriteHolder.localEulerAngles = new Vector3(0, Mathf.LerpAngle(spriteHolder.localEulerAngles.y, angularGForce * Type.bankAmount, Type.bankSpeed * Time.fixedDeltaTime), 0);
+            }
+        }
+
+        // Height behaviour
+        if (!isLanded) {
+            // If is taking off climb until half fly height
+            if (isTakingOff) height = Mathf.Clamp(Time.fixedDeltaTime * Type.flyHeight / 6 + height, 0, Type.flyHeight);
+            else {
+                float liftForce = 3;
+                float fallForce = -3;
+
+                // Change height increase or decrease based on enginePower
+                bool isFalling = enginePower <= 0 || targetHeight < height;
+                height = Mathf.Clamp((isFalling ? fallForce : liftForce) * Time.fixedDeltaTime + height, 0, Type.flyHeight);
+
+                // If is touching ground, crash
+                if (height < 0.05f) Land();
+            }
+        }
+
+        // Drag force inversely proportional to velocity
+        acceleration -= (1 - Type.drag * 0.33f * Time.fixedDeltaTime) * (velocity * transform.up);
+
+        // Drag force inversely proportional to direction
+        acceleration -= (1 - Type.drag * 0.67f * Time.fixedDeltaTime) * velocity;
+
+        // Calculate velocity and position
+        velocity = Vector2.ClampMagnitude(acceleration * Time.fixedDeltaTime + velocity, Type.velocityCap);
+        transform.position += (Vector3)velocity * Time.fixedDeltaTime;
+
+        // Calculate g-force and reset acceleration
+        gForce = (acceleration * Time.fixedDeltaTime).magnitude;
+        acceleration = Vector2.zero;
     }
 
     public void HandleBehaviour() {
-        //If is flying too slow, land
-        if (!isLanded && !isTakingOff && velocity.magnitude < 0.05f) Land();
-
-        //Increase or decrease unit scale on landing and takeoff
-        if (isTakingOff && spriteHolder.localScale.x < 1f) spriteHolder.localScale += 0.1f * Time.fixedDeltaTime * Vector3.one;
-        else if (velocity.magnitude < 0.2f) spriteHolder.localScale = Vector3.one * (0.7f + Mathf.Clamp(velocity.magnitude, 0f, 0.2f));
-        
+        _move = true;
+        _rotate = true;
 
         switch (Mode) {
             case UnitMode.Attack:
@@ -316,110 +375,197 @@ public class Unit : LoadableContent, IDamageable, IView, IInventory {
             case UnitMode.Return:
                 ReturnBehaviour();
                 break;
+
+            case UnitMode.Assist:
+                AssistBehaviour();
+                break;
+
+            case UnitMode.Idling:
+                IdlingBehaviour();
+                break;
         }
+
+        if (!Target) SetWeaponsActive(false);
+
+        // Visual things
+        SetTrailTime(gForce * 0.3f);
+        shadow.SetDistance(height);
+        //frontLight.intensity = lightPercent;
     }
+
+    protected void SetBehaviourPosition(Vector2 target) => _position = target;
+
 
     #region - Behaviours -
     protected virtual void AttackBehaviour() {
-        //If is landed, takeoff
-        if (isLanded) TakeOff();
-        else if (!isTakingOff) {
-            //Get target
-            LoadableContent target = HandleTargeting();
-            Target = !target ? TeamUtilities.GetClosestCoreBlock(GetPosition(), TeamUtilities.GetEnemyTeam(teamCode).Code) : target;
-            if (!Target) SetMode(UnitMode.Return);
+        targetHeight = Type.flyHeight;
+        targetSpeed = 1f;
 
-            //Move towards target
-            MoveTo(Target.GetPosition());
-            HandleShooting();
+        //If is landed, takeoff
+        if (isLanded) Client.UnitTakeOff(this);
+        else if (!isTakingOff) {
+            // Default target search
+            if (!isFleeing) HandleTargeting(true);
+            else {
+                if (Vector2.Distance(patrolPosition, GetPosition()) < 5f) isFleeing = false;
+                else SetBehaviourPosition(patrolPosition);
+            }
+
+            // If there's not even an enemy core, set unit to return
+            if (!Target) {
+                Client.UnitChangeMode(this, (int)UnitMode.Return);
+            } else if (!isFleeing) {
+                AttackSubBehaviour(Target.GetPosition());
+            }
+
+            // Once gets too close, run far away for the next run
+            if (Type.useAerodynamics && Vector2.Distance(_position, transform.position) < 2f) { 
+                isFleeing = true;
+
+                // Where 25f is the flee distance
+                patrolPosition = GetPosition() + (Vector2)transform.up * 25f;
+
+                // Turn off weapons
+                SetWeaponsActive(false);
+            }
         }
     }
 
     protected virtual void PatrolBehaviour() {
+        targetHeight = Type.flyHeight;
+        targetSpeed = 0.9f;
+
         //If is landed, takeoff
         if (isLanded) TakeOff();
         else if (!isTakingOff) {
-            //Get target
-            Target = HandleTargeting();
-            //Target = target && !ValidTarget(target) ? null : target;
+            // Default target search
+            HandleTargeting();
 
-            if (!Target && (Vector2.Distance(patrolPosition, GetPosition()) < 5f || patrolPosition == Vector2.zero)) SetNewPatrolPoint();     
-            MoveTo(Target ? Target.GetPosition() : patrolPosition);
 
-            HandleShooting();
+            if (Target) {
+
+                // If a target was found, attack
+                AttackSubBehaviour(Target.GetPosition());
+
+            } else if (Vector2.Distance(patrolPosition, GetPosition()) < 5f || patrolPosition == Vector2.zero) {
+
+                // If no target or close to previous patrol point, create new one
+                Client.UnitChangePatrolPoint(this, Random.insideUnitCircle * Type.range + homePosition);
+
+            } else {
+
+                // Then move to the patrol point
+                SetBehaviourPosition(patrolPosition); 
+
+            }
         }
     }
-
 
     protected virtual void ReturnBehaviour() {
         if (isLanded) return;
 
+        targetHeight = Type.flyHeight * 0.5f;
+        targetSpeed = 0.5f;
+
         //If target block is invalid, get closest landpad
-        if (landPadSearchTime < Time.time && (!Target || !(Target is LandPadBlock) || (Target as LandPadBlock).IsFull())) {
+        bool isInvalid = !Target || !(Target is LandPadBlock) || !(Target as LandPadBlock).CanLand(this);
+        if (landPadSearchTime < Time.time && isInvalid) {
             // Search for a landpad
             landPadSearchTime = 3f + Time.time;
-            LandPadBlock targetLandPad = MapManager.Instance.GetClosestLandPad(GetPosition(), teamCode);
+            LandPadBlock targetLandPad = MapManager.Map.GetBestAvilableLandPad(this);
 
-            // If there's no landpad, set previous target
+            // Confirm target change
             if (targetLandPad) Target = targetLandPad;
         }
         
         // If couldnt't find any landpads, continue as patrol mode
         if (Target is LandPadBlock) {
-            LandPadBlock landPadTarget = Target as LandPadBlock;
-
             //If close to landpad, land
-            float distance = Vector2.Distance(landPadTarget.GetPosition(), GetPosition());
-            if (distance < (landPadTarget.Type.size / 2) + 0.5f && velocity.magnitude < 0.75f) Land(Target as LandPadBlock);
+            float distance = Vector2.Distance(Target.GetPosition(), GetPosition());
+            if (distance < ((Block)Target).Type.size / 2 + 0.5f && velocity.magnitude < 5f) Land(Target as LandPadBlock);
 
             //Move towards target
-            MoveTo(Target.GetPosition(), 0.85f);
+            SetBehaviourPosition(Target.GetPosition());
 
         } else PatrolBehaviour();
         
     }
+
+    protected virtual void AssistBehaviour() {
+        targetHeight = Type.flyHeight;
+        targetSpeed = 1f;
+    }
+
+    protected virtual void IdlingBehaviour() {
+        targetHeight = Type.flyHeight * 0.5f;
+        targetSpeed = 0.5f;
+    }
+
     #endregion
 
-    private LoadableContent HandleTargeting() {
+    #region - Sub Behaviours -
+
+    /// <summary>
+    /// A sub behaviour used for attacking a target at any time in the main behaviour
+    /// </summary>
+    /// <param name="target">The target's position</param>
+    private void AttackSubBehaviour(Vector2 target) {
+        if (unarmed) return;
+        if (!Type.useAerodynamics && InRange(target)) _move = false;
+
+        SetBehaviourPosition(target);
+
         if (Target) {
-            bool inShootRange = IsInShootRange(Target.GetPosition(), Type.fov, Type.range);
-            timeSinceTargetLost = inShootRange ? 0 : timeSinceTargetLost + Time.fixedDeltaTime;
-        }
-
-        if ((Target == null && nextTargetSearchTime < Time.time) || timeSinceTargetLost > 3.5f) {
-            nextTargetSearchTime = Time.time + 2f;
-            timeSinceTargetLost = 0f;
-            return GetTarget();
-        }
-
-        return Target;
-    }
-
-    private void HandleShooting() {
-        if (Target) {
-            //If is in shoot position, shoot
-            bool canShoot = IsInShootRange(Target.GetPosition(), weapons[0].Type.maxDeviation, Type.range);
-            if (canShoot != IsFullAuto) SetWeaponFullAuto(canShoot);
+            bool canShoot = InShootRange(target, weapons[0].Type.maxTargetDeviation);
+            if (canShoot != IsFullAuto) SetWeaponsActive(canShoot);
         } else {
-            SetWeaponFullAuto(false);
+            SetWeaponsActive(false);
         }
     }
 
-    private bool ValidTarget(LoadableContent target) {
+    #endregion
+
+    /// <summary>
+    /// Fully autonomous target search, includes:
+    ///  - Target search cooldown, for performance and accurate network syncronization
+    ///  - Target lost timer which the unit still remembers the target for a few seconds
+    ///  - Optional default target enemy core
+    /// </summary>
+    /// <param name="useEnemyCoreAsDefault">Enables the default target</param>
+    private void HandleTargeting(bool useEnemyCoreAsDefault = false) {
+        if (Target) {
+            // Check if target is still valid
+            bool inShootRange = InShootRange(Target.GetPosition(), Type.fov);
+            timeSinceTargetLost = inShootRange ? 0 : timeSinceTargetLost + Time.deltaTime;
+        }
+
+        if ((Target == null && nextTargetSearchTime < Time.time) || timeSinceTargetLost > 3f) {
+            // Update target timers
+            nextTargetSearchTime = Time.time + 1.5f;
+            timeSinceTargetLost = 0f;
+
+            // Find target or get closest
+            Entity tempTarget = GetTarget();
+            Entity core = TeamUtilities.GetClosestCoreBlock(GetPosition(), TeamUtilities.GetEnemyTeam(teamCode));
+            Target = !tempTarget && useEnemyCoreAsDefault ? core : tempTarget;
+        }
+    }
+
+    private bool ValidTarget(Entity target) {
         if (!target) return false;
         return Vector2.Distance(target.GetPosition(), GetPosition()) < Type.range;
     }
 
-    private LoadableContent GetTarget(System.Type[] priorityList = null) {
+    private Entity GetTarget(System.Type[] priorityList = null) {
         //Default priority targets
-        if (priorityList == null) priorityList = new System.Type[4] { typeof(Unit), typeof(CoreBlock), typeof(TurretBlock), typeof(LandPadBlock) };
+        if (priorityList == null) priorityList = new System.Type[5] { typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(StorageBlock), typeof(LandPadBlock) };
 
         foreach(System.Type type in priorityList) {
             //Search the next priority type
-            LoadableContent tempTarget;
+            Entity tempTarget;
 
-            if (type == typeof(Unit)) tempTarget = MapManager.Instance.GetClosestLoadableContentInView(GetPosition(), transform.up, Type.fov, type, TeamUtilities.GetEnemyTeam(teamCode).Code);
-            else tempTarget = MapManager.Instance.GetClosestLoadableContent(GetPosition(), type, TeamUtilities.GetEnemyTeam(teamCode).Code);
+            if (type == typeof(Unit)) tempTarget = MapManager.Map.GetClosestEntityInView(GetPosition(), transform.up, Type.fov, type, TeamUtilities.GetEnemyTeam(teamCode));
+            else tempTarget = MapManager.Map.GetClosestEntityStrict(GetPosition(), type, TeamUtilities.GetEnemyTeam(teamCode));
 
             //If target is valid, stop searching
             if (ValidTarget(tempTarget)) return tempTarget;
@@ -433,6 +579,7 @@ public class Unit : LoadableContent, IDamageable, IView, IInventory {
 
     #region - Landing / Takeoff - 
 
+    //Land unit on the ground, if obstructed: crash, THIS CURRENTLY CRASHES(into the map) THE UNIT ALWAYS
     public void Land() {
         MapCrash();
         /*
@@ -451,7 +598,7 @@ public class Unit : LoadableContent, IDamageable, IView, IInventory {
         spriteHolder.localScale = Vector3.one * 0.7f;
         SetTrailTime(0);
         */
-    } //Land unit on the ground, if obstructed: crash, THIS CURRENTLY CRASHES(into the map) THE UNIT ALWAYS
+    }
    
     public void Land(LandPadBlock landPad) {
         //Land on landpad
@@ -461,7 +608,9 @@ public class Unit : LoadableContent, IDamageable, IView, IInventory {
         //Set landed true and stop completely the unit
         isLanded = true;
         velocity = Vector2.zero;
-        spriteHolder.localScale = Vector3.one * 0.7f;
+        //spriteHolder.localScale = Vector3.one * 0.7f;
+
+        height = 0f;
         SetTrailTime(0);
     } //Land unit on a near landpad
 
@@ -469,14 +618,13 @@ public class Unit : LoadableContent, IDamageable, IView, IInventory {
     //When crash into the map
     public void MapCrash() {
         //Crash effects: TODO
-        Delete();
+        Client.DestroyUnit(this, true);
     }
 
 
     //Take off from land
-    public void TakeOff(bool sync = true) {
+    public void TakeOff() {
         if (isTakingOff || !isLanded) return;
-        if (sync) PhotonView.RPC(nameof(RPC_Takeoff), RpcTarget.Others);
 
         //Start takeOff
         isTakingOff = true;
@@ -488,27 +636,27 @@ public class Unit : LoadableContent, IDamageable, IView, IInventory {
 
         //Play particle system
         takeOffEffect.Play();
-
-        //If is landed on a landpad, takeoff from it
-        if (currentLandPadBlock) currentLandPadBlock.TakeOff(this);
-        currentLandPadBlock = null;
     }
 
 
     //Enable physics movement
     private void EndTakeOff() {
+        //If is landed on a landpad, takeoff from it
+        if (currentLandPadBlock) currentLandPadBlock.TakeOff(this);
+        currentLandPadBlock = null;
+
         //Takeoff ended, allowing free movement
         isTakingOff = false;
-        spriteHolder.localScale = Vector3.one;
-        velocity = lowAccel * Random.Range(0.75f, 1.25f) * transform.up;
+        //spriteHolder.localScale = Vector3.one;
+        velocity = Type.force / 3 * transform.up;
     }
     #endregion
 
 
     #region - Math - 
 
-    public bool IsInShootRange(Vector2 target, float fov, float range) {
-        if (Vector2.Distance(target, GetPosition()) > range) return false;
+    public bool InShootRange(Vector2 target, float fov) {
+        if (!InRange(target)) return false;
 
         float cosAngle = Vector2.Dot((target - GetPosition()).normalized, transform.up);
         float angle = Mathf.Acos(cosAngle) * Mathf.Rad2Deg;
@@ -516,53 +664,64 @@ public class Unit : LoadableContent, IDamageable, IView, IInventory {
         return angle < fov;
     }
 
-    //Smooth point to position
-    protected void RotateTowards(Vector3 position, float power) {
-        //Quirky quaternion stuff to make the unit rotate slowly
-        Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, position - transform.position);
-        desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRotation, rotationSpeed * power * Time.fixedDeltaTime * (1 / velocity.magnitude));
+    public override Vector2 GetPredictedPosition(Vector2 origin, Vector2 velocity) {
+        float time = (GetPosition() - origin).magnitude / (velocity - this.velocity).magnitude;
+        Vector2 impact = GetPosition() + time * this.velocity;
+        return impact;
     }
 
-    //How much is the second vector pointing like other vector (0 = exact, 2 == oposite)
-    public float GetForwardDotProduct(Vector2 v1, Vector2 v2, float threshold = 0.3f) => ((v2 != Vector2.zero && v1.magnitude > threshold) ? Vector2.Dot(v1.normalized, v2.normalized) : 1f) - 1;
+    public bool InRange(Vector2 target) => Vector2.Distance(target, GetPosition()) < Type.range;
+
+    public Vector2 GetDirection(Vector2 target) => Type.useAerodynamics ? (Vector2)transform.up : (target - GetPosition()).normalized;
+
+    //How much is the second vector pointing like other vector (0 = exact, 1 == oposite)
+    public float GetForwardDotProduct(Vector2 v1, Vector2 v2) => Vector2.Dot(v1.normalized, v2.normalized) / 2 + 0.5f;
+
+    //How much is the second vector pointing like other vector (1 = exact, 0 == oposite)
+    public float GetBackwardDotProduct(Vector2 v1, Vector2 v2) => (1 + Vector2.Dot(v1.normalized, v2.normalized)) / 2;
+
+    public float GetSimilarity(Vector2 v1, Vector2 v2) => 1 - Vector2.Angle(v1, v2) / 180f;
 
     public Vector2 GetVelocity() => velocity;
+
     public float HealthPercent() => health / Type.health;
+
     public float FuelPercent() => fuel / Type.fuelCapacity;
+
     public float AmmoPercent() => 1;
 
     #endregion
 
 
     #region - Shooting -    
-    bool IsFullAuto { get => weapons[0].isFullAuto; }
+    bool IsFullAuto { get => weapons[0].isActive; }
 
-    public void Damage(float amount) {
-        if (amount < health) { 
-            health -= amount;
-            UpdateUISliders();
-        } else PhotonNetwork.Destroy(PhotonView);
-    }
+    public override void OnDestroy() {
+        if (!gameObject.scene.isLoaded) return;
 
-    public override void Delete() {
-        if (gameObject.scene.isLoaded) {
-            GameObject destroyEffect = Assets.GetPrefab("ExplosionEffect");
-            Instantiate(destroyEffect, GetPosition(), Quaternion.identity);
-        }
+        GameObject explosionEffectPrefab = AssetLoader.GetPrefab("ExplosionEffect");
+        GameObject explosionBlastPrefab = AssetLoader.GetPrefab("explosion-blast");
+
+        Instantiate(explosionEffectPrefab, GetPosition(), Quaternion.identity);
+        GameObject explosionBlastGameObject = Instantiate(explosionBlastPrefab, GetPosition(), Quaternion.Euler(0f, 0f, Random.Range(0f, 360f)));
+
+        Destroy(explosionBlastGameObject, 10f);
 
         MapManager.units.Remove(this);
-        base.Delete();
+        base.OnDestroy();
     }
 
-    public void SetWeaponFullAuto(bool value, int weaponIndex = -1) {
-        if (weaponIndex == -1) foreach (Weapon weapon in weapons) weapon.isFullAuto = value;
-        else weapons[weaponIndex].isFullAuto = value;
+    public void SetWeaponsActive(bool value, int weaponIndex = -1) {
+        if (weaponIndex == -1) foreach (Weapon weapon in weapons) weapon.isActive = value;
+        else weapons[weaponIndex].isActive = value;
+    }
+
+    public Weapon GetWeaponByID(int ID) {
+        return weapons[ID];
     }
 
     public void Shoot(int weaponIndex) {
         weapons[weaponIndex].Shoot();
     }
-
     #endregion
 }

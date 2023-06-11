@@ -8,7 +8,7 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Non PostProcessing
   - Water
   - UI
   - 
@@ -47,9 +47,12 @@ TagManager:
   - name: Blocks
     uniqueID: 3833761459
     locked: 0
+  - name: Items
+    uniqueID: 3141966293
+    locked: 0
   - name: Units
     uniqueID: 3103465403
     locked: 0
-  - name: Items
-    uniqueID: 3141966293
+  - name: Effects
+    uniqueID: 2619323485
     locked: 0

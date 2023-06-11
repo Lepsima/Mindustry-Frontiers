@@ -57,6 +57,25 @@ MonoBehaviour:
   - RPC_NewPatrolPoint
   - RPC_AddItems
   - RPC_SubstractItems
+  - RPC_DestroyBlock
+  - RPC_AddItem
+  - RPC_CreateBlock
+  - RPC_CreateFire
+  - RPC_DestroyUnit
+  - RPC_ReciveSyncValues
+  - RPC_UnitChangeMode
+  - RPC_UnitChangePatrolPoint
+  - RPC_UnitTakeoff
+  - RPC_WeaponShoot
+  - RPC_ReciveMap
+  - RPC_RequestMap
+  - RPC_ReciveBlockData
+  - RPC_ReciveMapData
+  - RPC_RequestEntityData
+  - MasterRPC_CreateBlock
+  - MasterRPC_CreateUnit
+  - MasterRPC_DestroyBlock
+  - MasterRPC_DestroyUnit
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -28,12 +29,12 @@ public class Launcher : MonoBehaviourPunCallbacks {
     private void Awake() {
         Instance = this;
         PhotonNetwork.GameVersion = VERSION;
-
-        Assets.LoadAssets();
-        ContentLoader.LoadContent();
     }
 
     private void Start() {
+        AssetLoader.LoadAssets();
+        ContentLoader.LoadContent();
+
         Debug.Log("Connecting to Master");
         PhotonNetwork.ConnectUsingSettings();
     }

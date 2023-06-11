@@ -5,14 +5,22 @@ using UnityEngine;
 using Frontiers.Teams;
 
 public class CoreBlock : StorageBlock {
-    public override void Set(Vector2Int gridPosition, BlockType blockType, float timeCode, byte teamCode) {
-        base.Set(gridPosition, blockType, timeCode, teamCode);
-        TeamUtilities.AddCoreBlock(this);
-        inventory.AddItem(new ItemStack(Items.copper, 125));
+    public new CoreBlockType Type { get => (CoreBlockType)base.Type; protected set => base.Type = value; }
+
+    private void Start() {
+        inventory.Add(Items.copper, 325);
+        inventory.Add(Items.titanium, 125);
     }
 
-    public override void Delete() {
+    public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
+        base.Set(position, rotation, type, id, teamCode);
+        TeamUtilities.AddCoreBlock(this);
+    }
+
+    public override void OnDestroy() {
+        if (!gameObject.scene.isLoaded) return;
+
         TeamUtilities.RemoveCoreBlock(this);
-        base.Delete();
+        base.OnDestroy();
     }
 }

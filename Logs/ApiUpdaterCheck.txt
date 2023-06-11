@@ -488,3 +488,733 @@ C# parse time         : 632ms
 candidates check time : 99ms
 console write time    : 1ms
 
+[api-updater (non-obsolete-error-filter)] 08/03/2023 17:10:24 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 3632,9188ms
+moved types parse time: 128ms
+candidates parse time : 2ms
+C# parse time         : 962ms
+candidates check time : 92ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 09/03/2023 18:16:33 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 1675,4743ms
+moved types parse time: 114ms
+candidates parse time : 2ms
+C# parse time         : 681ms
+candidates check time : 65ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 09/03/2023 20:15:59 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 417,1736ms
+moved types parse time: 173ms
+candidates parse time : 2ms
+C# parse time         : 913ms
+candidates check time : 132ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 09/03/2023 20:16:37 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 317,0229ms
+moved types parse time: 140ms
+candidates parse time : 3ms
+C# parse time         : 623ms
+candidates check time : 177ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 09/03/2023 20:16:54 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 151,0483ms
+moved types parse time: 77ms
+candidates parse time : 2ms
+C# parse time         : 471ms
+candidates check time : 144ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 09/03/2023 20:17:57 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 142,0116ms
+moved types parse time: 79ms
+candidates parse time : 2ms
+C# parse time         : 488ms
+candidates check time : 106ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 09/03/2023 20:18:46 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 241,0177ms
+moved types parse time: 80ms
+candidates parse time : 1ms
+C# parse time         : 510ms
+candidates check time : 194ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 09/03/2023 20:19:53 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 226,017ms
+moved types parse time: 182ms
+candidates parse time : 2ms
+C# parse time         : 642ms
+candidates check time : 151ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 09/03/2023 20:20:15 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 124,0082ms
+moved types parse time: 109ms
+candidates parse time : 2ms
+C# parse time         : 714ms
+candidates check time : 116ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 09/03/2023 20:21:17 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 175,0128ms
+moved types parse time: 98ms
+candidates parse time : 3ms
+C# parse time         : 493ms
+candidates check time : 101ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 09/03/2023 20:21:32 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 138,009ms
+moved types parse time: 87ms
+candidates parse time : 2ms
+C# parse time         : 443ms
+candidates check time : 97ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 09/03/2023 20:21:44 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 222,0163ms
+moved types parse time: 188ms
+candidates parse time : 9ms
+C# parse time         : 556ms
+candidates check time : 111ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 09/03/2023 20:22:09 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 171,0139ms
+moved types parse time: 135ms
+candidates parse time : 4ms
+C# parse time         : 480ms
+candidates check time : 95ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 09/03/2023 20:24:02 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 217,7394ms
+moved types parse time: 97ms
+candidates parse time : 2ms
+C# parse time         : 532ms
+candidates check time : 139ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 09/03/2023 20:24:23 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 194,0128ms
+moved types parse time: 119ms
+candidates parse time : 2ms
+C# parse time         : 650ms
+candidates check time : 128ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 09/03/2023 20:29:17 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 135,0087ms
+moved types parse time: 89ms
+candidates parse time : 2ms
+C# parse time         : 515ms
+candidates check time : 90ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 09/03/2023 20:29:33 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 191,6154ms
+moved types parse time: 88ms
+candidates parse time : 2ms
+C# parse time         : 445ms
+candidates check time : 77ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 10/03/2023 18:48:15 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 2203,2932ms
+moved types parse time: 104ms
+candidates parse time : 2ms
+C# parse time         : 868ms
+candidates check time : 123ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 10/03/2023 20:02:11 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 110,0128ms
+moved types parse time: 82ms
+candidates parse time : 2ms
+C# parse time         : 672ms
+candidates check time : 107ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 10/03/2023 20:42:08 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 107,9717ms
+moved types parse time: 80ms
+candidates parse time : 2ms
+C# parse time         : 505ms
+candidates check time : 90ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 11/03/2023 11:44:39 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 1665,8964ms
+moved types parse time: 87ms
+candidates parse time : 2ms
+C# parse time         : 630ms
+candidates check time : 94ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 11/03/2023 12:10:39 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 184,0119ms
+moved types parse time: 140ms
+candidates parse time : 3ms
+C# parse time         : 635ms
+candidates check time : 162ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 11/03/2023 12:10:52 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 105,0068ms
+moved types parse time: 77ms
+candidates parse time : 2ms
+C# parse time         : 397ms
+candidates check time : 168ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 11/03/2023 12:12:14 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 118,0082ms
+moved types parse time: 82ms
+candidates parse time : 3ms
+C# parse time         : 530ms
+candidates check time : 85ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 11/03/2023 12:14:31 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 165,0119ms
+moved types parse time: 74ms
+candidates parse time : 2ms
+C# parse time         : 613ms
+candidates check time : 88ms
+console write time    : 3ms
+
+[api-updater (non-obsolete-error-filter)] 11/03/2023 12:14:35 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 147,0103ms
+moved types parse time: 91ms
+candidates parse time : 2ms
+C# parse time         : 518ms
+candidates check time : 99ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 11/03/2023 12:25:52 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 161,0107ms
+moved types parse time: 92ms
+candidates parse time : 2ms
+C# parse time         : 677ms
+candidates check time : 94ms
+console write time    : 5ms
+
+[api-updater (non-obsolete-error-filter)] 19/04/2023 20:10:52 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 1591,1296ms
+moved types parse time: 230ms
+candidates parse time : 3ms
+C# parse time         : 872ms
+candidates check time : 586ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 21/04/2023 17:26:01 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 2482,4427ms
+moved types parse time: 132ms
+candidates parse time : 3ms
+C# parse time         : 813ms
+candidates check time : 130ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 22/04/2023 12:36:51 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 1840,0754ms
+moved types parse time: 93ms
+candidates parse time : 2ms
+C# parse time         : 900ms
+candidates check time : 193ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 22/04/2023 13:30:32 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 187,016ms
+moved types parse time: 124ms
+candidates parse time : 3ms
+C# parse time         : 594ms
+candidates check time : 217ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 22/04/2023 13:30:47 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 148,0118ms
+moved types parse time: 81ms
+candidates parse time : 1ms
+C# parse time         : 397ms
+candidates check time : 135ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 29/04/2023 17:38:20 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 3360,5219ms
+moved types parse time: 94ms
+candidates parse time : 2ms
+C# parse time         : 607ms
+candidates check time : 83ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 30/04/2023 14:38:57 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 2554,0571ms
+moved types parse time: 120ms
+candidates parse time : 2ms
+C# parse time         : 823ms
+candidates check time : 213ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 30/04/2023 14:50:08 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 337,0285ms
+moved types parse time: 123ms
+candidates parse time : 2ms
+C# parse time         : 492ms
+candidates check time : 58ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 01/05/2023 12:52:30 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 3773,7931ms
+moved types parse time: 116ms
+candidates parse time : 3ms
+C# parse time         : 462ms
+candidates check time : 90ms
+console write time    : 4ms
+
+[api-updater (non-obsolete-error-filter)] 01/05/2023 12:52:40 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 119,0081ms
+moved types parse time: 134ms
+candidates parse time : 2ms
+C# parse time         : 451ms
+candidates check time : 74ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 01/05/2023 16:32:01 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 278,0225ms
+moved types parse time: 108ms
+candidates parse time : 2ms
+C# parse time         : 368ms
+candidates check time : 53ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 01/05/2023 16:33:14 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 129,011ms
+moved types parse time: 97ms
+candidates parse time : 2ms
+C# parse time         : 848ms
+candidates check time : 178ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 01/05/2023 16:33:34 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 114,0094ms
+moved types parse time: 85ms
+candidates parse time : 2ms
+C# parse time         : 435ms
+candidates check time : 110ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 02/05/2023 19:35:53 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 5210,9569ms
+moved types parse time: 109ms
+candidates parse time : 2ms
+C# parse time         : 740ms
+candidates check time : 111ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 02/05/2023 19:35:56 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 154,1903ms
+moved types parse time: 85ms
+candidates parse time : 2ms
+C# parse time         : 486ms
+candidates check time : 130ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 04/05/2023 19:09:41 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 1925,8158ms
+moved types parse time: 79ms
+candidates parse time : 2ms
+C# parse time         : 580ms
+candidates check time : 189ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 04/05/2023 19:46:54 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 321,7279ms
+moved types parse time: 96ms
+candidates parse time : 2ms
+C# parse time         : 529ms
+candidates check time : 113ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 04/05/2023 19:46:58 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 128,0102ms
+moved types parse time: 100ms
+candidates parse time : 2ms
+C# parse time         : 544ms
+candidates check time : 107ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 04/05/2023 19:47:06 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 526,043ms
+moved types parse time: 192ms
+candidates parse time : 2ms
+C# parse time         : 836ms
+candidates check time : 229ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 04/05/2023 19:47:14 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 130,0094ms
+moved types parse time: 87ms
+candidates parse time : 2ms
+C# parse time         : 425ms
+candidates check time : 107ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 04/05/2023 19:48:53 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 378,0306ms
+moved types parse time: 97ms
+candidates parse time : 2ms
+C# parse time         : 504ms
+candidates check time : 110ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 04/05/2023 19:49:27 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 139,0109ms
+moved types parse time: 98ms
+candidates parse time : 2ms
+C# parse time         : 460ms
+candidates check time : 108ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 04/05/2023 19:50:20 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 141,0119ms
+moved types parse time: 130ms
+candidates parse time : 2ms
+C# parse time         : 528ms
+candidates check time : 109ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 04/05/2023 19:57:50 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 132,0105ms
+moved types parse time: 84ms
+candidates parse time : 2ms
+C# parse time         : 439ms
+candidates check time : 99ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 04/05/2023 19:58:02 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 313,0254ms
+moved types parse time: 100ms
+candidates parse time : 3ms
+C# parse time         : 556ms
+candidates check time : 146ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 04/05/2023 19:58:06 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 151,0119ms
+moved types parse time: 92ms
+candidates parse time : 2ms
+C# parse time         : 525ms
+candidates check time : 120ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 04/05/2023 19:58:40 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 211,971ms
+moved types parse time: 95ms
+candidates parse time : 8ms
+C# parse time         : 746ms
+candidates check time : 134ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 04/05/2023 19:58:44 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 238,0194ms
+moved types parse time: 162ms
+candidates parse time : 2ms
+C# parse time         : 742ms
+candidates check time : 151ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 04/05/2023 19:59:04 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 164,0128ms
+moved types parse time: 209ms
+candidates parse time : 3ms
+C# parse time         : 856ms
+candidates check time : 226ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 05/05/2023 19:50:32 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 1875,7679ms
+moved types parse time: 148ms
+candidates parse time : 3ms
+C# parse time         : 684ms
+candidates check time : 66ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 05/05/2023 19:50:49 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 306,0252ms
+moved types parse time: 107ms
+candidates parse time : 2ms
+C# parse time         : 635ms
+candidates check time : 111ms
+console write time    : 3ms
+
+[api-updater (non-obsolete-error-filter)] 08/05/2023 20:25:22 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 2124,8249ms
+moved types parse time: 105ms
+candidates parse time : 2ms
+C# parse time         : 517ms
+candidates check time : 65ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 08/05/2023 20:25:44 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 156,0121ms
+moved types parse time: 136ms
+candidates parse time : 3ms
+C# parse time         : 526ms
+candidates check time : 68ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 13/05/2023 12:53:19 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 3147,2482ms
+moved types parse time: 104ms
+candidates parse time : 2ms
+C# parse time         : 631ms
+candidates check time : 76ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 13/05/2023 12:53:25 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 189,0588ms
+moved types parse time: 101ms
+candidates parse time : 2ms
+C# parse time         : 510ms
+candidates check time : 75ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 13/05/2023 15:24:24 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 1387,6327ms
+moved types parse time: 78ms
+candidates parse time : 2ms
+C# parse time         : 503ms
+candidates check time : 60ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 19/05/2023 16:25:28 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 2493,5131ms
+moved types parse time: 151ms
+candidates parse time : 4ms
+C# parse time         : 808ms
+candidates check time : 241ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 19/05/2023 16:26:18 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 450,0371ms
+moved types parse time: 120ms
+candidates parse time : 2ms
+C# parse time         : 893ms
+candidates check time : 300ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 19/05/2023 16:31:26 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 1687,7262ms
+moved types parse time: 84ms
+candidates parse time : 2ms
+C# parse time         : 691ms
+candidates check time : 66ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 19/05/2023 16:31:28 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 126,0091ms
+moved types parse time: 136ms
+candidates parse time : 2ms
+C# parse time         : 424ms
+candidates check time : 71ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 19/05/2023 19:59:08 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 3132,4975ms
+moved types parse time: 82ms
+candidates parse time : 2ms
+C# parse time         : 543ms
+candidates check time : 103ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 20/05/2023 16:28:42 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 3083,0299ms
+moved types parse time: 79ms
+candidates parse time : 2ms
+C# parse time         : 599ms
+candidates check time : 79ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 20/05/2023 16:28:47 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 183,0136ms
+moved types parse time: 83ms
+candidates parse time : 2ms
+C# parse time         : 481ms
+candidates check time : 72ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 20/05/2023 16:29:58 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 133,0103ms
+moved types parse time: 77ms
+candidates parse time : 2ms
+C# parse time         : 445ms
+candidates check time : 71ms
+console write time    : 0ms
+
+[api-updater (non-obsolete-error-filter)] 20/05/2023 16:30:00 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 90,0064ms
+moved types parse time: 130ms
+candidates parse time : 2ms
+C# parse time         : 498ms
+candidates check time : 93ms
+console write time    : 1ms
+
+[api-updater (non-obsolete-error-filter)] 20/05/2023 16:33:35 : Starting C:/Users/Hugo/Desktop/2020.3.14f1/Editor/Data/Tools/ScriptUpdater/APIUpdater.NonObsoleteApiUpdaterDetector.exe
+[api-updater (non-obsolete-error-filter)] 
+----------------------------------
+jit/startup time      : 102,0082ms
+moved types parse time: 113ms
+candidates parse time : 2ms
+C# parse time         : 484ms
+candidates check time : 68ms
+console write time    : 0ms
+

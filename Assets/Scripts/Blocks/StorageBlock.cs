@@ -4,8 +4,5 @@ using UnityEngine;
 using Frontiers.Content;
 
 public class StorageBlock : ItemBlock {
-    public override void SetInventory() {
-        inventory = new ItemList(Type.itemCapacity, true);
-        base.SetInventory();
-    }
+    public new StorageBlockType Type { get => (StorageBlockType)base.Type; protected set => base.Type = value; }
 }

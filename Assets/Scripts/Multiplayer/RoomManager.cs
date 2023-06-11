@@ -11,6 +11,7 @@ using Photon.Pun.UtilityScripts;
 using System;
 using ExitGames.Client.Photon;
 using Frontiers.Teams;
+using Frontiers.Content.Maps;
 
 public class RoomManager : MonoBehaviourPunCallbacks {
     public static RoomManager Instance;
@@ -37,10 +38,12 @@ public class RoomManager : MonoBehaviourPunCallbacks {
 
     private void Update() {
         if (!updateManagers) return;
-
-        // Update managers
         MapManager.Instance.UpdateMapManager();
-        //PlayerManager.Instance.UpdatePlayerManager();
+    }
+
+    private void FixedUpdate() {
+        if (!updateManagers) return;
+        Server.UpdateSyncObjects(Time.fixedDeltaTime);
     }
 
     #endregion
@@ -49,7 +52,7 @@ public class RoomManager : MonoBehaviourPunCallbacks {
 
     public override void OnJoinedRoom() {
         if (!TeamUtilities.IsMaster()) return;
-        PhotonNetwork.LocalPlayer.JoinTeam(TeamUtilities.GetDefaultTeam());
+        PhotonNetwork.LocalPlayer.JoinTeam(TeamUtilities.GetDefaultTeam());    
     }
 
     public override void OnPlayerEnteredRoom(Player newPlayer) {
@@ -65,23 +68,25 @@ public class RoomManager : MonoBehaviourPunCallbacks {
     public void SwitchTeam() {
         if (switchButtonCooldown >= Time.time) return;
         switchButtonCooldown = Time.time + 1f;
-        PhotonNetwork.LocalPlayer.SwitchTeam(TeamUtilities.GetEnemyTeam(TeamUtilities.GetLocalPlayerTeam().Code));
+        PhotonNetwork.LocalPlayer.SwitchTeam(TeamUtilities.GetEnemyTeam(TeamUtilities.GetLocalTeam()));
     }
 
     void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode) {
         if (scene.buildIndex == 1) {
-            InitializeMatch();
+            // Initialize managers
+            MapManager.InitializeMapManager();
+            PlayerManager.InitializePlayerManager();
+
+            // If this client is the master, spawn cores
+            if (TeamUtilities.IsMaster()) {
+                MapLoader.LoadMap("SplitLands");
+                MapManager.Instance.InitializeCores(); 
+            } else {
+                Client.RequestMap();
+            }
+
+            updateManagers = true;
         }
-    }
-
-    void InitializeMatch() {
-        // Initialize managers
-        PlayerManager.InitializePlayerManager();
-        MapManager.InitializeMapManager();
-
-        // If this client is the master, spawn cores
-        if (TeamUtilities.IsMaster()) MapManager.Instance.InitializeCores();
-        updateManagers = true;
     }
 
     #endregion

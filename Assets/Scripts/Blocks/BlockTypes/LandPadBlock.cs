@@ -4,12 +4,16 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class LandPadBlock : Block {
-    public List<Unit> landedUnits = new List<Unit>();
+    public new LandPadBlockType Type { get => (LandPadBlockType)base.Type; protected set => base.Type = value; }
+    public List<Unit> landedUnits = new();
 
     public bool IsFull() => landedUnits.Count >= Type.unitCapacity;
 
+    public bool CanLand(Unit unit) => unit.Type.size <= Type.unitSize && !IsFull() && !landedUnits.Contains(unit) && unit.GetTeam() == teamCode;
+
     public bool Land(Unit unit) {
-        if (IsFull() || landedUnits.Contains(unit)) return false;
+        if (!CanLand(unit)) return false;
+
         unit.transform.position = GetLandPosition(landedUnits.Count);
         landedUnits.Add(unit);
         return true;
