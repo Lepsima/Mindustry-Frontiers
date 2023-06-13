@@ -36,12 +36,12 @@ public class Client : MonoBehaviourPunCallbacks {
 
 
     public static void BuildBlock(ConstructionBlock block) {
-        local.photonView.RPC(nameof(MasterRPC_BuildBlock), RpcTarget.MasterClient, (Vector2)block.GetGridPosition(), block.GetOrientation(), false, block.Type.id, block.GetTeam(), block.SyncID);
+        local.photonView.RPC(nameof(MasterRPC_BuildBlock), RpcTarget.MasterClient, (Vector2)block.GetGridPosition(), block.GetOrientation(), block.Type.id, block.GetTeam(), block.SyncID);
     }
 
     [PunRPC]
-    public void MasterRPC_BuildBlock(Vector2 position, int orientation, bool isPlan, short contentID, byte teamCode, int syncID) {
-        local.photonView.RPC(nameof(RPC_CreateBlock), RpcTarget.All, position, orientation, isPlan, contentID, syncID, teamCode);
+    public void MasterRPC_BuildBlock(Vector2 position, int orientation, short contentID, byte teamCode, int syncID) {
+        local.photonView.RPC(nameof(RPC_CreateBlock), RpcTarget.All, position, orientation, false, contentID, syncID, teamCode);
     }
 
     public static void CreateBlock(Vector2 position, int orientation, bool isPlan, Content type, byte teamCode) {
@@ -85,7 +85,6 @@ public class Client : MonoBehaviourPunCallbacks {
     [PunRPC]
     public void RPC_DestroyBlock(int syncID, bool destroyed) {
         if (isRecivingMap) return;
-        Debug.Log("Destroy" + syncID);
         MapManager.Instance.DeleteBlock((Block)syncObjects[syncID], destroyed);
     }
 

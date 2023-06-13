@@ -10,9 +10,6 @@ using Frontiers.Assets;
 public class KineticWeapon : Weapon {
     public override void Set(Entity parentEntity, int weaponID, WeaponType weaponType, bool mirrored = false, bool onTop = false) {
         base.Set(parentEntity, weaponID, weaponType, mirrored, onTop);
-
-        if (weaponType.bulletType.bulletClass == BulletClass.instant) Debug.LogWarning(BulletClass.instant + " is incompatible with" + typeof(KineticWeapon));
-
         shootParticleSystemEffect.transform.localPosition = Type.shootOffset;
     }
 

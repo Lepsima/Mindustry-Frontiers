@@ -45,23 +45,19 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
         this.Type = type;
 
         fires = new GameObject[Type.maximumFires];
+        teamColor = TeamUtilities.GetTeamColor(teamCode);
 
         SetLayerAllChildren(transform, GetTeamLayer());
         SetInventory();
         SetSprites();
 
         syncValues = 2;
-        teamColor = TeamUtilities.GetTeamColor(teamCode);
     }
 
     protected Color CellColor() {
-        float f = GetHealthPercent() * 0.5f;
-        float a = 1 - f * Mathf.Sin(Time.time * Mathf.Max(f * 5f, 1f)) - f;
-        return Color.Lerp(Color.black, teamColor, a);
-    }
-
-    public static float Absin(float scl, float mag) {
-        return (Mathf.Sin(Time.time / scl * 2f) * mag + mag) * 0.5f;
+        float hp = GetHealthPercent();
+        float sin = Mathf.Sin(5f * Time.time * (2f - hp));
+        return Color.Lerp(Color.black, teamColor, 1 - Mathf.Max(sin - hp * sin, 0));
     }
 
     protected virtual int GetTeamLayer(bool ignore = false) => TeamUtilities.GetTeamLayer(teamCode, ignore);

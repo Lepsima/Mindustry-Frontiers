@@ -1216,7 +1216,6 @@ namespace Frontiers.Content {
 
             zenithMissiles = new WeaponType("zenith-missiles", typeof(RaycastWeapon)) {
                 bulletType = new BulletType("zenith-missile") {
-                    bulletClass = BulletClass.instant,
                     damage = 7.5f,
                     lifeTime = 0.5f,
                     velocity = 100f
@@ -1248,7 +1247,6 @@ namespace Frontiers.Content {
 
             stingerWeapon = new WeaponType("stinger-weapon", typeof(RaycastWeapon)) {
                 bulletType = new BulletType("stinger-bullet") {
-                    bulletClass = BulletClass.instant,
                     damage = 15f,
                     lifeTime = 0.5f,
                     velocity = 200f
@@ -1265,7 +1263,6 @@ namespace Frontiers.Content {
 
             pathWeapon = new WeaponType("path-weapon", typeof(RaycastWeapon)) {
                 bulletType = new BulletType("path-bullet") {
-                    bulletClass = BulletClass.instant,
                     damage = 3f,
                     lifeTime = 0.35f,
                     velocity = 150f
@@ -1317,12 +1314,21 @@ namespace Frontiers.Content {
 
     [Serializable]
     public class BulletType : Content {
-        public BulletClass bulletClass;
         public float damage = 10f, buildingDamageMultiplier = 1f, velocity = 100f, lifeTime = 1f;
         public float blastRadius = -1f, minimumBlastDamage = 0f;
         public float homingStrength = 30f;
 
         public BulletType(string name) : base(name) {
+
+        }
+    }
+
+    [Serializable]
+
+    public class BombBulletType : BulletType {
+        
+
+        public BombBulletType(string name) : base(name) {
 
         }
     }
@@ -1333,7 +1339,6 @@ namespace Frontiers.Content {
 
         public static void Load() {
             basicBulletType = new BulletType("BasicBulletType") {
-                bulletClass = BulletClass.instant,
                 damage = 7.5f,
                 lifeTime = 0.35f,
                 buildingDamageMultiplier = 2f,
@@ -1341,7 +1346,6 @@ namespace Frontiers.Content {
             };
 
             instantBulletType = new BulletType("InstantBulletType") {
-                bulletClass = BulletClass.instant,
                 damage = 2.5f,
                 lifeTime = 0.5f,
                 buildingDamageMultiplier = 2f,
@@ -1349,7 +1353,6 @@ namespace Frontiers.Content {
             };
 
             missileBulletType = new BulletType("bombBulletType") {
-                bulletClass = BulletClass.homingPhysical,
                 damage = 100f,
                 minimumBlastDamage = 25f,
                 blastRadius = 1f,
@@ -1626,13 +1629,6 @@ namespace Frontiers.Content {
     #endregion
 
     #region - Structures - 
-
-    public enum BulletClass {
-        instant,          //Laser, raycast bulletType
-        constantPhysical, //Basic bullet, speed keeps constant
-        slowDownPhysical, //Grenade or similar, speed is afected by drag
-        homingPhysical    //Missile bullet type, once fired it's fully autonomous
-    }
 
     /// <summary>
     /// Stores the amount of a defined item

@@ -12,8 +12,6 @@ public class RaycastWeapon : Weapon {
 
     public override void Set(Entity parentEntity, int weaponID, WeaponType weaponType, bool mirrored = false, bool onTop = false) {
         base.Set(parentEntity, weaponID, weaponType, mirrored, onTop);
-
-        if (weaponType.bulletType.bulletClass != BulletClass.instant) Debug.LogWarning("Only " + BulletClass.instant + " is compatible with" + typeof(RaycastWeapon));
         shootParticleSystemEffect.transform.localPosition = Type.shootOffset;
     }
 
