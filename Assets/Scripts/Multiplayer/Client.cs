@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,6 +18,8 @@ public class Client : MonoBehaviourPunCallbacks {
         local = this;
         MapLoader.OnMapLoaded += OnMapLoaded;
     }
+
+    public static bool TypeEquals(Type target, Type reference) => target == reference || target.IsSubclassOf(reference);
 
     public static SyncronizableObject GetBySyncID(int syncID) {
         return syncObjects[syncID];
@@ -184,16 +187,19 @@ public class Client : MonoBehaviourPunCallbacks {
         Entity entity = (Entity)syncObjects[syncID];
         BulletType bulletType = (BulletType)ContentLoader.GetContentById(bulletID);
 
-        if (bulletType.blastRadius == -1f) {
-            if (entity.TryGetComponent(out IDamageable damageable)) damageable.Damage(bulletType.damage);
-        } else {
+        if (entity.TryGetComponent(out IDamageable damageable)) damageable.Damage(bulletType.damage);
+
+        if (bulletType.HasBlastDamage()) {
             foreach (Collider2D collider in Physics2D.OverlapCircleAll(entity.GetPosition(), bulletType.blastRadius, TeamUtilities.GetTeamMask(entity.GetTeam()))) {
-                if (collider.transform.TryGetComponent(out IDamageable damageable)) {
+                if (collider.transform.TryGetComponent(out IDamageable areaDamageable)) {
 
                     float distance = Vector2.Distance(entity.transform.position, collider.transform.position);
-                    damageable.Damage(Mathf.Lerp(bulletType.damage, bulletType.minimumBlastDamage, distance / bulletType.blastRadius));
+                    areaDamageable.Damage(bulletType.Damage(areaDamageable, distance));
                 }
             }
+
+        } else {
+
         }
     }
 

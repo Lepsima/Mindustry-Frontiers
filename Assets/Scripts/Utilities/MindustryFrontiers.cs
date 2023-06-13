@@ -553,6 +553,8 @@ namespace Frontiers.Content {
         public virtual void Wrap() { }
 
         public virtual void UnWrap() { }
+
+        public static bool TypeEquals(Type target, Type reference) => target == reference || target.IsSubclassOf(reference);
     }
 
     #region - Blocks -
@@ -1316,17 +1318,38 @@ namespace Frontiers.Content {
     public class BulletType : Content {
         public float damage = 10f, buildingDamageMultiplier = 1f, velocity = 100f, lifeTime = 1f;
         public float blastRadius = -1f, minimumBlastDamage = 0f;
-        public float homingStrength = 30f;
 
         public BulletType(string name) : base(name) {
+
+        }
+
+        public float Multiplier(IDamageable damageable) {
+            return damageable.IsBuilding() ? buildingDamageMultiplier : 1f;
+        }
+
+        public float Damage(IDamageable damageable, float distance) {
+            float mult = Multiplier(damageable);
+            return HasBlastDamage() ? Mathf.Lerp(damage * mult, minimumBlastDamage * mult, distance / blastRadius) : damage * mult;
+        }
+
+        public bool HasBlastDamage() {
+            return blastRadius > 0;
+        }
+    }
+
+    [Serializable]
+    public class HomingBulletType : BulletType {
+        public float homingStrength = 30f;
+        public bool canUpdateTarget = false;
+        
+        public HomingBulletType(string name) : base(name) {
 
         }
     }
 
     [Serializable]
-
     public class BombBulletType : BulletType {
-        
+        public float fallVelocity;
 
         public BombBulletType(string name) : base(name) {
 
@@ -1335,7 +1358,7 @@ namespace Frontiers.Content {
 
     public class Bullets {
         public const BulletType none = null;
-        public static BulletType basicBulletType, instantBulletType, missileBulletType;
+        public static BulletType basicBulletType, bombBulletType, missileBulletType;
 
         public static void Load() {
             basicBulletType = new BulletType("BasicBulletType") {
@@ -1345,14 +1368,15 @@ namespace Frontiers.Content {
                 velocity = 90f
             };
 
-            instantBulletType = new BulletType("InstantBulletType") {
-                damage = 2.5f,
-                lifeTime = 0.5f,
-                buildingDamageMultiplier = 2f,
-                velocity = 100f
+            bombBulletType = new BombBulletType("BombBulletType") {
+                damage = 25f,
+                minimumBlastDamage = 5f,
+                blastRadius = 3f,
+                buildingDamageMultiplier = 5f,
+                fallVelocity = 1f
             };
 
-            missileBulletType = new BulletType("bombBulletType") {
+            missileBulletType = new HomingBulletType("missileBulletType") {
                 damage = 100f,
                 minimumBlastDamage = 25f,
                 blastRadius = 1f,
@@ -2749,6 +2773,8 @@ namespace Frontiers.Content.Maps {
 
 public interface IDamageable {
     public void Damage(float amount);
+
+    public bool IsBuilding();
 }
 
 public interface IView {

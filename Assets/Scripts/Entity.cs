@@ -156,4 +156,8 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
         data += health + ":";
         return data;
     }
+
+    public bool IsBuilding() {
+        return Content.TypeEquals(Type.GetType(), typeof(BlockType));
+    }
 }
