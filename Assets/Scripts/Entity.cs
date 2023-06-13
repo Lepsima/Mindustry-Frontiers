@@ -138,7 +138,7 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
 
         if (!fires[fireCount - 1]) {
             Vector3 worldPosition = transform.position + (new Vector3(UnityEngine.Random.Range(0f, 0.4f), UnityEngine.Random.Range(0f, 0.4f), 0) * size);
-            fires[fireCount - 1] = Instantiate(AssetLoader.GetPrefab("HitSmokeFX"), worldPosition, Quaternion.Euler(0, 0, UnityEngine.Random.Range(0f, 359.99f)), transform);
+            fires[fireCount - 1] = Instantiate(AssetLoader.GetPrefab(Type.hitSmokeFX), worldPosition, Quaternion.Euler(0, 0, UnityEngine.Random.Range(0f, 359.99f)), transform);
             fires[fireCount - 1].transform.localScale = Vector3.one * size;
         }
     }

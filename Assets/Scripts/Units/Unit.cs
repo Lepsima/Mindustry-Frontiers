@@ -438,7 +438,6 @@ public class Unit : Entity, IArmed {
 
                 // Turn off weapons
                 timeToDeactivateWeapons = 0.75f;
-                //SetWeaponsActive(false);
             }
         }
     }
@@ -711,7 +710,7 @@ public class Unit : Entity, IArmed {
     public override void OnDestroy() {
         if (!gameObject.scene.isLoaded) return;
 
-        EffectManager.PlayEffect("ExplosionFX", transform.position, size);
+        EffectManager.PlayEffect(Type.explosionFX, transform.position, size);
 
         GameObject explosionBlastGameObject = Instantiate(AssetLoader.GetPrefab("explosion-blast"), GetPosition(), Quaternion.Euler(0f, 0f, Random.Range(0f, 360f)));
         Destroy(explosionBlastGameObject, 10f);

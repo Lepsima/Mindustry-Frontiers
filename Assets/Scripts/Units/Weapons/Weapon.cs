@@ -13,7 +13,6 @@ using System;
 using Random = UnityEngine.Random;
 
 public class Weapon : MonoBehaviour {
-    protected ParticleSystem shootParticleSystemEffect;
     private readonly List<Bullet> activeBullets = new();
 
     public WeaponType Type { private set; get; }
@@ -134,9 +133,6 @@ public class Weapon : MonoBehaviour {
         Type = weaponType;
 
         weaponOffset = transform.localPosition;
-        shootParticleSystemEffect = transform.Find("ShootParticleSystem").GetComponent<ParticleSystem>();
-        shootParticleSystemEffect.transform.localPosition = Type.shootOffset;
-
         if (Type.consumesItems && !parentEntity.hasInventory) Debug.LogWarning(Type.name + " consumes items but " + parentEntity.GetEntityType().name + " doesn't have inventory, this may cause errors");
 
         EndReload();
@@ -233,7 +229,8 @@ public class Weapon : MonoBehaviour {
         if (hasAnimations) animator.NextFrame(Animation.Case.Shoot);
         if (Type.consumesItems) parentEntity.GetInventory().Substract(Type.ammoItem, 1);
 
-        shootParticleSystemEffect.Play();
+        //shootParticleSystemEffect.Play();
+
 
         if (hasMultiBarrel) {
             barrelIndex++;
@@ -245,7 +242,7 @@ public class Weapon : MonoBehaviour {
         else transform.position += transform.up * -Type.recoil;
 
         Vector2 originPoint = transform.position + GetOffset();
-        shootParticleSystemEffect.transform.position = originPoint;
+        EffectManager.PlayEffect(Type.shootFX, originPoint, transform.rotation, 7f);
 
         float angle = transform.eulerAngles.z + Random.Range(-Type.spread, Type.spread); ;
         Bullet bullet = this.ShootBullet(originPoint, angle);

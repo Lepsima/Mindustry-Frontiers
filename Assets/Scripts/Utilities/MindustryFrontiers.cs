@@ -609,6 +609,8 @@ namespace Frontiers.Content {
 
         public float blinkInterval = 0.5f, blinkOffset = 0f, blinkLength = 1f;
 
+        public string hitSmokeFX = "HitSmokeFX", destroyFX = "DestroyFX", explosionFX = "ExplosionFX";
+
         public EntityType(string name, Type type) : base(name) {
             typeName = TypeWrapper.GetString(type);
             this.type = type;
@@ -1172,6 +1174,8 @@ namespace Frontiers.Content {
         public Vector2 shootOffset = Vector2.zero;
         public BulletType bulletType;
 
+        public string shootFX = "MuzzleFX";
+
         private string ammoItemName;
         private Wrapper<Animation> animationWrapper;
         private Wrapper<WeaponBarrel> barrelWrapper;
@@ -1444,11 +1448,11 @@ namespace Frontiers.Content {
             SpriteRenderer renderer;
             renderer = transform.GetComponent<SpriteRenderer>();
             renderer.sprite = sprite;
-            renderer.color = new Color(0f, 0f, 0f);
+            renderer.color = new Color(1f, 1f, 1f);
 
             renderer = back.GetComponent<SpriteRenderer>();
             renderer.sprite = backSprite;
-            renderer.color = new Color(0.2f, 0.2f, 0.2f);
+            renderer.color = new Color(0.8f, 0.8f, 0.8f);
         }
 
     }
@@ -1525,7 +1529,7 @@ namespace Frontiers.Content {
                 minimumBlastDamage = 5f,
                 blastRadius = 3f,
                 buildingDamageMultiplier = 5f,
-                fallVelocity = 3f
+                fallVelocity = 4f
             };
 
             missileBullet = new HomingBulletType() {
