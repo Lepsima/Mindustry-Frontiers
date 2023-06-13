@@ -12,7 +12,7 @@ using Animation = Frontiers.Animations.Animation;
 using System;
 using Random = UnityEngine.Random;
 
-public abstract class Weapon : MonoBehaviour {
+public class Weapon : MonoBehaviour {
     protected ParticleSystem shootParticleSystemEffect;
     private readonly List<Bullet> activeBullets = new();
 
@@ -248,7 +248,7 @@ public abstract class Weapon : MonoBehaviour {
         shootParticleSystemEffect.transform.position = originPoint;
 
         float angle = transform.eulerAngles.z + Random.Range(-Type.spread, Type.spread); ;
-        Bullet bullet = this.ShootBullet(Type.bulletType, originPoint, angle);
+        Bullet bullet = this.ShootBullet(originPoint, angle);
         activeBullets.Add(bullet);
     }
 

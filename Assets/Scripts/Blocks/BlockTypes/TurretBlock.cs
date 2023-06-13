@@ -21,7 +21,7 @@ public class TurretBlock : ItemBlock, IArmed {
 
         //Create and initialize new weapon
         GameObject weaponGameObject = Instantiate(weaponPrefab, turretTransform.position + (Vector3)weaponMount.position, Quaternion.identity, turretTransform);
-        Weapon weapon = (Weapon)weaponGameObject.AddComponent(weaponMount.weapon.type);
+        Weapon weapon = weaponGameObject.AddComponent<Weapon>();
         weapon.Set(this, 1, weaponMount.weapon, weaponMount.onTop);
         installedWeapon = weapon;
     }

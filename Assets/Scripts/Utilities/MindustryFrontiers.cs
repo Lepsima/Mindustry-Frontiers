@@ -111,20 +111,17 @@ namespace Frontiers.Pooling {
     public class PoolManager : MonoBehaviour {
         public static Dictionary<string, GameObjectPool> allPools = new Dictionary<string, GameObjectPool>();
 
+        public static GameObjectPool GetOrCreatePool(GameObject prefab, int targetAmount, string name = null) {
+            if (name == null) name = prefab.name;
+            return allPools.ContainsKey(name) ? allPools[name] : NewPool(prefab, targetAmount, name);
+        }
+
         public static GameObjectPool NewPool(GameObject prefab, int targetAmount, string name = null) {
-            GameObjectPool newPool = new GameObjectPool(prefab, targetAmount);
+            GameObjectPool newPool = new(prefab, targetAmount);
             if (name == null) name = prefab.name;
 
             allPools.Add(name, newPool);
             return newPool;
-        }
-
-        public static GameObject Pool_CreateGameObject(GameObject prefab, Transform parent = null) {
-            return Instantiate(prefab, parent);
-        }
-
-        public static void Pool_DestroyGameObject(GameObject gameObject) {
-            Destroy(gameObject);
         }
     }
 
@@ -134,6 +131,13 @@ namespace Frontiers.Pooling {
 
         public GameObject prefab;
         public Queue<GameObject> pooledGameObjects;
+
+        public event EventHandler<PoolEventArgs> OnGameObjectCreated;
+        public event EventHandler<PoolEventArgs> OnGameObjectDestroyed;
+
+        public class PoolEventArgs {
+            public GameObject target;
+        }
 
         public GameObjectPool(GameObject prefab, int targetAmount) {
             this.prefab = prefab;
@@ -146,15 +150,24 @@ namespace Frontiers.Pooling {
         public bool CanReturn() => targetAmount == -1 || pooledGameObjects.Count < targetAmount;
 
         public GameObject Take() {
-            GameObject gameObject = !CanTake() ? PoolManager.Pool_CreateGameObject(prefab) : pooledGameObjects.Dequeue();
+            bool canTake = CanTake();
+
+            GameObject gameObject = canTake ? pooledGameObjects.Dequeue() : Object.Instantiate(prefab);
+            if (!canTake) OnGameObjectCreated?.Invoke(this, new PoolEventArgs { target = gameObject });
+
             gameObject.SetActive(true);
             return gameObject;
         }
 
         public void Return(GameObject gameObject) {
             gameObject.SetActive(false);
-            if (CanReturn()) pooledGameObjects.Enqueue(gameObject);
-            else PoolManager.Pool_DestroyGameObject(gameObject);
+
+            if (CanReturn()) { 
+                pooledGameObjects.Enqueue(gameObject); 
+            } else {
+                OnGameObjectDestroyed?.Invoke(this, new PoolEventArgs() { target = gameObject });
+                Object.Destroy(gameObject);
+            }
         }
     }
 
@@ -327,6 +340,13 @@ namespace Frontiers.Assets {
             return null;
         }
 
+        public static Sprite GetSprite(string name, string alt) {
+            foreach (Sprite sprite in sprites) if (sprite.name == name) return sprite;
+            foreach (Sprite sprite in sprites) if (sprite.name == alt) return sprite;
+
+            return null;
+        }
+
         public static GameObject GetPrefab(string name, bool suppressWarnings = false) {
             foreach (GameObject prefab in prefabs) if (prefab.name == name) return prefab;
 
@@ -334,10 +354,24 @@ namespace Frontiers.Assets {
             return null;
         }
 
+        public static GameObject GetPrefab(string name, string alt) {
+            foreach (GameObject prefab in prefabs) if (prefab.name == name) return prefab;
+            foreach (GameObject prefab in prefabs) if (prefab.name == alt) return prefab;
+
+            return null;
+        }
+
         public static T GetAsset<T>(string name, bool suppressWarnings = false) where T : Object {
-            foreach (Object prefab in assets) if (prefab.name == name && prefab is T) return prefab as T;
+            foreach (Object asset in assets) if (asset.name == name && asset is T) return asset as T;
 
             if (!suppressWarnings) Debug.LogWarning("No asset was found with the name: " + name);
+            return null;
+        }
+
+        public static T GetAsset<T>(string name, string alt) where T : Object {
+            foreach (Object asset in assets) if (asset.name == name && asset is T) return asset as T;
+            foreach (Object asset in assets) if (asset.name == alt && asset is T) return asset as T;
+
             return null;
         }
     }
@@ -398,7 +432,6 @@ namespace Frontiers.Content {
 
         public static void InitializeObjectPools() {
             ConveyorBlock.conveyorItemPool = PoolManager.NewPool(Assets.AssetLoader.GetPrefab("conveyorItem"), 100);
-            RaycastWeapon.tracerGameObjectPool = PoolManager.NewPool(Assets.AssetLoader.GetPrefab("tPref"), 100);
         }
 
         public static void HandleContent(Content content) {
@@ -541,13 +574,14 @@ namespace Frontiers.Content {
         [JsonIgnore] public Sprite spriteFull;
 
         public Content(string name) {
+            id = (short)ContentLoader.loadedContents.Count;
+            if (name == null) name = "content " + id;
             this.name = name;
 
             sprite = AssetLoader.GetSprite(name);
-            spriteFull = AssetLoader.GetSprite(name + "-full", true);
-            if (!spriteFull) spriteFull = sprite;
+            spriteFull = AssetLoader.GetSprite(name + "-full", name);
 
-            id = (short)ContentLoader.loadedContents.Count;
+
             ContentLoader.HandleContent(this);
         }
 
@@ -1014,7 +1048,7 @@ namespace Frontiers.Content {
 
             horizon = new UnitType("horizon", typeof(Unit)) {
                 weapons = new WeaponMount[1] {
-                    new WeaponMount(Weapons.smallAutoWeapon, new Vector2(0.43675f, 0.15f), true),
+                    new WeaponMount(Weapons.horizonBombBay, Vector2.zero, false),
                 },
 
                 useAerodynamics = true,
@@ -1028,7 +1062,7 @@ namespace Frontiers.Content {
                 rotationSpeed = 100f,
                 bankAmount = 40f,
 
-                range = 5f,
+                range = 3f,
                 fov = 110f,
                 flyHeight = 12f,
 
@@ -1044,7 +1078,7 @@ namespace Frontiers.Content {
 
             zenith = new UnitType("zenith", typeof(Unit)) {
                 weapons = new WeaponMount[1] {
-                    new WeaponMount(Weapons.zenithMissiles, new Vector2(0.8f, -0.15f), true, true),
+                    new WeaponMount(Weapons.zenithMissiles, new Vector2(0.4f, -0.15f), true, true),
                 },
 
                 useAerodynamics = false,
@@ -1130,7 +1164,6 @@ namespace Frontiers.Content {
     #region - Weapons -
     [Serializable]
     public class WeaponType : Content {
-        [JsonIgnore] public Type type;
         [JsonIgnore] public Item ammoItem;
         [JsonIgnore] public Sprite outlineSprite;
         [JsonIgnore] public Animation[] animations;
@@ -1139,7 +1172,6 @@ namespace Frontiers.Content {
         public Vector2 shootOffset = Vector2.zero;
         public BulletType bulletType;
 
-        public string typeName;
         private string ammoItemName;
         private Wrapper<Animation> animationWrapper;
         private Wrapper<WeaponBarrel> barrelWrapper;
@@ -1151,25 +1183,20 @@ namespace Frontiers.Content {
         public int clipSize = 10;
         public float maxTargetDeviation = 15f, spread = 0.05f, recoil = 0.75f, returnSpeed = 1f, shootTime = 1f, reloadTime = 1f, rotateSpeed = 90f;
 
-        public WeaponType(string name, Type type) : base(name) {
-            typeName = TypeWrapper.GetString(type);
+        public WeaponType(string name) : base(name) {
             outlineSprite = AssetLoader.GetSprite(name + "-outline", true);
-            this.type = type;
         }
 
-        public WeaponType(string name, Type type, Item ammoItem) : base(name) {
-            typeName = TypeWrapper.GetString(type);
+        public WeaponType(string name, Item ammoItem) : base(name) {
             outlineSprite = AssetLoader.GetSprite(name + "-outline", true);
             ammoItemName = ammoItem.name;
             this.ammoItem = ammoItem;
-            this.type = type;
         }
 
         public float Range { get => bulletType.Range; }
 
         public override void Wrap() {
             base.Wrap();
-            typeName = TypeWrapper.GetString(type);
             ammoItemName = ammoItem == null ? "empty" : ammoItem.name;
             animationWrapper = new Wrapper<Animation>(animations);
             barrelWrapper = new Wrapper<WeaponBarrel>(barrels);
@@ -1177,7 +1204,6 @@ namespace Frontiers.Content {
 
         public override void UnWrap() {
             base.UnWrap();
-            type = TypeWrapper.GetSystemType(typeName);
             ammoItem = ammoItemName == "empty" ? null : ContentLoader.GetContentByName(ammoItemName) as Item;
             animations = animationWrapper.array;
             barrels = barrelWrapper.array;
@@ -1188,18 +1214,18 @@ namespace Frontiers.Content {
         public const Weapon none = null;
 
         // Base weapons
-        public static WeaponType smallAutoWeapon, flareWeapon, tempestWeapon, stingerWeapon, pathWeapon, spreadWeapon;
+        public static WeaponType smallAutoWeapon, tempestWeapon, stingerWeapon, pathWeapon, spreadWeapon;
 
         //Unit weapons
-        public static WeaponType zenithMissiles;
+        public static WeaponType flareWeapon, horizonBombBay, zenithMissiles;
 
         // Item related weapons 
         public static WeaponType missileRack;
 
         public static void Load() {
 
-            smallAutoWeapon = new WeaponType("small-auto-weapon", typeof(RaycastWeapon)) {
-                bulletType = Bullets.basicBulletType,
+            smallAutoWeapon = new WeaponType("small-auto-weapon") {
+                bulletType = Bullets.basicBullet,
                 shootOffset = new Vector2(0, 0.37f),
                 recoil = 0f,
                 clipSize = 25,
@@ -1207,8 +1233,8 @@ namespace Frontiers.Content {
                 reloadTime = 5f
             };
 
-            flareWeapon = new WeaponType("flare-weapon", typeof(RaycastWeapon)) {
-                bulletType = Bullets.basicBulletType,
+            flareWeapon = new WeaponType("flare-weapon") {
+                bulletType = Bullets.basicBullet,
                 shootOffset = new Vector2(0, 0.37f),
                 recoil = 0.075f,
                 returnSpeed = 3f,
@@ -1217,8 +1243,22 @@ namespace Frontiers.Content {
                 reloadTime = 5f
             };
 
-            zenithMissiles = new WeaponType("zenith-missiles", typeof(RaycastWeapon)) {
-                bulletType = new BulletType("zenith-missile") {
+            horizonBombBay = new WeaponType("horizon-bomb-bay") {
+                bulletType = Bullets.bombBullet,
+
+                recoil = 0f,
+                returnSpeed = 1f,
+
+                clipSize = 10,
+                shootTime = 0.2f,
+                reloadTime = 5f,
+
+                maxTargetDeviation = 360f,
+                rotateSpeed = 0f
+            };
+
+            zenithMissiles = new WeaponType("zenith-missiles") {
+                bulletType = new BulletType() {
                     damage = 7.5f,
                     lifeTime = 0.5f,
                     velocity = 100f
@@ -1235,8 +1275,8 @@ namespace Frontiers.Content {
                 rotateSpeed = 115f
             };
 
-            tempestWeapon = new WeaponType("tempest-weapon", typeof(RaycastWeapon)) {
-                bulletType = Bullets.basicBulletType,
+            tempestWeapon = new WeaponType("tempest-weapon") {
+                bulletType = Bullets.basicBullet,
                 shootOffset = new Vector2(0, 0.5f),
 
                 isIndependent = true,
@@ -1248,8 +1288,8 @@ namespace Frontiers.Content {
                 rotateSpeed = 90f
             };
 
-            stingerWeapon = new WeaponType("stinger-weapon", typeof(RaycastWeapon)) {
-                bulletType = new BulletType("stinger-bullet") {
+            stingerWeapon = new WeaponType("stinger-weapon") {
+                bulletType = new BulletType() {
                     damage = 15f,
                     lifeTime = 0.5f,
                     velocity = 200f
@@ -1264,8 +1304,8 @@ namespace Frontiers.Content {
                 rotateSpeed = 60f
             };
 
-            pathWeapon = new WeaponType("path-weapon", typeof(RaycastWeapon)) {
-                bulletType = new BulletType("path-bullet") {
+            pathWeapon = new WeaponType("path-weapon") {
+                bulletType = new BulletType() {
                     damage = 3f,
                     lifeTime = 0.35f,
                     velocity = 150f
@@ -1281,8 +1321,8 @@ namespace Frontiers.Content {
                 rotateSpeed = 120f
             };
 
-            spreadWeapon = new WeaponType("spread-weapon", typeof(RaycastWeapon)) {
-                bulletType = Bullets.basicBulletType,
+            spreadWeapon = new WeaponType("spread-weapon") {
+                bulletType = Bullets.basicBullet,
                 shootOffset = Vector2.zero,
 
                 barrels = new WeaponBarrel[4] {
@@ -1300,8 +1340,8 @@ namespace Frontiers.Content {
                 rotateSpeed = 100f,
             };
 
-            missileRack = new WeaponType("missileRack", typeof(KineticWeapon), Items.missileX1) {
-                bulletType = Bullets.missileBulletType,
+            missileRack = new WeaponType("missileRack", Items.missileX1) {
+                bulletType = Bullets.missileBullet,
                 shootOffset = new Vector2(0, 0.5f),
 
                 isIndependent = true,
@@ -1318,15 +1358,21 @@ namespace Frontiers.Content {
     [Serializable]
     public class BulletType : Content {
         [JsonIgnore] public GameObjectPool pool;
+        public string bulletName;
+
         public float damage = 10f, buildingDamageMultiplier = 1f, velocity = 100f, lifeTime = 1f, size = 0.05f;
         public float blastRadius = -1f, minimumBlastDamage = 0f;
 
         public float Range { get => velocity * lifeTime; }
 
-        public BulletType(string name) : base(name) {
-            GameObject prefab = AssetLoader.GetPrefab(name);
-            if (!prefab) prefab = AssetLoader.GetPrefab("tPref");
-            pool = PoolManager.NewPool(prefab, 100);
+        public string hitFX = "BulletHitFX", despawnFX = "DespawnFX";
+
+        public BulletType(string name = null, string bulletName = "tracer") : base(name) {
+            pool = PoolManager.GetOrCreatePool(AssetLoader.GetPrefab(bulletName + "-prefab", "tracer-prefab"), 100);
+            this.bulletName = bulletName;
+
+            pool.OnGameObjectCreated += OnPoolObjectCreated;
+            pool.OnGameObjectDestroyed += OnPoolObjectDestroyed;
         }
 
         public float Multiplier(IDamageable damageable) {
@@ -1342,21 +1388,21 @@ namespace Frontiers.Content {
             return blastRadius > 0;
         }
 
-        public IEnumerator BulletBehaviour(Bullet bullet, Transform transform, int mask) {
-            TrailRenderer trail = transform.GetComponent<TrailRenderer>();
+        public virtual IEnumerator BulletBehaviour(Bullet bullet) {
+            Transform transform = bullet.transform;
+            int mask = bullet.mask;
+
             Vector2 startPosition = transform.position;
-            Vector2 hitPos = transform.up * Range;
+            Vector2 hitPos = (Vector2)transform.up * Range + startPosition;
 
             float distance = Vector2.Distance(startPosition, hitPos);
             float startingDistance = distance;
-            float destroyTime = Time.time + trail.time + 1f + (distance / velocity);
 
             while (distance > 0) {
                 transform.position = Vector2.Lerp(startPosition, hitPos, 1 - (distance / startingDistance));
                 distance -= Time.deltaTime * velocity;
 
                 if (Physics2D.OverlapCircle(transform.position, size, mask)) {
-                    destroyTime = Time.time + trail.time + 1f;
                     bullet.OnBulletCollision();
                     break;
                 }
@@ -1364,54 +1410,125 @@ namespace Frontiers.Content {
                 yield return null;
             }
 
-            ParticleSystem hitEffect = transform.GetComponent<ParticleSystem>();
-            hitEffect.Play();
-
+            float destroyTime = Time.time + 2f;
             while (destroyTime > Time.time) yield return null;
+
             bullet.Return();
+        }
+
+
+        public virtual void OnPoolObjectCreated(object sender, GameObjectPool.PoolEventArgs e) {
+
+        }
+
+        public virtual void OnPoolObjectDestroyed(object sender, GameObjectPool.PoolEventArgs e) {
+
         }
     }
 
     [Serializable]
-    public class HomingBulletType : BulletType {
+    public class BasicBulletType : BulletType {
+        [JsonIgnore] public Sprite backSprite;
+
+        public BasicBulletType(string name = null, string bulletName = "bullet") : base(name, bulletName) {
+            sprite = AssetLoader.GetSprite(bulletName, true);
+            backSprite = AssetLoader.GetSprite(bulletName + "-back", true);
+        }
+
+        public override void OnPoolObjectCreated(object sender, GameObjectPool.PoolEventArgs e) {
+            if (!e.target) return;
+
+            Transform transform = e.target.transform;
+            Transform back = transform.GetChild(0);
+
+            SpriteRenderer renderer;
+            renderer = transform.GetComponent<SpriteRenderer>();
+            renderer.sprite = sprite;
+            renderer.color = new Color(0f, 0f, 0f);
+
+            renderer = back.GetComponent<SpriteRenderer>();
+            renderer.sprite = backSprite;
+            renderer.color = new Color(0.2f, 0.2f, 0.2f);
+        }
+
+    }
+
+    [Serializable]
+    public class HomingBulletType : BasicBulletType {
         public float homingStrength = 30f;
         public bool canUpdateTarget = false;
         
-        public HomingBulletType(string name) : base(name) {
+        public HomingBulletType(string name = null, string bulletName = "missile") : base(name, bulletName) {
 
         }
     }
 
     [Serializable]
-    public class BombBulletType : BulletType {
-        public float fallVelocity;
+    public class BombBulletType : BasicBulletType {
+        public float fallVelocity = 3f, initialSize = 1f, finalSize = 0.5f;
 
-        public BombBulletType(string name) : base(name) {
+        public BombBulletType(string name = null, string bulletName = "bomb") : base(name, bulletName) {
+            despawnFX = "BulletHitFX";
+        }
 
+        public override void OnPoolObjectCreated(object sender, GameObjectPool.PoolEventArgs e) {
+            base.OnPoolObjectCreated(sender, e);
+            if (!e.target) return;
+
+            Transform shadow = e.target.transform.GetChild(1);
+
+            SpriteRenderer renderer = shadow.GetComponent<SpriteRenderer>();
+            renderer.sprite = backSprite;
+            renderer.color = new Color(0, 0, 0, 0.5f);
+        }
+
+        public override IEnumerator BulletBehaviour(Bullet bullet) {
+            Transform transform = bullet.transform;
+            Transform shadow = transform.GetChild(1);
+            int mask = bullet.mask;
+
+            // Bomb bullets don't work on block turrets
+            float height = ((Unit)bullet.weapon.parentEntity).GetHeight();
+            float maxHeight = ((Unit)bullet.weapon.parentEntity).Type.flyHeight;
+
+            while (height > 0f) {
+                height -= fallVelocity * Time.deltaTime;
+                transform.localScale = Vector3.one * Mathf.Lerp(initialSize, finalSize, 1 - height / maxHeight);
+                shadow.position = -Vector3.one * (height * 0.2f) + transform.position;
+
+                yield return null;
+            }
+
+            if (Physics2D.OverlapCircle(transform.position, size, mask)) {
+                bullet.OnBulletCollision();
+            }
+
+            EffectManager.PlayEffect(despawnFX, transform.position, 1f);
+            bullet.Return();
         }
     }
 
     public class Bullets {
         public const BulletType none = null;
-        public static BulletType basicBulletType, bombBulletType, missileBulletType;
+        public static BulletType basicBullet, bombBullet, missileBullet;
 
         public static void Load() {
-            basicBulletType = new BulletType("BasicBulletType") {
+            basicBullet = new BulletType() {
                 damage = 7.5f,
                 lifeTime = 0.35f,
                 buildingDamageMultiplier = 2f,
                 velocity = 90f
             };
 
-            bombBulletType = new BombBulletType("BombBulletType") {
+            bombBullet = new BombBulletType() {
                 damage = 25f,
                 minimumBlastDamage = 5f,
                 blastRadius = 3f,
                 buildingDamageMultiplier = 5f,
-                fallVelocity = 1f
+                fallVelocity = 3f
             };
 
-            missileBulletType = new HomingBulletType("missileBulletType") {
+            missileBullet = new HomingBulletType() {
                 damage = 100f,
                 minimumBlastDamage = 25f,
                 blastRadius = 1f,

@@ -43,7 +43,7 @@ public class Unit : Entity, IArmed {
 
     protected float targetSpeed, targetHeight, enginePower, currentMass, lightPercent = 0f;
 
-    protected float fuel, height, nextTargetSearchTime, landPadSearchTime, timeSinceTargetLost;
+    protected float fuel, height, nextTargetSearchTime, landPadSearchTime, timeSinceTargetLost, timeToDeactivateWeapons;
     bool isTakingOff, isLanded, isFleeing;
 
     // The target position used in behaviours for the next frame
@@ -129,6 +129,15 @@ public class Unit : Entity, IArmed {
 
     protected virtual void Update() {
         HandleBehaviour();
+
+        if (timeToDeactivateWeapons >= 0f) {
+            timeToDeactivateWeapons -= Time.deltaTime;
+
+            if(timeToDeactivateWeapons <= 0f) {
+                SetWeaponsActive(false);
+                timeToDeactivateWeapons = -1f;
+            }
+        }
 
         teamSpriteRenderer.color = CellColor();
 
@@ -222,7 +231,7 @@ public class Unit : Entity, IArmed {
         weaponGameObject.transform.localPosition += offsetPos;
         weaponGameObject.transform.localScale = Vector3.one;
 
-        Weapon weapon = (Weapon)weaponGameObject.AddComponent(weaponMount.weapon.type);
+        Weapon weapon = weaponGameObject.AddComponent<Weapon>();
         weapon.Set(this, weapons.Count, weaponMount.weapon, mirrored, weaponMount.onTop);
         weapons.Add(weapon);
     }
@@ -232,8 +241,8 @@ public class Unit : Entity, IArmed {
         shadow = transform.GetComponentInChildren<Shadow>();
 
         foreach (ParticleSystem particleSystem in gameObject.GetComponentsInChildren<ParticleSystem>()) {
-            if (particleSystem.name == "TakeOffEffect") takeOffEffect = particleSystem;
-            if (particleSystem.name == "WaterDeviationEffect") waterDeviationEffect = particleSystem;
+            if (particleSystem.name == "TakeOffFX") takeOffEffect = particleSystem;
+            if (particleSystem.name == "WaterDeviationFX") waterDeviationEffect = particleSystem;
             //if (particleSystem.name == "EngineEffect") engineEffect = particleSystem;
         }
 
@@ -264,6 +273,8 @@ public class Unit : Entity, IArmed {
     }
 
     public override EntityType GetEntityType() => Type;
+
+    public float GetHeight() => height;
 
     #endregion
 
@@ -426,7 +437,8 @@ public class Unit : Entity, IArmed {
                 patrolPosition = GetPosition() + (Vector2)transform.up * 25f;
 
                 // Turn off weapons
-                SetWeaponsActive(false);
+                timeToDeactivateWeapons = 0.75f;
+                //SetWeaponsActive(false);
             }
         }
     }
@@ -699,12 +711,9 @@ public class Unit : Entity, IArmed {
     public override void OnDestroy() {
         if (!gameObject.scene.isLoaded) return;
 
-        GameObject explosionEffectPrefab = AssetLoader.GetPrefab("ExplosionEffect");
-        GameObject explosionBlastPrefab = AssetLoader.GetPrefab("explosion-blast");
+        EffectManager.PlayEffect("ExplosionFX", transform.position, size);
 
-        Instantiate(explosionEffectPrefab, GetPosition(), Quaternion.identity);
-        GameObject explosionBlastGameObject = Instantiate(explosionBlastPrefab, GetPosition(), Quaternion.Euler(0f, 0f, Random.Range(0f, 360f)));
-
+        GameObject explosionBlastGameObject = Instantiate(AssetLoader.GetPrefab("explosion-blast"), GetPosition(), Quaternion.Euler(0f, 0f, Random.Range(0f, 360f)));
         Destroy(explosionBlastGameObject, 10f);
 
         MapManager.units.Remove(this);

@@ -7,6 +7,7 @@ public static class EffectManager {
     public static Dictionary<string, ParticleSystem> effectGameObjects = new();
 
     public static void PlayEffect(string name, Vector2 position, float size) {
+        if (name == "") return;
         if (!effectGameObjects.ContainsKey(name)) InstantiateNew(name);
 
         ParticleSystem instance = effectGameObjects[name];

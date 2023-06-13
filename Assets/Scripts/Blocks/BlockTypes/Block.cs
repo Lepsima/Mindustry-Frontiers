@@ -174,7 +174,7 @@ public class Block : Entity {
         if (!gameObject.scene.isLoaded) return;
 
         if (wasDestroyed) {
-            string explosionEffect = "SmallExplosionEffect";
+            string explosionEffect = "SmallExplosionFX";
             ItemBlock itemBlock = this as ItemBlock;
 
             if (itemBlock != null) {
@@ -183,7 +183,7 @@ public class Block : Entity {
                 }
 
                 if (itemBlock.IsExplosive()) {
-                    explosionEffect = "ExplosionEffect";
+                    explosionEffect = "ExplosionFX";
                 }
             }
 
