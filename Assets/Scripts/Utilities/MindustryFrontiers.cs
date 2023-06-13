@@ -27,6 +27,7 @@ using Anim = Frontiers.Animations.Anim;
 using Animator = Frontiers.Animations.Animator;
 using Animation = Frontiers.Animations.Animation;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Collections;
 
 namespace Frontiers.Animations {
     public class Animator {
@@ -1164,7 +1165,7 @@ namespace Frontiers.Content {
             this.type = type;
         }
 
-        public float Range { get => bulletType.velocity * bulletType.lifeTime; }
+        public float Range { get => bulletType.Range; }
 
         public override void Wrap() {
             base.Wrap();
@@ -1235,7 +1236,7 @@ namespace Frontiers.Content {
             };
 
             tempestWeapon = new WeaponType("tempest-weapon", typeof(RaycastWeapon)) {
-                bulletType = Bullets.instantBulletType,
+                bulletType = Bullets.basicBulletType,
                 shootOffset = new Vector2(0, 0.5f),
 
                 isIndependent = true,
@@ -1316,11 +1317,16 @@ namespace Frontiers.Content {
 
     [Serializable]
     public class BulletType : Content {
-        public float damage = 10f, buildingDamageMultiplier = 1f, velocity = 100f, lifeTime = 1f;
+        [JsonIgnore] public GameObjectPool pool;
+        public float damage = 10f, buildingDamageMultiplier = 1f, velocity = 100f, lifeTime = 1f, size = 0.05f;
         public float blastRadius = -1f, minimumBlastDamage = 0f;
 
-        public BulletType(string name) : base(name) {
+        public float Range { get => velocity * lifeTime; }
 
+        public BulletType(string name) : base(name) {
+            GameObject prefab = AssetLoader.GetPrefab(name);
+            if (!prefab) prefab = AssetLoader.GetPrefab("tPref");
+            pool = PoolManager.NewPool(prefab, 100);
         }
 
         public float Multiplier(IDamageable damageable) {
@@ -1334,6 +1340,35 @@ namespace Frontiers.Content {
 
         public bool HasBlastDamage() {
             return blastRadius > 0;
+        }
+
+        public IEnumerator BulletBehaviour(Bullet bullet, Transform transform, int mask) {
+            TrailRenderer trail = transform.GetComponent<TrailRenderer>();
+            Vector2 startPosition = transform.position;
+            Vector2 hitPos = transform.up * Range;
+
+            float distance = Vector2.Distance(startPosition, hitPos);
+            float startingDistance = distance;
+            float destroyTime = Time.time + trail.time + 1f + (distance / velocity);
+
+            while (distance > 0) {
+                transform.position = Vector2.Lerp(startPosition, hitPos, 1 - (distance / startingDistance));
+                distance -= Time.deltaTime * velocity;
+
+                if (Physics2D.OverlapCircle(transform.position, size, mask)) {
+                    destroyTime = Time.time + trail.time + 1f;
+                    bullet.OnBulletCollision();
+                    break;
+                }
+
+                yield return null;
+            }
+
+            ParticleSystem hitEffect = transform.GetComponent<ParticleSystem>();
+            hitEffect.Play();
+
+            while (destroyTime > Time.time) yield return null;
+            bullet.Return();
         }
     }
 

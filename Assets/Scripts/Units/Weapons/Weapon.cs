@@ -14,6 +14,7 @@ using Random = UnityEngine.Random;
 
 public abstract class Weapon : MonoBehaviour {
     protected ParticleSystem shootParticleSystemEffect;
+    private readonly List<Bullet> activeBullets = new();
 
     public WeaponType Type { private set; get; }
     protected Vector2 weaponOffset;
@@ -134,6 +135,7 @@ public abstract class Weapon : MonoBehaviour {
 
         weaponOffset = transform.localPosition;
         shootParticleSystemEffect = transform.Find("ShootParticleSystem").GetComponent<ParticleSystem>();
+        shootParticleSystemEffect.transform.localPosition = Type.shootOffset;
 
         if (Type.consumesItems && !parentEntity.hasInventory) Debug.LogWarning(Type.name + " consumes items but " + parentEntity.GetEntityType().name + " doesn't have inventory, this may cause errors");
 
@@ -224,7 +226,7 @@ public abstract class Weapon : MonoBehaviour {
         return true;
     }
 
-    public virtual void Shoot() {
+    public void Shoot() {
         currentRounds--;
         avilableShootTimer = Time.time + Type.shootTime;
 
@@ -241,6 +243,13 @@ public abstract class Weapon : MonoBehaviour {
 
         if (hasMultiBarrel) transform.position += transform.up * -Type.recoil / (barrels.Length * 2f);
         else transform.position += transform.up * -Type.recoil;
+
+        Vector2 originPoint = transform.position + GetOffset();
+        shootParticleSystemEffect.transform.position = originPoint;
+
+        float angle = transform.eulerAngles.z + Random.Range(-Type.spread, Type.spread); ;
+        Bullet bullet = this.ShootBullet(Type.bulletType, originPoint, angle);
+        activeBullets.Add(bullet);
     }
 
     public void Reload() {
@@ -253,15 +262,17 @@ public abstract class Weapon : MonoBehaviour {
         currentRounds = Type.clipSize;
     }
 
-    public void BulletHit(Entity entity) {
-        Client.BulletHit(entity, Type.bulletType);
+    private Vector3 GetOffset() {
+        Vector2 offset = hasMultiBarrel ? barrelOffsets[barrelIndex] : Type.shootOffset;
+        return (offset.x * transform.right) + (offset.y * transform.up);
     }
 
-    public Vector2 GetSpread() {
-        return new Vector2(Random.Range(-Type.spread, Type.spread), Random.Range(-Type.spread, Type.spread));
-    }
+    public void OnDestroy() {
+        if (!gameObject.scene.isLoaded) return;
 
-    public Vector2 GetOffset() {
-        return hasMultiBarrel ? barrelOffsets[barrelIndex] : Type.shootOffset;
+        StopAllCoroutines();
+
+        int amount = activeBullets.Count;
+        for (int i = amount - 1; i >= 0; i--) activeBullets[i].Return();
     }
 }
