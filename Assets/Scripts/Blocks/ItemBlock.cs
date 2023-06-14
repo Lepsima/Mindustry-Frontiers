@@ -11,22 +11,14 @@ public abstract class ItemBlock : Block {
     protected Item[] acceptedItems;
     protected Item[] outputItems;
 
-    private void Start() {
-        List<ItemBlock> adjacentBlocks = MapManager.Map.GetAdjacentBlocks(this);
-        this.adjacentBlocks = new Queue<ItemBlock>();
-
-        foreach (ItemBlock itemBlock in adjacentBlocks) {
-            // If the block is a conveyor and it's facing at this block, you dont want to give it any items back
-            if (itemBlock is ConveyorBlock conveyor && conveyor.IsFacingAt(this)) continue;
-
-            this.adjacentBlocks.Enqueue(itemBlock);
-            itemBlock.UpdateAdjacentBlocks();
-        }
-    }
-
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
         hasInventory = true;
+
+        GetAdjacentBlocks();
+        UpdateAdjacentBlocks();
+
+        Debug.Log(adjacentBlocks);
     }
 
     public override void SetInventory() {
@@ -70,14 +62,24 @@ public abstract class ItemBlock : Block {
         }
     }
 
-    public virtual void UpdateAdjacentBlocks() {
+    public virtual void GetAdjacentBlocks() {
         List<ItemBlock> adjacentBlocks = MapManager.Map.GetAdjacentBlocks(this);
         this.adjacentBlocks = new Queue<ItemBlock>();
 
         foreach (ItemBlock itemBlock in adjacentBlocks) {
             // If the block is a conveyor and it's facing at this block, you dont want to give it any items back
             if (itemBlock is ConveyorBlock conveyor && conveyor.IsFacingAt(this)) continue;
-            this.adjacentBlocks.Enqueue(itemBlock); 
+            this.adjacentBlocks.Enqueue(itemBlock);
+        }
+    }
+
+    public virtual void UpdateAdjacentBlocks() {
+        for (int i = 0; i < adjacentBlocks.Count; i++) {
+            ItemBlock adjacentBlock = adjacentBlocks.Dequeue();
+            if (adjacentBlock == null) continue;
+
+            adjacentBlock.GetAdjacentBlocks();
+            adjacentBlocks.Enqueue(adjacentBlock);
         }
     }
 
@@ -95,8 +97,8 @@ public abstract class ItemBlock : Block {
 
     public override void OnDestroy() {
         base.OnDestroy();
-
         if (!gameObject.scene.isLoaded) return;
-        for (int i = 0; i < adjacentBlocks.Count; i++) adjacentBlocks.Dequeue().UpdateAdjacentBlocks();
+
+        UpdateAdjacentBlocks();
     }
 }

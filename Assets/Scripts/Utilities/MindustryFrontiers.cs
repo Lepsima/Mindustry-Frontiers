@@ -2,8 +2,12 @@ using Photon.Pun;
 using Photon.Pun.UtilityScripts;
 using Photon.Realtime;
 using System;
+using System.IO;
+using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 using Frontiers.Content;
 using Frontiers.Content.Maps;
 using Frontiers.Settings;
@@ -18,16 +22,11 @@ using CI.QuickSave.Core.Storage;
 using CI.QuickSave.Core.Converters;
 using CI.QuickSave;
 using Newtonsoft.Json;
-using System.IO;
-using System.Linq;
-using UnityEngine.Tilemaps;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 using Anim = Frontiers.Animations.Anim;
 using Animator = Frontiers.Animations.Animator;
 using Animation = Frontiers.Animations.Animation;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Collections;
 
 namespace Frontiers.Animations {
     public class Animator {
@@ -2707,10 +2706,14 @@ namespace Frontiers.Content.Maps {
         }
 
         public List<ItemBlock> GetAdjacentBlocks(ItemBlock itemBlock) {
-            List<ItemBlock> adjacentBlocks = new List<ItemBlock>();
+            List<ItemBlock> adjacentBlocks = new();
+
             foreach (Block other in blocks) {
-                if (TypeEquals(other.GetType(), typeof(ItemBlock)) && itemBlock != other && itemBlock.IsNear(other)) adjacentBlocks.Add(other as ItemBlock);
+                if (TypeEquals(other.GetType(), typeof(ItemBlock)) && itemBlock != other && itemBlock.IsNear(other)) { 
+                    adjacentBlocks.Add(other as ItemBlock); 
+                }
             }
+
             return adjacentBlocks;
         }
 

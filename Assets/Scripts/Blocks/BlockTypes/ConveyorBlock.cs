@@ -96,10 +96,15 @@ public class ConveyorBlock : ItemBlock {
         }
     }
 
-    public override void UpdateAdjacentBlocks() {
+    public override void GetAdjacentBlocks() {
         next = GetFacingBlock() as ItemBlock;
         nextAsConveyor = next as ConveyorBlock;
         aligned = nextAsConveyor != null && nextAsConveyor.GetOrientation() == GetOrientation();
+    }
+
+    public override void UpdateAdjacentBlocks() {
+        if (!next) return;
+        next.GetAdjacentBlocks();
     }
 
     public override bool CanReciveItem(Item item) {
@@ -149,6 +154,4 @@ public class ConveyorBlock : ItemBlock {
         if (!gameObject.scene.isLoaded) return;
         foreach (ConveyorItem convItem in items) convItem.End();
     }
-
-
 }
