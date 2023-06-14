@@ -2,18 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using Photon.Pun;
-using Photon.Realtime;
-using ExitGames.Client.Photon;
 using Frontiers.Content;
 using Frontiers.Content.Maps;
 using Frontiers.Assets;
 using System;
-using System.IO;
-using Frontiers.Teams;
 using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
 
-public class MapManager : MonoBehaviourPunCallbacks {
+public class MapManager : MonoBehaviour {
     public static MapManager Instance;
     public static Map Map;
 

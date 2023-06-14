@@ -19,6 +19,8 @@ public class Launcher : MonoBehaviourPunCallbacks {
     [SerializeField] TMP_Text errorText;
     [SerializeField] TMP_Text roomNameText;
 
+    [SerializeField] Color localPlayerColor;
+
     [SerializeField] Transform roomListContent;
     [SerializeField] Transform playerListContentTeam1;
     [SerializeField] Transform playerListContentTeam2;
@@ -81,7 +83,7 @@ public class Launcher : MonoBehaviourPunCallbacks {
             PlayerListItem item = Instantiate(playerListItemPrefab, contentList).GetComponent<PlayerListItem>();
             item.SetUp(player);
 
-            if (player.NickName == PhotonNetwork.NickName) item.SetColor(Color.cyan);
+            if (player.NickName == PhotonNetwork.NickName) item.SetColor(localPlayerColor);
         }
     }
 
@@ -139,6 +141,6 @@ public class Launcher : MonoBehaviourPunCallbacks {
         PlayerListItem item = Instantiate(playerListItemPrefab, playerListContentTeam1).GetComponent<PlayerListItem>();
         item.SetUp(newPlayer);
 
-        if (newPlayer.NickName == PhotonNetwork.NickName) item.SetColor(Color.cyan);
+        if (newPlayer.NickName == PhotonNetwork.NickName) item.SetColor(localPlayerColor);
     }
 }
