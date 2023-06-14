@@ -16,53 +16,46 @@ public class Weapon : MonoBehaviour {
     private readonly List<Bullet> activeBullets = new();
 
     public WeaponType Type { private set; get; }
-    protected Vector2 weaponOffset;
+    private Vector2 weaponOffset;
+    private Vector2[] barrelOffsets;
 
-    public Entity parentEntity;
+    public Entity parentEntity, target;
     public int weaponID;
 
-    protected Entity target;
-    private float nextTargetSearchTime;
-
-    private int currentRounds;
-    private float avilableShootTimer = 0f;
-    private bool isReloading = false;
-    public bool isActive = false, mirrored = false;
-
-    private bool hasMultiBarrel = false;
-    private int barrelIndex;
-    private Vector2[] barrelOffsets;
     private Transform[] barrels;
 
     private Animator animator;
     private bool hasAnimations;
 
+    // Timers
+    private float targetSearchTimer = 0f, avilableShootTimer = 0f;
+
+    private bool isReloading = false, isActive = false, mirrored = false, hasMultiBarrel = false;
+    private int currentRounds, barrelIndex;
+
     private void Update() {
-        if (isReloading && hasAnimations) animator.NextFrame(Animation.Case.Reload);
+        if (isReloading && hasAnimations) {
+            animator.NextFrame(Animation.Case.Reload); 
+        }
 
         if (Type.isIndependent) {
-            HandleTargeting();
-            HandleShooting();
+            HandleTargeting(); 
         }
 
         if (isActive && IsAvilable()) {
             Client.WeaponShoot(this);
         }
 
-        transform.localPosition = Vector2.Lerp(transform.localPosition, weaponOffset, Type.returnSpeed * Time.deltaTime);
-
-        if (hasMultiBarrel) {
-            for(int i = 0; i < barrels.Length; i++) {
-                Transform transform = barrels[i];
-                transform.localPosition = Vector2.Lerp(transform.localPosition, Vector2.zero, Type.returnSpeed * Time.deltaTime);
-            }
-        }
+        UpdateRecoil();
     }
 
-    private void HandleTargeting() {
-        if (!ValidTarget(target) && nextTargetSearchTime <= Time.time) {
-            nextTargetSearchTime = Time.time + 3f;
-            ChangeTarget(GetTarget());
+    private void UpdateRecoil() {
+        transform.localPosition = Vector2.Lerp(transform.localPosition, weaponOffset, Type.returnSpeed * Time.deltaTime);
+        if (!hasMultiBarrel) return;
+
+        for (int i = 0; i < barrels.Length; i++) {
+            Transform transform = barrels[i];
+            transform.localPosition = Vector2.Lerp(transform.localPosition, Vector2.zero, Type.returnSpeed * Time.deltaTime);
         }
     }
 
@@ -73,10 +66,20 @@ public class Weapon : MonoBehaviour {
     }
 
     private void OnTargetDestroyed(object sender, EventArgs e) {
-        nextTargetSearchTime = 0;
+        targetSearchTimer = 0;
     }
 
-    private void HandleShooting() {
+    private bool ValidTarget(Entity target) {
+        if (!target) return false;
+        return Vector2.Distance(target.GetPosition(), transform.position) < Type.Range;
+    }
+
+    private void HandleTargeting() {
+        if (!ValidTarget(target) && targetSearchTimer <= Time.time) {
+            targetSearchTimer = Time.time + 3f;
+            ChangeTarget(GetTarget());
+        }
+
         if (target) {
             Vector2 targetPosition = Type.predictTarget ? target.GetPredictedPosition(transform.position, transform.up * Type.bulletType.velocity) : target.GetPosition();
 
@@ -87,11 +90,6 @@ public class Weapon : MonoBehaviour {
         } else {
             isActive = false;
         }
-    }
-
-    private bool ValidTarget(Entity target) {
-        if (!target) return false;
-        return Vector2.Distance(target.GetPosition(), transform.position) < Type.Range;
     }
 
     //Smooth point to position
@@ -222,15 +220,16 @@ public class Weapon : MonoBehaviour {
         return true;
     }
 
+    public void SetActive(bool state) {
+        isActive = state;
+    }
+
     public void Shoot() {
         currentRounds--;
         avilableShootTimer = Time.time + Type.shootTime;
 
         if (hasAnimations) animator.NextFrame(Animation.Case.Shoot);
         if (Type.consumesItems) parentEntity.GetInventory().Substract(Type.ammoItem, 1);
-
-        //shootParticleSystemEffect.Play();
-
 
         if (hasMultiBarrel) {
             barrelIndex++;
@@ -241,11 +240,11 @@ public class Weapon : MonoBehaviour {
         if (hasMultiBarrel) transform.position += transform.up * -Type.recoil / (barrels.Length * 2f);
         else transform.position += transform.up * -Type.recoil;
 
-        Vector2 originPoint = transform.position + GetOffset();
-        EffectManager.PlayEffect(Type.shootFX, originPoint, transform.rotation, 7f);
+        Vector2 bulletOriginPoint = transform.position + GetOffset();
+        EffectManager.PlayEffect(Type.shootFX, bulletOriginPoint, transform.rotation, 7f);
 
-        float angle = transform.eulerAngles.z + Random.Range(-Type.spread, Type.spread); ;
-        Bullet bullet = this.ShootBullet(originPoint, angle);
+        float bulletAngle = transform.eulerAngles.z + Random.Range(-Type.spread, Type.spread);
+        Bullet bullet = this.ShootBullet(bulletOriginPoint, bulletAngle);
         activeBullets.Add(bullet);
     }
 

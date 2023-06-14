@@ -6,7 +6,6 @@ using Frontiers.Teams;
 using Photon.Pun;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering.Universal;
 
 public class Unit : Entity, IArmed {
     public new UnitType Type { protected set; get; }
@@ -17,7 +16,7 @@ public class Unit : Entity, IArmed {
     protected SpriteRenderer teamSpriteRenderer;
 
     TrailRenderer[] trailRenderers;
-    [SerializeField] ParticleSystem takeOffEffect, engineEffect, waterDeviationEffect;
+    [SerializeField] ParticleSystem waterDeviationEffect;
 
     readonly List<Weapon> weapons = new();
     public bool unarmed = true;
@@ -43,8 +42,11 @@ public class Unit : Entity, IArmed {
 
     protected float targetSpeed, targetHeight, enginePower, currentMass, lightPercent = 0f;
 
-    protected float fuel, height, nextTargetSearchTime, landPadSearchTime, timeSinceTargetLost, timeToDeactivateWeapons;
-    bool isTakingOff, isLanded, isFleeing;
+    protected float fuel, height, cargoMass;
+    bool isTakingOff, isLanded, isFleeing, areWeaponsActive;
+
+    // Timers
+    private float targetSearchTimer, landPadSearchTimer, targetLostTimer, deactivateWeaponsTimer;
 
     // The target position used in behaviours for the next frame
     Vector2 _position;
@@ -85,9 +87,10 @@ public class Unit : Entity, IArmed {
         Target = null;
         isFleeing = false;
 
-        timeSinceTargetLost = 0;
-        landPadSearchTime = 0;
-        nextTargetSearchTime = 0;
+        targetLostTimer = 0;
+        landPadSearchTimer = 0;
+        targetSearchTimer = 0;
+        deactivateWeaponsTimer = 0;
 
         homePosition = GetPosition();
         SetWeaponsActive(false);
@@ -130,12 +133,11 @@ public class Unit : Entity, IArmed {
     protected virtual void Update() {
         HandleBehaviour();
 
-        if (timeToDeactivateWeapons >= 0f) {
-            timeToDeactivateWeapons -= Time.deltaTime;
+        if (deactivateWeaponsTimer <= Time.time) {
 
-            if(timeToDeactivateWeapons <= 0f) {
+            if(deactivateWeaponsTimer != 0f) {
                 SetWeaponsActive(false);
-                timeToDeactivateWeapons = -1f;
+                deactivateWeaponsTimer = 0f;
             }
         }
 
@@ -241,20 +243,14 @@ public class Unit : Entity, IArmed {
         shadow = transform.GetComponentInChildren<Shadow>();
 
         foreach (ParticleSystem particleSystem in gameObject.GetComponentsInChildren<ParticleSystem>()) {
-            if (particleSystem.name == "TakeOffFX") takeOffEffect = particleSystem;
             if (particleSystem.name == "WaterDeviationFX") waterDeviationEffect = particleSystem;
-            //if (particleSystem.name == "EngineEffect") engineEffect = particleSystem;
         }
-
-        takeOffEffect.transform.localScale = Vector3.one * Type.size;
 
         shadow.SetDistance(Type.flyHeight);
         shadow.SetSprite(Type.spriteFull);
-
-        // frontLight = GetComponentInChildren<Light2D>();
     }
 
-    private void SetTrailTime(float time) {
+    private void SetDragTrailLenght(float time) {
         foreach (TrailRenderer tr in trailRenderers) tr.time = Mathf.Abs(time);
     } //Simulate drag trails
 
@@ -399,7 +395,7 @@ public class Unit : Entity, IArmed {
         if (!Target) SetWeaponsActive(false);
 
         // Visual things
-        SetTrailTime(gForce * 0.3f);
+        SetDragTrailLenght(gForce * 0.3f);
         shadow.SetDistance(height);
         //frontLight.intensity = lightPercent;
     }
@@ -437,7 +433,7 @@ public class Unit : Entity, IArmed {
                 patrolPosition = GetPosition() + (Vector2)transform.up * 25f;
 
                 // Turn off weapons
-                timeToDeactivateWeapons = 0.75f;
+                deactivateWeaponsTimer = Time.time + 0.75f;
             }
         }
     }
@@ -480,9 +476,9 @@ public class Unit : Entity, IArmed {
 
         //If target block is invalid, get closest landpad
         bool isInvalid = !Target || !(Target is LandPadBlock) || !(Target as LandPadBlock).CanLand(this);
-        if (landPadSearchTime < Time.time && isInvalid) {
+        if (landPadSearchTimer < Time.time && isInvalid) {
             // Search for a landpad
-            landPadSearchTime = 3f + Time.time;
+            landPadSearchTimer = 3f + Time.time;
             LandPadBlock targetLandPad = MapManager.Map.GetBestAvilableLandPad(this);
 
             // Confirm target change
@@ -528,7 +524,7 @@ public class Unit : Entity, IArmed {
 
         if (Target) {
             bool canShoot = InShootRange(target, weapons[0].Type.maxTargetDeviation);
-            if (canShoot != IsFullAuto) SetWeaponsActive(canShoot);
+            if (canShoot != areWeaponsActive) SetWeaponsActive(canShoot);
         } else {
             SetWeaponsActive(false);
         }
@@ -547,13 +543,13 @@ public class Unit : Entity, IArmed {
         if (Target) {
             // Check if target is still valid
             bool inShootRange = InShootRange(Target.GetPosition(), Type.fov);
-            timeSinceTargetLost = inShootRange ? 0 : timeSinceTargetLost + Time.deltaTime;
+            targetLostTimer = inShootRange ? 0 : targetLostTimer + Time.deltaTime;
         }
 
-        if ((Target == null && nextTargetSearchTime < Time.time) || timeSinceTargetLost > 3f) {
+        if ((Target == null && targetSearchTimer < Time.time) || targetLostTimer > 3f) {
             // Update target timers
-            nextTargetSearchTime = Time.time + 1.5f;
-            timeSinceTargetLost = 0f;
+            targetSearchTimer = Time.time + 1.5f;
+            targetLostTimer = 0f;
 
             // Find target or get closest
             Entity tempTarget = GetTarget();
@@ -622,7 +618,7 @@ public class Unit : Entity, IArmed {
         //spriteHolder.localScale = Vector3.one * 0.7f;
 
         height = 0f;
-        SetTrailTime(0);
+        SetDragTrailLenght(0);
     } //Land unit on a near landpad
 
 
@@ -646,7 +642,7 @@ public class Unit : Entity, IArmed {
         Invoke(nameof(EndTakeOff), 3f);
 
         //Play particle system
-        takeOffEffect.Play();
+        EffectManager.PlayEffect("TakeoffFX", transform.position, size);
     }
 
 
@@ -705,7 +701,6 @@ public class Unit : Entity, IArmed {
 
 
     #region - Shooting -    
-    bool IsFullAuto { get => weapons[0].isActive; }
 
     public override void OnDestroy() {
         if (!gameObject.scene.isLoaded) return;
@@ -719,17 +714,13 @@ public class Unit : Entity, IArmed {
         base.OnDestroy();
     }
 
-    public void SetWeaponsActive(bool value, int weaponIndex = -1) {
-        if (weaponIndex == -1) foreach (Weapon weapon in weapons) weapon.isActive = value;
-        else weapons[weaponIndex].isActive = value;
+    public void SetWeaponsActive(bool value) {
+        foreach (Weapon weapon in weapons) weapon.SetActive(value);
+        areWeaponsActive = value;
     }
 
     public Weapon GetWeaponByID(int ID) {
         return weapons[ID];
-    }
-
-    public void Shoot(int weaponIndex) {
-        weapons[weaponIndex].Shoot();
     }
     #endregion
 }
