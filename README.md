@@ -1,7 +1,7 @@
 # Mindustry-Frontiers
 ![logo](Assets/Resources/Sprites/UI/logo.png)
 
-A Mindustry related game i'm working on, very similar to mindustry but with the objective of making battles and whole matches (multiplayer is supported) more cinematic looking
+A Mindustry related game, very similar to mindustry but with the objective of making battles and whole matches (multiplayer is supported) more cinematic looking
 
 Most of the sprites are copy-pasted from mindustry for now, excluding the turrets and some other units
 
