@@ -8,50 +8,45 @@ using Frontiers.Assets;
 using Frontiers.Teams;
 using UnityEngine.EventSystems;
 using System;
+using Cinemachine;
 using UnitMode = Unit.UnitMode;
 
 public class PlayerManager : MonoBehaviour {
+    [SerializeField] float moveSpeed = 15f;
+    [SerializeField] float zoomSpeed = 30f;
+    [SerializeField] float zoomInMultiplier = 2f;
+    [SerializeField] float zoomOutMultiplier = 1f;
     [SerializeField] [Range(1, 50)] float zoomClampMax = 40f;
 
     public static PlayerManager Instance;
-    public bool IsPlayerSpawned;
-
-    public Transform target;
     public Entity selectedEntity;
 
-    public GameObject PlayerGameObject { get; set; }
+    private CinemachineVirtualCamera virtualCamera;
+    private Transform playerTransform;
+
     public bool buildMode = false;
     public int unitFollowIndex = 0;
 
     public static Vector3 mousePos;
 
-    public bool IsFollowingPlayer() {
-        return target == PlayerGameObject.transform;
+    private void Start() {
+        Instance = this;
+        PlayerContentSelector.OnSelectedContentChanged += Instance.OnSelectedContentChanged;
+
+        playerTransform = transform.GetChild(0);
+        playerTransform.parent = null;
+
+        virtualCamera = GetComponent<CinemachineVirtualCamera>();
+        Follow(playerTransform);
     }
 
-    public static void InitializePlayerManager() {
-        // Instantiate Spectator Camera
-        GameObject spectatorCameraPrefab = AssetLoader.GetPrefab("SpectatorCameraPrefab");
-        Instance = Instantiate(spectatorCameraPrefab, new Vector3(0, 0, -10f), Quaternion.identity).GetComponent<PlayerManager>();
-        PlayerContentSelector.OnSelectedContentChanged += Instance.OnSelectedContentChanged;
+    public bool IsFollowingPlayer() {
+        return virtualCamera.Follow == playerTransform;
     }
 
     public void Update() {
-        // If player is dead or doesnt exist, check for closest core to spawn again
-        if (!IsPlayerSpawned && TeamUtilities.LocalCoreBlocks.Count > 0) SpawnPlayer();
-        if (!IsPlayerSpawned) return;
-
-        if (!target) {
-            Follow(PlayerGameObject.transform);
-        }
-
+        playerTransform.position += new Vector3(Input.GetAxis("Horizontal") * moveSpeed, Input.GetAxis("Vertical") * moveSpeed, 0) * Time.deltaTime;
         mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-        Vector3 targetPosition = target.position;
-        targetPosition.z = -10f;
-
-        // Set new position
-        transform.position = targetPosition;
 
         if (buildMode) HandleBuildMode();
         else HandleMainMode();
@@ -93,8 +88,6 @@ public class PlayerManager : MonoBehaviour {
         if (!EventSystem.current.IsPointerOverGameObject() && Input.GetMouseButtonDown(0)) PlayerContentSelector.CreateSelectedContent(mousePos, 0);
         if (!EventSystem.current.IsPointerOverGameObject() && Input.GetMouseButtonDown(1)) PlayerContentSelector.CreateSelectedContent(mousePos, 1);
 
-        if (!IsFollowingPlayer()) Follow(PlayerGameObject.transform);
-
         PlayerContentSelector.ChangeSelectedContentOrientation(Input.mouseScrollDelta.y);
     }
 
@@ -120,7 +113,10 @@ public class PlayerManager : MonoBehaviour {
 
             }
 
-            Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize - Input.mouseScrollDelta.y * 10 * Time.deltaTime, 1, zoomClampMax);
+
+            float delta = Input.mouseScrollDelta.y;
+            float change = delta * zoomSpeed * ( delta < 0f ? zoomOutMultiplier : zoomInMultiplier) * Time.deltaTime;
+            virtualCamera.m_Lens.OrthographicSize = Mathf.Clamp(virtualCamera.m_Lens.OrthographicSize - change, 1, zoomClampMax);
         }
     }
 
@@ -139,6 +135,7 @@ public class PlayerManager : MonoBehaviour {
         if (buildMode) {
             selectedEntity = null;
             InventoryViewer.Instance.SetInventory(null);
+            Follow(playerTransform);
         }
     }
 
@@ -147,24 +144,25 @@ public class PlayerManager : MonoBehaviour {
 
         if (unitFollowIndex >= MapManager.units.Count) unitFollowIndex = 0;
         if (unitFollowIndex < 0) unitFollowIndex = MapManager.units.Count - 1;
+        
+        Unit unit = MapManager.units[unitFollowIndex];
+        Transform unitTransform = unit.transform;
 
-        Transform unitTransform = MapManager.units[unitFollowIndex].transform;
+        unit.OnDestroyed += OnFollowingUnitDestroyed;
+
         Follow(unitTransform);
     }
 
+    public void OnFollowingUnitDestroyed(object sender, Entity.DestroyEventArgs e) {
+        // If there's a registered killer, follow that entity
+        Follow(e.other ? e.other.transform : playerTransform);
+    }
+
     public void Follow(Transform target) {
-        this.target = target;
+        virtualCamera.Follow = target;
     }
 
-    public void SpawnPlayer() {
-        IsPlayerSpawned = true;
-        GameObject playerPrefab = AssetLoader.GetPrefab("PlayerPrefab");
-        PlayerGameObject = Instantiate(playerPrefab, TeamUtilities.GetClosestAllyCoreBlock(Vector2.zero).GetPosition(), Quaternion.identity);
-        Follow(PlayerGameObject.transform);
-    }
+    public void CameraShake() {
 
-    public void DestroyPlayer() {
-        IsPlayerSpawned = false;
-        Destroy(PlayerGameObject);
     }
 }

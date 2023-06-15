@@ -75,7 +75,6 @@ public class RoomManager : MonoBehaviourPunCallbacks {
         if (scene.buildIndex == 1) {
             // Initialize managers
             MapManager.InitializeMapManager();
-            PlayerManager.InitializePlayerManager();
 
             // If this client is the master, spawn cores
             if (TeamUtilities.IsMaster()) {

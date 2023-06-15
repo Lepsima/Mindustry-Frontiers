@@ -302,10 +302,10 @@ MonoBehaviour:
   active: 0
   distance:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 1
   cropToFit:
     m_OverrideState: 1
-    m_Value: 0.194
+    m_Value: 1
 --- !u!114 &-3147297118738349633
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -318,10 +318,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81180773991d8724ab7f2d216912b564, type: 3}
   m_Name: ChromaticAberration
   m_EditorClassIdentifier: 
-  active: 0
+  active: 1
   intensity:
     m_OverrideState: 1
-    m_Value: 0.177
+    m_Value: 0.132
 --- !u!114 &-111415961966856790
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -340,13 +340,13 @@ MonoBehaviour:
     m_Value: 0
   quality:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 2
   intensity:
     m_OverrideState: 1
-    m_Value: 0.183
+    m_Value: 0.161
   clamp:
     m_OverrideState: 1
-    m_Value: 0.0693
+    m_Value: 0.0101
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -477,7 +477,7 @@ MonoBehaviour:
   active: 0
   intensity:
     m_OverrideState: 1
-    m_Value: -0.373
+    m_Value: 0.819
   xMultiplier:
     m_OverrideState: 1
     m_Value: 1
@@ -580,10 +580,10 @@ MonoBehaviour:
   active: 0
   mode:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 1
   gaussianStart:
     m_OverrideState: 1
-    m_Value: 10
+    m_Value: 18.96
   gaussianEnd:
     m_OverrideState: 1
     m_Value: 30
