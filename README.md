@@ -1,5 +1,5 @@
 # Mindustry-Frontiers
-![logo](https://github.com/Lepisma-0/Mindustry-Frontiers/assets/77903853/26ef4fb7-e787-4f4c-9a5e-66c93907d2c6)
+![logo](Assets/Resources/Sprites/UI/logo.png)
 
 A Mindustry related game i'm working on, very similar to mindustry but with the objective of making battles and whole matches (multiplayer is supported) more cinematic looking
 
