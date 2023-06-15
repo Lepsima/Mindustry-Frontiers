@@ -45,7 +45,7 @@ public class Block : Entity {
         MapManager.blocks.Add(this);
         syncTime = 10f;
 
-        if (!MapManager.TypeEquals(Type.type, typeof(ConstructionBlock))) EffectManager.PlayEffect("BuildFX", GetPosition(), size);
+        if (!MapManager.TypeEquals(Type.type, typeof(ConstructionBlock))) Effect.PlayEffect("BuildFX", GetPosition(), size);
     }
 
     protected override void SetSprites() {
@@ -187,7 +187,7 @@ public class Block : Entity {
                 }
             }
 
-            EffectManager.PlayEffect(explosionEffect, GetPosition(), 2 * Type.size);
+            Effect.PlayEffect(explosionEffect, GetPosition(), 2 * Type.size);
             RubbleGenerator.CreateRubble(GetPosition(), Type.size);
         }
 

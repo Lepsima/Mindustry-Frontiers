@@ -17,13 +17,13 @@ public class Weapon : MonoBehaviour {
 
     public WeaponType Type { private set; get; }
     private Vector2 weaponOffset;
-    private Vector2[] barrelOffsets;
 
     public Entity parentEntity, target;
     public int weaponID;
 
-    private Transform[] barrels;
+    private Barrel[] barrels;
 
+    private ParticleSystem shootFX;
     private Animator animator;
     private bool hasAnimations;
 
@@ -54,7 +54,7 @@ public class Weapon : MonoBehaviour {
         if (!hasMultiBarrel) return;
 
         for (int i = 0; i < barrels.Length; i++) {
-            Transform transform = barrels[i];
+            Transform transform = barrels[i].transform;
             transform.localPosition = Vector2.Lerp(transform.localPosition, Vector2.zero, Type.returnSpeed * Time.deltaTime);
         }
     }
@@ -139,39 +139,17 @@ public class Weapon : MonoBehaviour {
 
         hasMultiBarrel = Type.barrels != null && Type.barrels.Length > 0;
         hasAnimations = SetAnimations(Type.animations);
+
+        if (!hasMultiBarrel) {
+            shootFX = transform.CreateEffect(Type.shootFX, Vector2.zero, Quaternion.identity, 5f);
+            if (shootFX) shootFX.transform.position = transform.position + GetOffset();
+        }
     }
 
     private void SetBarrels(WeaponBarrel[] barrels) {
         if (barrels == null || barrels.Length == 0) return;
-        this.barrels = new Transform[barrels.Length];
-        this.barrelOffsets = new Vector2[barrels.Length];
-
-        for(int i = 0; i < barrels.Length; i++) {
-            WeaponBarrel barrel = barrels[i];
-
-            Transform barrelTransform = new GameObject("barrel", typeof(SpriteRenderer)).transform;
-            barrelTransform.parent = transform;
-            barrelTransform.localPosition = Vector3.zero;
-            barrelTransform.localRotation = Quaternion.identity;
-
-            SpriteRenderer barrelRenderer = barrelTransform.GetComponent<SpriteRenderer>();
-            barrelRenderer.sprite = barrel.barrelSprite;
-            barrelRenderer.sortingLayerName = "Units";
-            barrelRenderer.sortingOrder = 3;
-
-            Transform barrelOutlineTransform = new GameObject("outline", typeof(SpriteRenderer)).transform;
-            barrelOutlineTransform.parent = barrelTransform;
-            barrelOutlineTransform.localPosition = Vector3.zero;
-            barrelOutlineTransform.localRotation = Quaternion.identity;
-
-            SpriteRenderer outlineRenderer = barrelOutlineTransform.GetComponent<SpriteRenderer>();
-            outlineRenderer.sprite = barrel.barrelOutlineSprite;
-            outlineRenderer.sortingLayerName = "Units";
-            outlineRenderer.sortingOrder = -1;
-
-            this.barrels[i] = barrelTransform;
-            this.barrelOffsets[i] = barrel.shootOffset;
-        }
+        this.barrels = new Barrel[barrels.Length];
+        for(int i = 0; i < barrels.Length; i++) this.barrels[i] = new(this, barrels[i]); 
     }
 
     private void SetSprites(bool onTop) {
@@ -232,20 +210,25 @@ public class Weapon : MonoBehaviour {
         if (Type.consumesItems) parentEntity.GetInventory().Substract(Type.ammoItem, 1);
 
         if (hasMultiBarrel) {
+            transform.position += transform.up * -Type.recoil / (barrels.Length * 2f);
+
             barrelIndex++;
-            if (barrelIndex >= barrelOffsets.Length) barrelIndex = 0;
-            barrels[barrelIndex].position += barrels[barrelIndex].up * -Type.recoil;
+            if (barrelIndex >= barrels.Length) barrelIndex = 0;
+
+            activeBullets.Add(barrels[barrelIndex].Shoot(this));
+        } else {
+            transform.position += transform.up * -Type.recoil;
+
+            Vector2 bulletOriginPoint = transform.position + GetOffset();
+            float bulletAngle = transform.eulerAngles.z + Random.Range(-Type.spread, Type.spread);
+
+            if (shootFX) shootFX.Play();
+            activeBullets.Add(this.ShootBullet(bulletOriginPoint, bulletAngle));
         }
+    }
 
-        if (hasMultiBarrel) transform.position += transform.up * -Type.recoil / (barrels.Length * 2f);
-        else transform.position += transform.up * -Type.recoil;
-
-        Vector2 bulletOriginPoint = transform.position + GetOffset();
-        EffectManager.PlayEffect(Type.shootFX, bulletOriginPoint, transform.rotation, 7f);
-
-        float bulletAngle = transform.eulerAngles.z + Random.Range(-Type.spread, Type.spread);
-        Bullet bullet = this.ShootBullet(bulletOriginPoint, bulletAngle);
-        activeBullets.Add(bullet);
+    public void ReturnBullet(Bullet bullet) {
+        activeBullets.Remove(bullet);
     }
 
     public void Reload() {
@@ -259,7 +242,7 @@ public class Weapon : MonoBehaviour {
     }
 
     private Vector3 GetOffset() {
-        Vector2 offset = hasMultiBarrel ? barrelOffsets[barrelIndex] : Type.shootOffset;
+        Vector2 offset = hasMultiBarrel ? barrels[barrelIndex].shootOffset : Type.shootOffset;
         return (offset.x * transform.right) + (offset.y * transform.up);
     }
 
@@ -270,5 +253,50 @@ public class Weapon : MonoBehaviour {
 
         int amount = activeBullets.Count;
         for (int i = amount - 1; i >= 0; i--) activeBullets[i].Return();
+    }
+}
+
+public class Barrel {
+    public Vector2 shootOffset;
+    public Transform transform;
+    public ParticleSystem shootFX;
+
+    public Barrel(Weapon parent, WeaponBarrel weaponBarrel) {
+        shootOffset = weaponBarrel.shootOffset;
+
+        transform = new GameObject("barrel", typeof(SpriteRenderer)).transform;
+        transform.parent = parent.transform;
+        transform.localPosition = Vector3.zero;
+        transform.localRotation = Quaternion.identity;
+
+        shootFX = transform.CreateEffect(parent.Type.shootFX, Vector2.zero, Quaternion.identity, 5f);
+        if (shootFX) shootFX.transform.position = transform.position + GetOffset();
+
+        SpriteRenderer barrelRenderer = transform.GetComponent<SpriteRenderer>();
+        barrelRenderer.sprite = weaponBarrel.barrelSprite;
+        barrelRenderer.sortingLayerName = "Units";
+        barrelRenderer.sortingOrder = 3;
+
+        Transform barrelOutlineTransform = new GameObject("outline", typeof(SpriteRenderer)).transform;
+        barrelOutlineTransform.parent = transform;
+        barrelOutlineTransform.localPosition = Vector3.zero;
+        barrelOutlineTransform.localRotation = Quaternion.identity;
+
+        SpriteRenderer outlineRenderer = barrelOutlineTransform.GetComponent<SpriteRenderer>();
+        outlineRenderer.sprite = weaponBarrel.barrelOutlineSprite;
+        outlineRenderer.sortingLayerName = "Units";
+        outlineRenderer.sortingOrder = -1;
+    }
+
+    public Bullet Shoot(Weapon weapon) {
+        if (shootFX) shootFX.Play();
+        transform.position += transform.up * -weapon.Type.recoil;
+
+        float bulletAngle = transform.eulerAngles.z + Random.Range(-weapon.Type.spread, weapon.Type.spread);
+        return weapon.ShootBullet(transform.position + GetOffset(), bulletAngle);
+    }
+
+    public Vector3 GetOffset() {
+        return (shootOffset.x * transform.right) + (shootOffset.y * transform.up);
     }
 }

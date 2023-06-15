@@ -17,8 +17,6 @@ public abstract class ItemBlock : Block {
 
         GetAdjacentBlocks();
         UpdateAdjacentBlocks();
-
-        Debug.Log(adjacentBlocks);
     }
 
     public override void SetInventory() {

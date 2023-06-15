@@ -169,7 +169,6 @@ namespace Frontiers.Pooling {
             }
         }
     }
-
 }
 
 namespace Frontiers.Settings {
@@ -1020,7 +1019,6 @@ namespace Frontiers.Content {
             flare = new UnitType("flare", typeof(Unit)) {
                 weapons = new WeaponMount[1] {
                     new WeaponMount(Weapons.flareWeapon, new Vector2(-0.25f, 0.3f), true),
-                    //new WeaponMount(Weapons.missileRack, new Vector2(0f, 1f), false)
                 },
 
                 useAerodynamics = true,
@@ -1184,7 +1182,7 @@ namespace Frontiers.Content {
         public bool predictTarget = true;
 
         public int clipSize = 10;
-        public float maxTargetDeviation = 15f, spread = 0.05f, recoil = 0.75f, returnSpeed = 1f, shootTime = 1f, reloadTime = 1f, rotateSpeed = 90f;
+        public float maxTargetDeviation = 15f, spread = 5f, recoil = 0.75f, returnSpeed = 1f, shootTime = 1f, reloadTime = 1f, rotateSpeed = 90f;
 
         public WeaponType(string name) : base(name) {
             outlineSprite = AssetLoader.GetSprite(name + "-outline", true);
@@ -1257,7 +1255,9 @@ namespace Frontiers.Content {
                 reloadTime = 5f,
 
                 maxTargetDeviation = 360f,
-                rotateSpeed = 0f
+                rotateSpeed = 0f,
+
+                shootFX = "",
             };
 
             zenithMissiles = new WeaponType("zenith-missiles") {
@@ -1401,6 +1401,9 @@ namespace Frontiers.Content {
             float distance = Vector2.Distance(startPosition, hitPos);
             float startingDistance = distance;
 
+            transform.position = startPosition;
+            transform.GetComponent<TrailRenderer>().Clear();
+
             while (distance > 0) {
                 transform.position = Vector2.Lerp(startPosition, hitPos, 1 - (distance / startingDistance));
                 distance -= Time.deltaTime * velocity;
@@ -1412,9 +1415,6 @@ namespace Frontiers.Content {
 
                 yield return null;
             }
-
-            float destroyTime = Time.time + 2f;
-            while (destroyTime > Time.time) yield return null;
 
             bullet.Return();
         }
@@ -1462,7 +1462,7 @@ namespace Frontiers.Content {
         public bool canUpdateTarget = false;
         
         public HomingBulletType(string name = null, string bulletName = "missile") : base(name, bulletName) {
-
+            despawnFX = "BulletHitFX";
         }
     }
 
@@ -1471,7 +1471,8 @@ namespace Frontiers.Content {
         public float fallVelocity = 3f, initialSize = 1f, finalSize = 0.5f;
 
         public BombBulletType(string name = null, string bulletName = "bomb") : base(name, bulletName) {
-            despawnFX = "BulletHitFX";
+            hitFX = "ExplosionFX";
+            despawnFX = "ExplosionFX";
         }
 
         public override void OnPoolObjectCreated(object sender, GameObjectPool.PoolEventArgs e) {
@@ -1506,7 +1507,7 @@ namespace Frontiers.Content {
                 bullet.OnBulletCollision();
             }
 
-            EffectManager.PlayEffect(despawnFX, transform.position, 1f);
+            Effect.PlayEffect(despawnFX, transform.position, 1f);
             bullet.Return();
         }
     }
@@ -1558,25 +1559,11 @@ namespace Frontiers.Content {
         public bool allowBuildings = true, flammable = false, isWater = false;
         public string itemDropName;
 
-        public TileType(string name, int variants = 1) : base(name) {
-            this.variants = variants;
-
-            if (this.variants < 1) this.variants = 1;
-
-            if (this.variants == 1) {
-                tile = AssetLoader.GetAsset<TileBase>(name);
-            } else {
-                allVariants = new TileBase[variants];
-                for (int i = 0; i < this.variants; i++) allVariants[i] = AssetLoader.GetAsset<TileBase>(name + (i + 1)); 
-                tile = allVariants[0];
+        public TileType(string name, int variants = 1, Item itemDrop = null) : base(name) {
+            if (itemDrop != null) {
+                this.itemDrop = itemDrop;
+                itemDropName = itemDrop.name;
             }
-
-            color = sprite.texture.GetPixel(sprite.texture.width / 2, sprite.texture.height / 2);
-        }
-
-        public TileType(string name, int variants, Item itemDrop) : base(name) {
-            this.itemDrop = itemDrop;
-            itemDropName = itemDrop.name;
 
             this.variants = variants;
 
@@ -1591,8 +1578,7 @@ namespace Frontiers.Content {
                 tile = allVariants[0];
             }
 
-            float mult = id / 30f;
-            color = new Color(mult, mult, mult);
+            color = sprite.texture.GetPixel(sprite.texture.width / 2, sprite.texture.height / 2);
         }
 
         public virtual TileBase[] GetAllTiles() {

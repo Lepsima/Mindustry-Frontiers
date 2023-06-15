@@ -91,10 +91,7 @@ public class PlayerManager : MonoBehaviour {
 
     private void HandleBuildMode() {
         if (!EventSystem.current.IsPointerOverGameObject() && Input.GetMouseButtonDown(0)) PlayerContentSelector.CreateSelectedContent(mousePos, 0);
-        if (!EventSystem.current.IsPointerOverGameObject()
-            && Input.GetMouseButtonDown(1)) 
-            PlayerContentSelector.
-                CreateSelectedContent(mousePos, 1);
+        if (!EventSystem.current.IsPointerOverGameObject() && Input.GetMouseButtonDown(1)) PlayerContentSelector.CreateSelectedContent(mousePos, 1);
 
         if (!IsFollowingPlayer()) Follow(PlayerGameObject.transform);
 

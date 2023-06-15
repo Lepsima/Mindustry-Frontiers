@@ -21,7 +21,7 @@ public class Bullet {
     }
 
     public void OnBulletCollision() {
-        EffectManager.PlayEffect(Type.hitFX, transform.position, 1f);
+        Effect.PlayEffect(Type.hitFX, transform.position, 1f);
 
         Collider2D collider = Physics2D.OverlapCircle(transform.position, Type.size, mask);
         if (collider.transform.TryGetComponent(out Entity entity)) Client.BulletHit(entity, Type);
@@ -29,6 +29,7 @@ public class Bullet {
 
     public void Return() {
         Type.pool.Return(transform.gameObject);
+        weapon.ReturnBullet(this);
     }
 }
 

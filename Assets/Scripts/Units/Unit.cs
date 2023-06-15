@@ -642,7 +642,7 @@ public class Unit : Entity, IArmed {
         Invoke(nameof(EndTakeOff), 3f);
 
         //Play particle system
-        EffectManager.PlayEffect("TakeoffFX", transform.position, size);
+        Effect.PlayEffect("TakeoffFX", transform.position, size);
     }
 
 
@@ -705,7 +705,7 @@ public class Unit : Entity, IArmed {
     public override void OnDestroy() {
         if (!gameObject.scene.isLoaded) return;
 
-        EffectManager.PlayEffect(Type.explosionFX, transform.position, size);
+        Effect.PlayEffect(Type.explosionFX, transform.position, size);
 
         GameObject explosionBlastGameObject = Instantiate(AssetLoader.GetPrefab("explosion-blast"), GetPosition(), Quaternion.Euler(0f, 0f, Random.Range(0f, 360f)));
         Destroy(explosionBlastGameObject, 10f);

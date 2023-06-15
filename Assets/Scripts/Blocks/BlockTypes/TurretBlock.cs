@@ -26,6 +26,13 @@ public class TurretBlock : ItemBlock, IArmed {
         installedWeapon = weapon;
     }
 
+    public override void SetInventory() {
+        base.SetInventory();
+
+        WeaponType weapon = Type.weapon.weapon;
+        if (weapon.consumesItems) inventory.SetAllowedItems(new Item[1] { weapon.ammoItem });
+    }
+
     public Weapon GetWeaponByID(int ID) {
         return installedWeapon;
     }
