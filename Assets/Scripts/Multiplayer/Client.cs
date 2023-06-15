@@ -284,7 +284,7 @@ public class Client : MonoBehaviourPunCallbacks {
         }
     }
 
-    public void OnMapLoaded(object sender, MapLoader.MapLoadedEvent e) {
+    public void OnMapLoaded(object sender, MapLoader.MapLoadedEventArgs e) {
         if (!PhotonNetwork.IsMasterClient) {
             photonView.RPC(nameof(RPC_RequestEntityData), RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.ActorNumber);
             return;

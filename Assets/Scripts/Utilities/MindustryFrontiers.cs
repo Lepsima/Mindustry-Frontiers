@@ -27,6 +27,9 @@ using Random = UnityEngine.Random;
 using Anim = Frontiers.Animations.Anim;
 using Animator = Frontiers.Animations.Animator;
 using Animation = Frontiers.Animations.Animation;
+using Tile = Frontiers.Content.Maps.Tile;
+using Tilemap = Frontiers.Content.Maps.Tilemap;
+using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
 
 namespace Frontiers.Animations {
     public class Animator {
@@ -2216,21 +2219,21 @@ namespace Frontiers.Content.Maps {
     public class MapLoader {
         public const int TilesPerString = 1000;
 
-        public static event EventHandler<MapLoadedEvent> OnMapLoaded;
-        public class MapLoadedEvent {
+        public static event EventHandler<MapLoadedEventArgs> OnMapLoaded;
+        public class MapLoadedEventArgs {
             public Map loadedMap;
         }
 
         public static void ReciveMap(string name, Vector2 size, string[] tileData) {
             MapData mapData = CreateMap(Vector2Int.CeilToInt(size), tileData);
             Map map = new(name, mapData);
-            OnMapLoaded?.Invoke(null, new MapLoadedEvent() { loadedMap = map });
+            OnMapLoaded?.Invoke(null, new MapLoadedEventArgs() { loadedMap = map });
         }
 
         public static void LoadMap(string name) {
             MapData mapData = ReadMap(name);
             Map map = new(name, mapData);
-            OnMapLoaded?.Invoke(null, new MapLoadedEvent() { loadedMap = map });
+            OnMapLoaded?.Invoke(null, new MapLoadedEventArgs() { loadedMap = map });
         }
 
         public static void SaveMap(Map map) {
@@ -2258,17 +2261,123 @@ namespace Frontiers.Content.Maps {
         }
     }
 
+    public struct Tile {
+        public Vector2Int position;
+        public TileType[] tiles;
+        public Block block;
+
+        public Tile(Vector2Int position) {
+            this.position = position;
+            tiles = new TileType[(int)MapLayer.Total];
+            block = null;
+        }
+
+        public void Set(TileType tileType, MapLayer layer) {
+            tiles[(int)layer] = tileType;
+        }
+        
+        public void Set(Block block) {
+            this.block = block;
+        }
+
+        public TileType Layer(MapLayer layer) {
+            return tiles[(int)layer];
+        }
+
+        public bool HasTile(MapLayer layer) {
+            return tiles[(int)layer] != null;
+        }
+
+        public bool HasBlock() {
+            return block != null;
+        }
+
+        public bool IsSolid() {
+            return HasBlock() || HasTile(MapLayer.Solid);
+        }
+
+        public void LoadTile(string data) {
+            for(int i = 0; i < data.Length; i++) {
+                int id = Convert.ToInt32(data[i]) - 32;
+                if (id == 0) continue;
+                Set((TileType)ContentLoader.GetContentById((short)id), (MapLayer)i);
+            }
+        }
+
+        public override string ToString() {
+            string data = "";
+
+            for (int i = 0; i < (int)MapLayer.Total; i++) {
+                TileType tileType = tiles[i];
+                data += tileType == null ? (char)32 : (char)(tileType.id + 32); 
+            }
+
+            return data;
+        }
+
+        public string[] ToNames() {
+            string[] names = new string[(int)MapLayer.Total];
+
+            for(int i = 0; i < names.Length; i++) {
+                TileType tileType = tiles[i];
+                names[i] = tileType == null ? null : tiles[i].name;
+            }
+
+            return names;
+        }
+    }
+
+    public class Tilemap {
+        public Tile[,] tilemap;
+        public Vector2Int size;
+
+        public Tilemap(int width, int height) {
+            Initialize(new Vector2Int(width, height));
+        }
+
+        public Tilemap(Vector2Int size) {
+            Initialize(size);
+        }
+
+        private void Initialize(Vector2Int size) {
+            this.size = size;
+            tilemap = new Tile[size.x, size.y];
+
+            for(int x = 0; x < size.x; x++) {
+                for (int y = 0; y < size.y; y++) {
+                    tilemap[x, y] = new Tile(new Vector2Int(x, y));
+                }
+            }
+        }
+
+        public Tile GetTile(Vector2Int position) {
+            return tilemap[position.x, position.y];
+        }
+
+        public TileType GetTile(Vector2Int position, MapLayer layer) {
+            return tilemap[position.x, position.y].Layer(layer);
+        }
+
+        public void SetTile(TileType tileType, Vector2Int position, MapLayer layer) {
+            tilemap[position.x, position.y].Set(tileType, layer);
+        }
+
+        public void SetBlock(Block block, Vector2Int position) {
+            tilemap[position.x, position.y].Set(block);
+        }
+
+        public void SetTile(string data, Vector2Int position) {
+            tilemap[position.x, position.y].LoadTile(data);
+        }
+    }
+
     public class Map {
         public string name;
 
         public List<Entity> loadedEntities = new();
         public Dictionary<TileBase, TileType> tileTypeDictionary = new();
 
-        public Tilemap groundTilemap;
-        public Tilemap oreTilemap;
-        public Tilemap solidTilemap;
-
-        public Tilemap[] tilemaps;
+        public Tilemap tilemap;
 
         public List<Block> blocks = new();
         public List<Unit> units = new();
@@ -2285,9 +2394,9 @@ namespace Frontiers.Content.Maps {
             Total = 3
         }
 
-        public Map(string name, int width, int height, Tilemap[] tilemaps) {
+        public Map(string name, int width, int height, Tilemap tilemap) {
             this.name = name;
-            this.tilemaps = tilemaps;
+            this.tilemap = tilemap;
             size = new(width, height);
 
             LoadTileTypeDictionary();
@@ -2312,35 +2421,79 @@ namespace Frontiers.Content.Maps {
 
             LoadTilemapReferences();
             LoadTileTypeDictionary();
-            LoadTilemapData(mapData.tilemapData);
+            LoadTilemapData(mapData.tilemapData.DecodeThis());
 
             loaded = true;
         }
 
         public void LoadTilemapReferences() {
-            tilemaps = new Tilemap[(int)MapLayer.Total];
-            for(int i = 0; i < (int)MapLayer.Total; i++) {
-                tilemaps[i] = MapManager.Instance.tilemaps[i];
-            }
+            tilemap = new Tilemap(size);
         }
 
-        public void LoadTilemapData(MapData.TilemapData tilemapData) {
+        public void LoadTilemapData(string[,,] tileNameArray) {
             int layers = (int)MapLayer.Total;
-            string[,,] tileNameArray = tilemapData.DecodeThis();
 
-            for (int z = 0; z < layers; z++) {
-                MapLayer layer = (MapLayer)z;
-
-                for (int x = 0; x < size.x; x++) {
-                    for (int y = 0; y < size.y; y++) {
-                        if (tileNameArray[x, y, z] == null) continue;
-                        TileBase tile = GetTileType(tileNameArray[x, y, z]).GetRandomTileVariant();
-                        PlaceTile(layer, new Vector2Int(x, y), tile);
+            for (int x = 0; x < size.x; x++) {
+                for (int y = 0; y < size.y; y++) {
+                    for (int z = 0; z < layers; z++) {
+                        string name = tileNameArray[x, y, z];
+                        if (name != null) tilemap.SetTile(GetTileType(name), new Vector2Int(x, y), (MapLayer)z);
                     }
                 }
             }
         }
 
+        public string[,,] SaveTilemapData() {
+            int layers = (int)MapLayer.Total;
+            string[,,] returnArray = new string[size.x, size.y, layers];
+
+            for (int x = 0; x < size.x; x++) {
+                for (int y = 0; y < size.y; y++) {
+                    string[] names = tilemap.GetTile(new Vector2Int(x, y)).ToNames();
+
+                    for (int layer = 0; layer < layers; layer++) {
+                        string name = names[layer];
+                        returnArray[x, y, layer] = name;
+                    }
+                }
+            }
+            return returnArray;
+        }
+
+
+        public string[] TilemapsToStringArray() {
+            string[] tileData = new string[Mathf.CeilToInt(size.x * size.y * (int)MapLayer.Total / MapLoader.TilesPerString) + 1];
+            int i = 0;
+
+            for (int x = 0; x < size.x; x++) {
+                for (int y = 0; y < size.y; y++) {
+                    int stringIndex = Mathf.FloorToInt(i / MapLoader.TilesPerString);
+                    tileData[stringIndex] += tilemap.GetTile(new Vector2Int(x, y)).ToString();
+                    i++;
+                }
+            }
+
+            return tileData;
+        }
+
+        public void SetTilemapsFromStringArray(Vector2Int size, string[] tileData) {
+            int layers = (int)MapLayer.Total;
+            int i = 0;
+
+            for (int x = 0; x < size.x; x++) {
+                for (int y = 0; y < size.y; y++) {
+                    int stringIndex = Mathf.FloorToInt(i / MapLoader.TilesPerString);
+                    string[] subTileData = (string[])tileData[stringIndex].Split(layers);
+
+                    for (int z = 0; z < subTileData.Length; z++) {
+                        string data = subTileData[z];
+                        tilemap.SetTile(data, new Vector2Int(x, y));
+                    }
+
+                    i++;
+                }
+            }
+        }
         public void LoadTileTypeDictionary() {
             foreach (TileType tileType in ContentLoader.GetContentByType<TileType>()) {
                 foreach (TileBase tileBase in tileType.GetAllTiles()) {
@@ -2359,12 +2512,6 @@ namespace Frontiers.Content.Maps {
 
         #region - Tilemaps -
 
-        public Tilemap GetTilemap(MapLayer layer) => tilemaps[(int)layer];
-
-        public TileBase GetMapTileAt(MapLayer layer, Vector3 position) {
-            return GetTilemap(layer).GetTile(Vector3Int.CeilToInt(position));
-        }
-
         public TileType GetTileType(string name) {
             return (TileType)ContentLoader.GetContentByName(name);
         }
@@ -2374,7 +2521,7 @@ namespace Frontiers.Content.Maps {
         }
 
         public TileType GetMapTileTypeAt(MapLayer layer, Vector2 position) {
-            return GetTileType(GetMapTileAt(layer, position));
+            return tilemap.GetTile(Vector2Int.CeilToInt(position)).Layer(layer);
         }
 
         public bool CanPlaceBlockAt(Vector2Int position, int size) {
@@ -2392,11 +2539,11 @@ namespace Frontiers.Content.Maps {
 
         public bool CanPlaceBlockAt(Vector2Int position) {
             TileType groundTile = GetMapTileTypeAt(MapLayer.Ground, position);
-            bool solidTileExists = GetTilemap(MapLayer.Solid).HasTile((Vector3Int)position);
+            bool solidTileExists = tilemap.GetTile(position).IsSolid();
             return !solidTileExists && groundTile != null && groundTile.allowBuildings;
         }
 
-        public void PlaceTile(MapLayer layer, Vector2Int position, TileBase tile, int size) {
+        public void PlaceTile(MapLayer layer, Vector2Int position, TileType tile, int size) {
             if (size == 1) {
                 PlaceTile(layer, position, tile);
                 return;
@@ -2410,103 +2557,40 @@ namespace Frontiers.Content.Maps {
             }
         }
 
-        public void PlaceTile(MapLayer layer, Vector2Int position, TileBase tile) {
-            GetTilemap(layer).SetTile((Vector3Int) position, tile);
+        public void PlaceTile(MapLayer layer, Vector2Int position, TileType tile) {
+            tilemap.SetTile(tile, position, layer);
         }
 
-        private bool ContainsAnyTile(MapLayer layer, Vector2Int position, TileBase[] tiles) {
-            foreach (TileBase tile in tiles) if (GetTilemap(layer).GetTile((Vector3Int)position) == tile) return true;
-            return false;
-        }
+        public void PlaceBlock(Block block, Vector2Int position) {
+            int size = block.Type.size;
 
-        public string[,,] AllMapsToStringArray() {
-            int layers = (int)MapLayer.Total;
-            string[,,] returnArray = new string[size.x, size.y, layers];
+            if (size == 1) {
+                tilemap.SetBlock(block, position);
 
-            for (int i = 0; i < layers; i++) {
-                MapLayer layer = (MapLayer)i;
-                Vector2Int offset = (Vector2Int)GetTilemap(layer).origin;
-
-                for (int x = 0; x < size.x; x++) {
-                    for (int y = 0; y < size.y; y++) {
-                        Vector2Int position = new(x + offset.x, y + offset.y);
-                        TileType tileType = GetMapTileTypeAt(layer, position);
-                        returnArray[x, y, i] = tileType?.name;
-                    }
-                }
+                return;
             }
 
-            return returnArray;
-        }
-
-
-
-
-        /* Old map to string array for a single tilemap
-        
-        public string[,] MapToStringArray(MapLayer layer) {
-            Tilemap tilemap = GetTilemap(layer);
-            int width = tilemap.size.x;
-            int height = tilemap.size.y;
-
-            Vector2Int offset = (Vector2Int)tilemap.origin;
-
-            string[,] returnArray = new string[width, height];
-
-            for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
-                    Vector3Int position = new(x + offset.x, y + offset.y, 0);
-                    TileType tileType = GetMapTileTypeAt(layer, position);
-                    returnArray[x, y] = tileType?.name;
+            for (int x = 0; x < size; x++) {
+                for (int y = 0; y < size; y++) {
+                    Vector2Int sizePosition = position + new Vector2Int(x, y);
+                    tilemap.SetBlock(block, sizePosition);
                 }
             }
-
-            return returnArray;
         }
-        */
 
-        public string[] TilemapsToStringArray() {
-            int layers = (int)MapLayer.Total;
-            int i = 0;
+        public void RemoveBlock(Block block, Vector2Int position) {
+            int size = block.Type.size;
 
-            string[] tileData = new string[Mathf.CeilToInt(size.x * size.y * layers / MapLoader.TilesPerString) + 1];
+            if (size == 1) {
+                tilemap.SetBlock(null, position);
 
-            for (int z = 0; z < layers; z++) {
-                MapLayer layer = (MapLayer)z;
-                for (int x = 0; x < size.x; x++) {
-                    for (int y = 0; y < size.y; y++) {
-                        int stringIndex = Mathf.FloorToInt(i / MapLoader.TilesPerString);
-
-                        Vector2Int position = new(x, y);
-                        TileType tileType = GetMapTileTypeAt(layer, position);
-                        tileData[stringIndex] += tileType == null ? (char)32 : (char)(tileType.id + 32);
-
-                        i++;
-                    }
-                }
+                return;
             }
 
-            return tileData;
-        }
-
-        public void SetTilemapsFromString(Vector2Int size, string[] tileData) {
-            int layers = (int)MapLayer.Total;
-            int i = 0;
-
-            for (int z = 0; z < layers; z++) {
-                for (int x = 0; x < size.x; x++) {
-                    for (int y = 0; y < size.y; y++) {
-                        int stringIndex = Mathf.FloorToInt(i / MapLoader.TilesPerString);
-                        int tile = i - (stringIndex * MapLoader.TilesPerString);
-
-                        int id = Convert.ToInt32(tileData[stringIndex][tile]) - 32;
-                        if (id == 0) continue;
-                        TileType tileType = id == 0 ? null : (TileType)ContentLoader.GetContentById((short)id);
-
-                        PlaceTile((MapLayer)z, new Vector2Int(x, y), tileType.GetRandomTileVariant());
-
-                        i++;
-                    }
+            for (int x = 0; x < size; x++) {
+                for (int y = 0; y < size; y++) {
+                    Vector2Int sizePosition = position + new Vector2Int(x, y);
+                    tilemap.SetBlock(null, sizePosition);
                 }
             }
         }
@@ -2706,11 +2790,13 @@ namespace Frontiers.Content.Maps {
         public void AddBlock(Block block) {
             blocks.Add(block);
             loadedEntities.Add(block);
+            PlaceBlock(block, block.GetGridPosition());
         }
 
         public void RemoveBlock(Block block) {
             blocks.Remove(block);
             loadedEntities.Remove(block);
+            RemoveBlock(block, block.GetGridPosition());
         }
 
         #endregion
@@ -2742,7 +2828,7 @@ namespace Frontiers.Content.Maps {
 
         public MapData(Map map) {
             size = map.size;
-            tilemapData = new TilemapData(map.AllMapsToStringArray());
+            tilemapData = new TilemapData(map.SaveTilemapData());
         }
 
         public MapData(Vector2Int size, string[] tileData) {

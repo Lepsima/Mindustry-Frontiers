@@ -191,9 +191,7 @@ public class Block : Entity {
             RubbleGenerator.CreateRubble(GetPosition(), Type.size);
         }
 
-        MapManager.Map.PlaceTile(MapLayer.Solid, GetGridPosition(), null, Type.size);
         MapManager.blocks.Remove(this);
-
         base.OnDestroy();
     }
 

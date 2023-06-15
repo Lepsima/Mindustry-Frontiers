@@ -6,7 +6,6 @@ using Frontiers.Content;
 using Frontiers.Content.Maps;
 using Frontiers.Assets;
 using System;
-using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
 
 public class MapManager : MonoBehaviour {
     public static MapManager Instance;
@@ -20,13 +19,10 @@ public class MapManager : MonoBehaviour {
     public static int nextID;
 
     public Vector2 shardCorePosition, cruxCorePosition;
-    public Tilemap[] tilemaps;
 
     public SpriteRenderer spriteRenderer;
-
     private GameObject blockPrefab;
     private GameObject unitPrefab;
-    private TileBase blockGridTile;
 
     public static void InitializeMapManager() {
         Instance = FindObjectOfType<MapManager>();
@@ -36,11 +32,10 @@ public class MapManager : MonoBehaviour {
     public void Setup() {
         blockPrefab = AssetLoader.GetPrefab("BlockPrefab");
         unitPrefab = AssetLoader.GetPrefab("UnitPrefab");
-        blockGridTile = Tiles.blockTile.GetRandomTileVariant();
         MapLoader.OnMapLoaded += OnMapLoaded;
     }
 
-    public void OnMapLoaded(object sender, MapLoader.MapLoadedEvent e) {
+    public void OnMapLoaded(object sender, MapLoader.MapLoadedEventArgs e) {
         Map = e.loadedMap;
     }
 
@@ -82,8 +77,6 @@ public class MapManager : MonoBehaviour {
         GameObject blockGameObject = Instantiate(blockPrefab, (Vector2)gridPosition, Quaternion.identity);
         Block block = (Block)blockGameObject.AddComponent(blockType.type);
 
-        Map.PlaceTile(MapLayer.Solid, gridPosition, blockGridTile, blockType.size);
-
         block.Set(syncID);
         block.Set(gridPosition, Quaternion.Euler(0, 0, orientation * 90f), blockType, GetID(), teamCode);
 
@@ -99,8 +92,6 @@ public class MapManager : MonoBehaviour {
 
         GameObject blockGameObject = Instantiate(blockPrefab, (Vector2)gridPosition, Quaternion.identity);
         ConstructionBlock block = blockGameObject.AddComponent<ConstructionBlock>();
-
-        Map.PlaceTile(MapLayer.Solid, gridPosition, blockGridTile, blockType.size);
 
         block.Set(syncID);
         block.Set(gridPosition, Quaternion.Euler(0, 0, orientation * 90f), blockType, GetID(), teamCode);

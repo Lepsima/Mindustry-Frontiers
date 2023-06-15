@@ -7,7 +7,6 @@ using Frontiers.Content;
 
 public class MapSaver : MonoBehaviour {
     public string saveName;
-    public Tilemap[] tilemaps;
     public Map map;
 
     private void Start() {
@@ -15,7 +14,8 @@ public class MapSaver : MonoBehaviour {
     }
 
     public void SaveMap() {
-        map = new Map(saveName, tilemaps[1].size.x, tilemaps[1].size.y, tilemaps);
+        // Here starts the point where i have to guess how the fuck to replace the unity tilemaps with custom ones
+        //map = new Map(saveName, tilemaps[1].size.x, tilemaps[1].size.y, tilemaps);
         map.Save();
         MapLoader.SaveMap(map);
     }
