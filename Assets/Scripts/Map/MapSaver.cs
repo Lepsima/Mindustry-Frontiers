@@ -2,11 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 using Frontiers.Content.Maps;
 using Frontiers.Content;
 using Frontiers.Assets;
 using System.Diagnostics;
+using Frontiers.Settings;
 
 public class MapSaver : MonoBehaviour {
     public bool save = true;
@@ -36,10 +36,14 @@ public class MapSaver : MonoBehaviour {
         MapDisplayer.meshFilter = meshFilter;
         MapDisplayer.meshRenderer = meshRenderer;
         MapDisplayer.spriteRenderer = spriteRenderer;
-        MapDisplayer.DisplayTexture(new Vector2Int(128, 128));
 
-        UnityEngine.Debug.Log("Time to load map: " + watch.Elapsed.TotalMilliseconds + " milliseconds");
+        Main.RegionSize = 64;
+        Tilemap tilemap = new(new Vector2Int(1024, 1024), Vector2Int.one * Main.RegionSize);
+
+        UnityEngine.Debug.Log("Create map: " + watch.Elapsed.TotalSeconds + " s.");
         watch.Stop();
+
+        MapDisplayer.DisplayTexture(tilemap);
     }
 
     public void SaveMap() {
