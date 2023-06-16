@@ -30,18 +30,12 @@ public class MapSaver : MonoBehaviour {
         AssetLoader.LoadAssets();
         ContentLoader.LoadContent();
 
-        Stopwatch watch = new();
-        watch.Start();
-
         MapDisplayer.meshFilter = meshFilter;
         MapDisplayer.meshRenderer = meshRenderer;
         MapDisplayer.spriteRenderer = spriteRenderer;
 
         Main.RegionSize = 64;
         Tilemap tilemap = new(new Vector2Int(1024, 1024), Vector2Int.one * Main.RegionSize);
-
-        UnityEngine.Debug.Log("Create map: " + watch.Elapsed.TotalSeconds + " s.");
-        watch.Stop();
 
         MapDisplayer.DisplayTexture(tilemap);
     }
