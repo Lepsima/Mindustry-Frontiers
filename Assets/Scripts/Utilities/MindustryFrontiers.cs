@@ -175,11 +175,16 @@ namespace Frontiers.Pooling {
 }
 
 namespace Frontiers.Settings {
-    public static class State {
+    public static class Main {
         /// <summary>
         /// The time interval each entity should sync their data to other players
         /// </summary>
         public const float SYNC_TIME = 5f;
+
+        /// <summary>
+        /// The amount of pixels per meter/unit
+        /// </summary>
+        public const int PixelsPerUnit = 32;
     }
 }
 
@@ -1553,8 +1558,8 @@ namespace Frontiers.Content {
 
     [Serializable]
     public class TileType : Content {
-        [JsonIgnore] public TileBase tile;
-        [JsonIgnore] public TileBase[] allVariants;
+        [JsonIgnore] public Sprite[] allVariantSprites;
+        [JsonIgnore] private Vector4[] allVariantSpriteUVs;
         [JsonIgnore] public Item itemDrop;
         public Color color;
 
@@ -1572,26 +1577,35 @@ namespace Frontiers.Content {
 
             if (this.variants < 1) this.variants = 1;
 
-            if (this.variants == 1) {
-                tile = AssetLoader.GetAsset<TileBase>(name);
-            } else {
-                allVariants = new TileBase[variants];
-                for (int i = 0; i < this.variants; i++) allVariants[i] = AssetLoader.GetAsset<TileBase>(name + (i + 1));
+            allVariantSprites = new Sprite[variants];
+            allVariantSpriteUVs = new Vector4[variants];
 
-                tile = allVariants[0];
-            }
+            allVariantSprites[0] = sprite;
+            for (int i = 1; i < this.variants; i++) allVariantSprites[i] = AssetLoader.GetAsset<Sprite>(name + (i + 1));
 
             color = sprite.texture.GetPixel(sprite.texture.width / 2, sprite.texture.height / 2);
         }
 
-        public virtual TileBase[] GetAllTiles() {
-            if (variants == 1) return new TileBase[1] { tile };
-            else return allVariants;
+        public virtual Sprite[] GetAllTiles() {
+            if (variants == 1) return new Sprite[1] { sprite };
+            else return allVariantSprites;
         }
 
-        public virtual TileBase GetRandomTileVariant() {
-            if (variants == 1) return tile;
-            return allVariants[Random.Range(0, variants - 1)];
+        public virtual Sprite GetRandomTileVariant() {
+            if (variants == 1) return sprite;
+            return allVariantSprites[Random.Range(0, variants - 1)];
+        }
+
+        public void SetSpriteUV(int index, Vector2 uv00, Vector2 uv11) {
+            allVariantSpriteUVs[index] = new Vector4(uv00.x, uv00.y, uv11.x, uv11.y);
+        }
+
+        public Vector4 GetUV() {
+            return GetSpriteVariantUV(0);
+        }
+
+        public Vector4 GetSpriteVariantUV(int index) {
+            return allVariantSpriteUVs[index];
         }
 
         public override void Wrap() {
@@ -1621,9 +1635,6 @@ namespace Frontiers.Content {
 
         //Ore tiles
         public static TileType copperOre, leadOre, titaniumOre, coalOre, thoriumOre;
-
-        //Miscelaneous Tiles
-        public static TileType blockTile;
 
         public static void Load() {
             darksandWater = new TileType("darksand-water") {
@@ -1675,8 +1686,6 @@ namespace Frontiers.Content {
             coalOre = new OreTileType("ore-coal", 3, Items.coal);
 
             thoriumOre = new OreTileType("ore-thorium", 3, Items.thorium);
-
-            blockTile = new TileType("blockTile");
         }
     }
 
@@ -2261,6 +2270,259 @@ namespace Frontiers.Content.Maps {
         }
     }
 
+    public static class MapDisplayer {
+        public static MeshRenderer meshRenderer;
+        public static MeshFilter meshFilter;
+        public static SpriteRenderer spriteRenderer;
+        public static Texture2D atlas;
+
+        public static void DisplayTexture(Vector2Int tsize) {
+            Texture2D texture2D = MapTextureGenerator.GenerateTileTextureAtlas();
+            atlas = texture2D;
+            meshRenderer.material.mainTexture = texture2D;
+
+            Sprite sprite = Sprite.Create(texture2D, new Rect(0.0f, 0.0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 32, 0, SpriteMeshType.FullRect);
+            spriteRenderer.sprite = sprite; 
+
+            Mesh mesh = MapMeshGenerator.GenerateMesh(tsize).CreateMesh();
+            meshFilter.mesh = mesh;
+        }
+    }
+
+    /*
+    public class ChunkDisplayer {
+        private MeshRenderer meshRenderer;
+        private MeshFilter meshFilter;
+
+        private Texture2D texture2D;
+        private Mesh mesh;
+
+        public ChunkDisplayer(MeshRenderer meshRenderer, MeshFilter meshFilter) {
+            this.meshRenderer = meshRenderer;
+            this.meshFilter = meshFilter;
+        }
+
+        public void Update(Texture2D texture2D) {
+            this.texture2D = texture2D;
+            meshRenderer.material.mainTexture = texture2D;
+            
+            mesh = MapMeshGenerator.GenerateMesh()
+        }
+    }
+    */
+
+    public static class MapMeshGenerator {
+        public static TileType[] allTiles;
+
+        public static TileType RANDOMGEN() {
+            if (allTiles == null) {
+                allTiles = ContentLoader.GetContentByType<TileType>();
+            }
+
+            return allTiles[Random.Range(0, allTiles.Length)];
+        }
+
+        public static MeshData GenerateMesh(Vector2Int tsize) {
+            Vector2Int size = tsize;
+            MeshData meshData = new(size.x, size.y, 1f);
+
+            for (int x = 0; x < size.x; x++) {
+                for (int y = 0; y < size.y; y++) {
+                    TileType tileType = RANDOMGEN();
+                    Vector4 UVs = tileType.GetSpriteVariantUV(Random.Range(0, tileType.variants));
+
+                    //Tile tile = tilemap.GetTile(new Vector2Int(x, y));
+
+                    Vector2 uv00 = new(UVs.x, UVs.y);
+                    Vector2 uv11 = new(UVs.z, UVs.w);
+
+                    int index = x * size.x + y;
+                    meshData.AddQuad(x, y, index, uv00, uv11);
+                }
+            }
+
+            return meshData;
+        }
+
+        public class MeshData {
+            readonly Vector3[] vertices;
+            readonly Vector2[] uvs;
+            readonly int[] triangles;     
+            readonly float tileSize;
+
+            public MeshData(int x, int y, float tileSize) {
+                vertices = new Vector3[x * y * 4];
+                uvs = new Vector2[x * y * 4];
+                triangles = new int[x * y * 6];
+                this.tileSize = tileSize;
+            }
+
+            public void AddQuad(int x, int y, int index, Vector2 uv00, Vector2 uv11) {
+                triangles[index * 6 + 0] = index * 4 + 0;
+                triangles[index * 6 + 1] = index * 4 + 1;
+                triangles[index * 6 + 2] = index * 4 + 2;
+
+                triangles[index * 6 + 3] = index * 4 + 0;
+                triangles[index * 6 + 4] = index * 4 + 2;
+                triangles[index * 6 + 5] = index * 4 + 3;
+
+                uvs[index * 4 + 0] = new Vector2(uv00.x, uv00.y);
+                uvs[index * 4 + 1] = new Vector2(uv00.x, uv11.y);
+                uvs[index * 4 + 2] = new Vector2(uv11.x, uv11.y);
+                uvs[index * 4 + 3] = new Vector2(uv11.x, uv00.y);
+
+                vertices[index * 4 + 0] = new Vector2(x, y);
+                vertices[index * 4 + 1] = new Vector2(x, y + tileSize);
+                vertices[index * 4 + 2] = new Vector2(x + tileSize, y + tileSize);
+                vertices[index * 4 + 3] = new Vector2(x + tileSize, y);
+            }
+
+            public Mesh CreateMesh() {
+                Mesh mesh = new();
+                mesh.vertices = vertices;
+                mesh.uv = uvs;
+                mesh.triangles = triangles;
+                mesh.RecalculateNormals();
+                return mesh;
+            }
+        }
+    }
+
+    public static class MapTextureGenerator {
+
+        public static Texture2D GenerateTileTextureAtlas() {
+            TileType[] tiles = ContentLoader.GetContentByType<TileType>();
+            List<SpriteLink> links = new();
+
+            for (int i = 0; i < tiles.Length; i++) {
+                TileType tileType = tiles[i];
+
+                for (int v = 0; v < tileType.variants; v++) {
+                    links.Add(new SpriteLink(tileType, v));
+                }
+            }
+
+            // All sprites in the array should be squares with the same size
+            int spriteSize = links[0].sprite.texture.width;
+
+            // Get the size in pixels of the atlas
+            int atlasSize = Mathf.CeilToInt(Mathf.Sqrt(links.Count));
+            Texture2D atlasTexture = new(atlasSize * spriteSize, atlasSize * spriteSize);
+            int index = 0;
+
+            for (int x = 0; x < atlasSize; x++) {
+                for (int y = 0; y < atlasSize; y++) {
+
+                    // If there are no more sprites, add a transparent gap
+                    if (index >= links.Count) {
+                        for (int px = 0; px < spriteSize; px++) {
+                            for (int py = 0; py < spriteSize; py++) {
+                                Vector2Int atlasPixelPosition = new(x * spriteSize + px, y * spriteSize + py);
+                                atlasTexture.SetPixel(atlasPixelPosition.x, atlasPixelPosition.y, new Color(0, 0, 0, 0));
+                            }
+                        }
+
+                        continue;
+                    }
+
+                    SpriteLink link = links[index];
+                    Texture2D spriteTexture = link.sprite.texture;
+
+                    // Add each pixel from the sprite to the atlas
+                    for (int px = 0; px < spriteSize; px++) {
+                        for (int py = 0; py < spriteSize; py++) {
+                            Vector2Int spritePixelPosition = new(px, py); 
+                            Vector2Int atlasPixelPosition = new(x * spriteSize + px, y * spriteSize + py);
+
+                            Color pixelColor = spriteTexture.GetPixel(spritePixelPosition.x, spritePixelPosition.y);
+                            atlasTexture.SetPixel(atlasPixelPosition.x, atlasPixelPosition.y, pixelColor);
+                        }
+                    }
+
+                    // Get the position of the sprite on the atlas (also called UVs)
+                    Vector2 uv00 = new Vector2(x, y) / atlasSize;
+                    Vector2 uv11 = new Vector2(x + 1, y + 1) / atlasSize;
+
+                    // Assign the UVs to the tile type
+                    TileType tileType = link.tileType;
+                    tileType.SetSpriteUV(link.variant, uv00, uv11);
+
+                    index++;
+
+                }
+            }
+
+            atlasTexture.filterMode = FilterMode.Point;
+            atlasTexture.wrapMode = TextureWrapMode.Clamp;
+            atlasTexture.Apply();
+
+            return atlasTexture;
+        }
+        /*  public static Texture2D GenerateTileTextureAtlas() {
+            TileType[] tiles = ContentLoader.GetContentByType<TileType>();
+            List<SpriteLink> links = new();
+
+            for (int i = 0; i < tiles.Length; i++) {
+                TileType tileType = tiles[i];
+
+                for (int v = 0; v < tileType.variants; v++) {
+                    links.Add(new SpriteLink(tileType, v));
+                }
+            }
+
+            // All sprites in the array should be squares with the same size
+            int spriteSize = links[0].sprite.texture.width;
+
+            // Get the size in pixels of the atlas
+            int atlasSize = links.Count;
+            Texture2D atlasTexture = new(atlasSize * spriteSize, spriteSize);
+            int index = 0;
+
+            for (int x = 0; index < links.Count; x++) {
+                SpriteLink link = links[index];
+                Texture2D spriteTexture = link.sprite.texture;
+
+                // Add each pixel from the sprite to the atlas
+                for (int px = 0; px < spriteSize; px++) {
+                    for (int py = 0; py < spriteSize; py++) {
+                        Vector2Int spritePixelPosition = new(px, py);
+                        Vector2Int atlasPixelPosition = new(x * spriteSize + px, spriteSize + py);
+
+                        Color pixelColor = spriteTexture.GetPixel(spritePixelPosition.x, spritePixelPosition.y);
+                        atlasTexture.SetPixel(atlasPixelPosition.x, atlasPixelPosition.y, pixelColor);
+                    }
+                }
+
+                // Get the position of the sprite on the atlas (also called UVs)
+                Vector2 uv00 = new Vector2(x, 0) / atlasSize;
+                Vector2 uv11 = new Vector2(x + 1, 1) / atlasSize;
+
+                // Assign the UVs to the tile type
+                TileType tileType = link.tileType;
+                tileType.SetSpriteUV(link.variant, uv00, uv11);
+
+                index++;
+            }
+
+            atlasTexture.filterMode = FilterMode.Point;
+            atlasTexture.wrapMode = TextureWrapMode.Clamp;
+            atlasTexture.Apply();
+            return atlasTexture;
+        }
+         */
+        private class SpriteLink {
+            public Sprite sprite;
+            public TileType tileType;
+            public int variant;
+
+            public SpriteLink(TileType tileType, int variant) {
+                sprite = tileType.allVariantSprites[variant];
+                this.tileType = tileType;
+                this.variant = variant;
+            }
+        }
+    }
+
     public struct Tile {
         public Vector2Int position;
         public TileType[] tiles;
@@ -2495,11 +2757,13 @@ namespace Frontiers.Content.Maps {
             }
         }
         public void LoadTileTypeDictionary() {
+            /*
             foreach (TileType tileType in ContentLoader.GetContentByType<TileType>()) {
                 foreach (TileBase tileBase in tileType.GetAllTiles()) {
                     tileTypeDictionary.Add(tileBase, tileType);
                 }
             }
+            */
         }
 
         public void Save() {
