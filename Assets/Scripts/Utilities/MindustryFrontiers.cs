@@ -2273,12 +2273,10 @@ namespace Frontiers.Content.Maps {
     }
 
     public static class MapDisplayer {
-        public static MeshRenderer meshRenderer;
-        public static SpriteRenderer spriteRenderer;
-        public static Texture2D atlas;
         public static Material atlasMaterial;
+        public static Texture2D atlas;
 
-        public static void DisplayTexture(Tilemap tilemap) {
+        public static void SetupAtlas() {
             // Generate tile texture atlas
             Texture2D atlas = MapTextureGenerator.GenerateTileTextureAtlas();
             MapDisplayer.atlas = atlas;
@@ -2287,12 +2285,18 @@ namespace Frontiers.Content.Maps {
             atlasMaterial = AssetLoader.GetAsset<Material>("Atlas Material");
             atlasMaterial.mainTexture = atlas;
 
-            // Get the regions in the tilemap
+
+            return;
+
+            /* Get the regions in the tilemap
             Region[,] regions = tilemap.regions;
 
             for (int x = 0; x < regions.GetLength(0); x++) {
                 for (int y = 0; y < regions.GetLength(1); y++) {
-                    Region region = regions[x, y];
+                    new RegionDisplayer(regions[x, y]);
+                    /
+                     
+                    
 
                     // Create a gameobject foreach region and offset their positions
                     Transform transform = new GameObject("Map Region", typeof(MeshRenderer), typeof(MeshFilter)).transform;
@@ -2304,9 +2308,36 @@ namespace Frontiers.Content.Maps {
 
                     // Get the mesh filter component and apply the region mesh to it
                     MeshFilter meshFilter = transform.GetComponent<MeshFilter>();
-                    meshFilter.mesh = MapMeshGenerator.GenerateMesh(region, MapLayer.Ground).CreateMesh();
+                    meshFilter.mesh = MapMeshGenerator.GenerateMesh(region);
+                    
+                    
                 }
             }
+            */
+        }
+    }
+
+    public class RegionDisplayer {
+        readonly MeshFilter meshFilter;
+
+        public RegionDisplayer(Region region) {
+            Transform transform = new GameObject("Map Region", typeof(MeshRenderer), typeof(MeshFilter)).transform;
+            transform.position = (Vector2)region.offset;
+
+            // Get the mesh renderer component and apply the atlas material
+            MeshRenderer meshRenderer = transform.GetComponent<MeshRenderer>();
+            meshRenderer.material = MapDisplayer.atlasMaterial;
+
+            // Get the mesh filter component and apply the region mesh to it
+            meshFilter = transform.GetComponent<MeshFilter>();
+            meshFilter.mesh = MapMeshGenerator.GenerateMesh(region);
+        }
+
+        public void Update(Region region) {
+            // Update the region's mesh
+            meshFilter.mesh = MapMeshGenerator.GenerateMesh(region);
+
+            Debug.Log("Updated!!");
         }
     }
 
@@ -2321,49 +2352,67 @@ namespace Frontiers.Content.Maps {
             return allTiles[Random.Range(0, allTiles.Length)];
         }
 
-        public static MeshData GenerateMesh(Region region, MapLayer layer) {
-            return GenerateMesh(region.tilemap, layer);
-        }
-
-        public static MeshData GenerateMesh(Tile[,] tilemap, MapLayer layer) {
+        public static Mesh GenerateMesh(Region region) {
             // Initialize the needed variables
+            Tile[,] tilemap = region.tilemap;
             Vector2Int size = new(tilemap.GetLength(0), tilemap.GetLength(1));
-            MeshData meshData = new(size.x, size.y, 1f);
+            MeshData meshData = new(region.GetRenderedTileCount());
 
             for (int x = 0; x < size.x; x++) {
                 for (int y = 0; y < size.y; y++) {
                     // Get the tile UVs corresponding to the region coords
                     Tile tile = tilemap[x, y];
-                    TileType tileType = tile.Layer(layer);
-                    Vector4 UVs = tileType.GetSpriteVariantUV(Random.Range(0, tileType.variants));
 
-                    // Get the atlas UVs
-                    Vector2 uv00 = new(UVs.x, UVs.y);
-                    Vector2 uv11 = new(UVs.z, UVs.w);
+                    // Get solid tile
+                    TileType tileType = tile.Layer(MapLayer.Solid);
 
-                    // Create a new quad for the tile and apply the UVs
-                    int index = x * size.x + y;
-                    meshData.AddQuad(x, y, index, uv00, uv11);
+                    // If is not solid, try to render the ground and ore layers
+                    if (tileType == null) { 
+                        tileType = tile.Layer(MapLayer.Ground); 
+                        if (tileType != null) AddTileToMesh(x, y, meshData, tileType);
+                        
+                        tileType = tile.Layer(MapLayer.Ore);
+                        if (tileType != null) AddTileToMesh(x, y, meshData, tileType);
+                    } else {
+                        AddTileToMesh(x, y, meshData, tileType);
+                    }
                 }
             }
 
-            return meshData;
+            return meshData.CreateMesh();
+        }
+
+        public static void AddTileToMesh(int x, int y, MeshData meshData, TileType tileType) {
+            if (tileType == null) return;
+            Vector4 UVs = tileType.GetSpriteVariantUV(Random.Range(0, tileType.variants));
+
+            // Get the atlas UVs
+            Vector2 uv00 = new(UVs.x, UVs.y);
+            Vector2 uv11 = new(UVs.z, UVs.w);
+
+            meshData.AddQuad(x, y, uv00, uv11);
+        }
+
+        public static TileType TryGetBaseTileType(Tile tile) {
+            TileType tileType = tile.Layer(MapLayer.Solid);
+            if (tileType == null) tileType = tile.Layer(MapLayer.Ground);
+            return tileType;
         }
 
         public class MeshData {
             readonly Vector3[] vertices;
             readonly Vector2[] uvs;
-            readonly int[] triangles;     
-            readonly float tileSize;
+            readonly int[] triangles;
 
-            public MeshData(int x, int y, float tileSize) {
-                vertices = new Vector3[x * y * 4];
-                uvs = new Vector2[x * y * 4];
-                triangles = new int[x * y * 6];
-                this.tileSize = tileSize;
+            int index = 0;
+
+            public MeshData(int tiles) {
+                vertices = new Vector3[tiles * 4];
+                uvs = new Vector2[tiles * 4];
+                triangles = new int[tiles * 6];
             }
 
-            public void AddQuad(int x, int y, int index, Vector2 uv00, Vector2 uv11) {
+            public void AddQuad(int x, int y, Vector2 uv00, Vector2 uv11) {
                 // Some funky shit that is needed to create a quad
                 triangles[index * 6 + 0] = index * 4 + 0;
                 triangles[index * 6 + 1] = index * 4 + 1;
@@ -2379,9 +2428,11 @@ namespace Frontiers.Content.Maps {
                 uvs[index * 4 + 3] = new Vector2(uv11.x, uv00.y);
                 
                 vertices[index * 4 + 0] = new Vector2(x, y);
-                vertices[index * 4 + 1] = new Vector2(x, y + tileSize);
-                vertices[index * 4 + 2] = new Vector2(x + tileSize, y + tileSize);
-                vertices[index * 4 + 3] = new Vector2(x + tileSize, y);
+                vertices[index * 4 + 1] = new Vector2(x, y + 1);
+                vertices[index * 4 + 2] = new Vector2(x + 1, y + 1);
+                vertices[index * 4 + 3] = new Vector2(x + 1, y);
+
+                index++;
             }
 
             public Mesh CreateMesh() {
@@ -2421,7 +2472,7 @@ namespace Frontiers.Content.Maps {
             // Create the texture with the given size
             Texture2D atlasTexture = new(atlasSize * spriteSize, atlasSize * spriteSize);
             int index = 0;
-
+            
             for (int x = 0; x < atlasSize; x++) {
                 for (int y = 0; y < atlasSize; y++) {
 
@@ -2574,11 +2625,18 @@ namespace Frontiers.Content.Maps {
             public Vector2Int size;
 
             public Vector2Int offset;
+            public RegionDisplayer displayer;
+
+            public bool holdMeshUpdate;
+            public bool wasChanged;
 
             public Region(Vector2Int size, Vector2Int offset) {
                 // Store given parameters
                 this.size = size;
                 this.offset = offset;
+                displayer = null;
+                holdMeshUpdate = false;
+                wasChanged = false;
 
                 // Create a new tile array
                 tilemap = new Tile[size.x, size.y];
@@ -2587,15 +2645,59 @@ namespace Frontiers.Content.Maps {
                 for (int x = 0; x < size.x; x++) {
                     for (int y = 0; y < size.y; y++) {
                         tilemap[x, y] = new Tile(new Vector2Int(x, y));
-                        tilemap[x, y].Set(MapMeshGenerator.RANDOMGEN(), MapLayer.Ground);
                     }
                 }
+
+                displayer = new RegionDisplayer(this);
             }
 
             public Tile GetTile(Vector2Int position) {
                 // Get a local tile from a world position
                 Vector2Int localPosition = position - offset;
                 return tilemap[localPosition.x, localPosition.y];
+            }
+
+            public void SetTile(TileType tileType, Vector2Int position, MapLayer layer) {
+                // Sets a tile type of a tile
+                GetTile(position).Set(tileType, layer);
+
+                if (holdMeshUpdate) wasChanged = true; 
+                else displayer.Update(this);
+            }
+
+            public void SetTile(string data, Vector2Int position) {
+                // Load a tile from the given string data
+                GetTile(position).LoadTile(data);
+            }
+
+            public void HoldMeshUpdate(bool state) {
+                holdMeshUpdate = state;
+
+                if (state) {
+                    wasChanged = false;
+                } else {
+                    if (wasChanged) displayer.Update(this);
+                    wasChanged = false;
+                }
+            }
+
+            public int GetRenderedTileCount() {
+                // Get the total tile count that should be renderer;
+                int counter = 0;
+
+                for (int x = 0; x < size.x; x++) {
+                    for (int y = 0; y < size.y; y++) {
+                        Tile tile = tilemap[x, y];
+
+                        if (tile.Layer(MapLayer.Solid) != null) counter++;
+                        else {
+                            if (tile.Layer(MapLayer.Ground) != null) counter++;
+                            if (tile.Layer(MapLayer.Ore) != null) counter++;
+                        }
+                    }
+                }
+
+                return counter;
             }
         }
 
@@ -2617,6 +2719,15 @@ namespace Frontiers.Content.Maps {
             }
         }
 
+        public void HoldMeshUpdate(bool state) {
+            // Used when updating the whole map is needed, to not call update 5000000 times, only once finished
+            for (int x = 0; x < regions.GetLength(0); x++) {
+                for (int y = 0; y < regions.GetLength(1) ; y++) {
+                    regions[x, y].HoldMeshUpdate(state);
+                }
+            }
+        }
+
         public Tile GetTile(Vector2Int position) {
             // Get a tile from a region
             return regions[position.x / regionSize.x, position.y / regionSize.y].GetTile(position);
@@ -2629,7 +2740,7 @@ namespace Frontiers.Content.Maps {
 
         public void SetTile(TileType tileType, Vector2Int position, MapLayer layer) {
             // Set a region's tile
-            GetTile(position).Set(tileType, layer);
+            regions[position.x / regionSize.x, position.y / regionSize.y].SetTile(tileType, position, layer);
         }
 
         public void SetBlock(Block block, Vector2Int position) {
@@ -2900,6 +3011,8 @@ namespace Frontiers.Content.Maps {
         }
 
         public string[] BlocksToStringArray() {
+            // Store all the blocks into a string array
+            // Used for network transfer
             string[] blockArray = new string[Mathf.Max(blocks.Count, 2)];
             for (int i = 0; i < blockArray.Length; i++) blockArray[i] = blocks.Count <= i ? "null" : blocks[i].ToString();
             return blockArray;
