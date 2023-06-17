@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63849c63d52d48d4499b729bf2bd9ffe, type: 3}
+  m_Name: River
+  m_EditorClassIdentifier: 
+  layerAction: 1
+  seed: -1
+  scale: 738
+  threshold: 0.48
+  octaves: 2
+  persistance: 0.487
+  lacunarity: 0.49
+  noiseLayer: 0
+  overrideIfNull: 0
+  tile1Name: water
+  tile2Name: sand-water
+  riverWidth: 0.075
+  shoreWidth: 0.02

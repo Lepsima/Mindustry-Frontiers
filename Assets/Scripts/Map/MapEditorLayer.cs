@@ -9,7 +9,9 @@ public class MapEditorLayer : ScriptableObject {
 
     public enum LayerAction {
         Noise,
+        River,
     }
+    public LayerAction layerAction;
 
     [Header("Noise Settings")]
     [Tooltip("Leave to -1 to auto generate each time")]public int seed = -1;
@@ -28,4 +30,9 @@ public class MapEditorLayer : ScriptableObject {
     public bool overrideIfNull;
     public string tile1Name;
     public string tile2Name;
+
+
+    [Header("River Settings")]
+    public float riverWidth;
+    public float shoreWidth;
 }

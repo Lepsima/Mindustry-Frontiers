@@ -20,6 +20,9 @@ public class MapEditor : MonoBehaviour {
     [Header("Noise Settings")]
     public float scale = 3.25f;
     [Range(0f, 1f)] public float threshold = 0.5f;
+    float minThreshold = -1f;
+    float shoreThreshold = -1f;
+
     [Range(0, 10)] public int octaves = 4;
     [Range(0f, 1f)] public float persistance = 0.5f;
     public float lacunarity = 1f;
@@ -80,7 +83,9 @@ public class MapEditor : MonoBehaviour {
         }
 
         if (Input.GetKeyDown(KeyCode.N)) {
+            map.tilemap.HoldMeshUpdate(true);
             ApplyNoise();
+            map.tilemap.HoldMeshUpdate(false);
         }
 
         if (Input.GetKeyDown(KeyCode.L)) {
@@ -97,7 +102,8 @@ public class MapEditor : MonoBehaviour {
     }
 
     public void ExecuteAllLayers() {
-        foreach(MapEditorLayer mapLayer in layers) {
+        map.tilemap.HoldMeshUpdate(true);
+        foreach (MapEditorLayer mapLayer in layers) {
             scale = mapLayer.scale;
             threshold = mapLayer.threshold;
             octaves = mapLayer.octaves;
@@ -107,7 +113,12 @@ public class MapEditor : MonoBehaviour {
             overrideIfNull = mapLayer.overrideIfNull;
             tile1 = GetByName(mapLayer.tile1Name);
             tile2 = GetByName(mapLayer.tile2Name);
+            minThreshold = mapLayer.layerAction == MapEditorLayer.LayerAction.River ? threshold - mapLayer.riverWidth : -1;
+            shoreThreshold = mapLayer.shoreWidth;
+
+            ApplyNoise(mapLayer.seed);
         }
+        map.tilemap.HoldMeshUpdate(false);
     }
 
     public int GetByName(string name) {
@@ -115,13 +126,11 @@ public class MapEditor : MonoBehaviour {
         return -1;
     }
 
-    public void ApplyNoise() {
+    public void ApplyNoise(int seed = -1) {
         TileType tile1 = this.tile1 == -1 ? null : loadedTiles[this.tile1];
         TileType tile2 = this.tile2 == -1 ? null : loadedTiles[this.tile2];
 
-        map.tilemap.HoldMeshUpdate(true);
-
-        int seed = Random.Range(0, 999999);
+        seed = seed == -1 ? Random.Range(0, 999999) : seed;
 
         float maxValue = float.MinValue;
         float minValue = float.MaxValue;
@@ -142,15 +151,24 @@ public class MapEditor : MonoBehaviour {
         for (int x = 0; x < map.size.x; x++) {
             for (int y = 0; y < map.size.y; y++) {
                 values[x, y] = Mathf.InverseLerp(minValue, maxValue, values[x, y]);
-                bool isTile1 = values[x, y] > threshold;
 
-                TileType tileType = isTile1 ? tile1 : tile2;
+                bool isTile1 = minThreshold == -1 ? values[x, y] > threshold : values[x, y] < threshold && values[x, y] > minThreshold;
+
+                bool isTile2 = (!isTile1 && (values[x, y] < threshold + shoreThreshold && values[x, y] > minThreshold - shoreThreshold));
+
+                TileType tileType = null;
+
+                if (minThreshold == -1) {
+                    tileType = isTile1 ? tile1 : tile2;
+                } else {
+                    if (isTile1) tileType = tile1;
+                    else if (isTile2) tileType = tile2;
+                }
+         
                 if (!overrideIfNull && tileType == null) continue;
                 map.PlaceTile(noiseLayer, new Vector2Int(x, y), tileType);
             }
         }
-
-        map.tilemap.HoldMeshUpdate(false);
     }
 
     public float CalculateNoiseTile(int x, int y) {
