@@ -985,12 +985,13 @@ namespace Frontiers.Content {
     [Serializable]
     public class UnitType : EntityType {
         [JsonIgnore] public Sprite cellSprite, outlineSprite;
+        [JsonIgnore] public Type[] priorityList = null;
 
         public float size = 1.5f;
         public float velocityCap = 2f, drag = 1f, bankAmount = 25f, bankSpeed = 5f, rotationSpeed = 90f;
         public bool useAerodynamics = true;
 
-        public float range = 15f, fov = 95;
+        public float range = 10f, searchRange = 15f, fov = 95;
 
         public float fuelCapacity = 60f, fuelConsumption = 1.5f, fuelRefillRate = 7.5f;
 
@@ -1031,17 +1032,19 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.flareWeapon, new Vector2(-0.25f, 0.3f), true),
                 },
 
+                priorityList = new Type[5] { typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(ItemBlock), typeof(Block) },
                 useAerodynamics = true,
 
                 health = 75f,
-                size = 1.5f, 
+                size = 1.5f,
                 velocityCap = 20f,
                 drag = 0.1f,
 
                 rotationSpeed = 160f,
                 bankAmount = 30f,
 
-                range = 15f,
+                range = 10f,
+                searchRange = 15f,
                 fov = 100f,
                 flyHeight = 18f,
 
@@ -1060,6 +1063,7 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.horizonBombBay, Vector2.zero, false),
                 },
 
+                priorityList = new Type[4] { typeof(TurretBlock), typeof(ItemBlock), typeof(CoreBlock), typeof(Block) },
                 useAerodynamics = true,
 
                 health = 215f,
@@ -1072,6 +1076,7 @@ namespace Frontiers.Content {
                 bankAmount = 40f,
 
                 range = 3f,
+                searchRange = 20f,
                 fov = 110f,
                 flyHeight = 12f,
 
@@ -1090,6 +1095,7 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.zenithMissiles, new Vector2(0.4f, -0.15f), true, true),
                 },
 
+                priorityList = new Type[5] { typeof(TurretBlock), typeof(Unit), typeof(ItemBlock), typeof(Block), typeof(CoreBlock) },
                 useAerodynamics = false,
 
                 health = 825f,
@@ -1102,6 +1108,7 @@ namespace Frontiers.Content {
                 bankAmount = 20f,
 
                 range = 15f,
+                searchRange = 20f,
                 fov = 90f,
                 flyHeight = 12f,
 
@@ -1122,6 +1129,7 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.smallAutoWeapon, new Vector2(0.43675f, 0.15f), true),
                 },
 
+                priorityList = null,
                 useAerodynamics = false,
 
                 health = 250f,
@@ -1138,6 +1146,7 @@ namespace Frontiers.Content {
             };
 
             poly = new CoreUnitType("poly", typeof(CoreUnit)) {
+                priorityList = new Type[0],
                 useAerodynamics = false,
 
                 health = 255f,
@@ -1150,6 +1159,7 @@ namespace Frontiers.Content {
                 bankAmount = 10f,
 
                 range = 10f,
+                searchRange = 25f,
                 fov = 180f,
                 flyHeight = 9f,
 
@@ -2242,7 +2252,7 @@ namespace Frontiers.Content.Maps {
         }
 
         public static void LoadMap(string name) {
-            MapData mapData = ReadMap(name);
+            MapData mapData = ReadMap(name);       
             Map map = new(name, mapData);
             OnMapLoaded?.Invoke(null, new MapLoadedEventArgs() { loadedMap = map });
         }
@@ -2263,8 +2273,7 @@ namespace Frontiers.Content.Maps {
         public static MapData ReadMap(string name) {
             name = Path.Combine("Maps", name);
             QuickSaveReader reader = QuickSaveReader.Create(name);
-
-            return reader.Read<MapData>("data");
+            return reader.Read<MapData>("data");    
         }
 
         public static MapData CreateMap(Vector2Int size, string[] tileData) {
@@ -2284,36 +2293,6 @@ namespace Frontiers.Content.Maps {
             // Create atlas material
             atlasMaterial = AssetLoader.GetAsset<Material>("Atlas Material");
             atlasMaterial.mainTexture = atlas;
-
-
-            return;
-
-            /* Get the regions in the tilemap
-            Region[,] regions = tilemap.regions;
-
-            for (int x = 0; x < regions.GetLength(0); x++) {
-                for (int y = 0; y < regions.GetLength(1); y++) {
-                    new RegionDisplayer(regions[x, y]);
-                    /
-                     
-                    
-
-                    // Create a gameobject foreach region and offset their positions
-                    Transform transform = new GameObject("Map Region", typeof(MeshRenderer), typeof(MeshFilter)).transform;
-                    transform.position = (Vector2)region.offset;
-
-                    // Get the mesh renderer component and apply the atlas material
-                    MeshRenderer meshRenderer = transform.GetComponent<MeshRenderer>();
-                    meshRenderer.material = atlasMaterial;
-
-                    // Get the mesh filter component and apply the region mesh to it
-                    MeshFilter meshFilter = transform.GetComponent<MeshFilter>();
-                    meshFilter.mesh = MapMeshGenerator.GenerateMesh(region);
-                    
-                    
-                }
-            }
-            */
         }
     }
 
@@ -2336,8 +2315,6 @@ namespace Frontiers.Content.Maps {
         public void Update(Region region) {
             // Update the region's mesh
             meshFilter.mesh = MapMeshGenerator.GenerateMesh(region);
-
-            Debug.Log("Updated!!");
         }
     }
 
@@ -2543,7 +2520,7 @@ namespace Frontiers.Content.Maps {
         }
     }
 
-    public struct Tile {
+    public class Tile {
         public Vector2Int position;
         public TileType[] tiles;
         public Block block;
@@ -2618,6 +2595,7 @@ namespace Frontiers.Content.Maps {
     public class Tilemap {
         public Region[,] regions;
         public Vector2Int regionSize;
+        public Vector2Int regionCount;
         public Vector2Int size;
 
         public struct Region {
@@ -2707,7 +2685,7 @@ namespace Frontiers.Content.Maps {
             this.regionSize = regionSize;
 
             // Create the region array
-            Vector2Int regionCount = new(size.x / regionSize.x, size.y / regionSize.y);
+            regionCount = new(size.x / regionSize.x, size.y / regionSize.y);
             regions = new Region[regionCount.x, regionCount.y];
 
 
@@ -2730,7 +2708,9 @@ namespace Frontiers.Content.Maps {
 
         public Tile GetTile(Vector2Int position) {
             // Get a tile from a region
-            return regions[position.x / regionSize.x, position.y / regionSize.y].GetTile(position);
+            int x = position.x / regionSize.x;
+            int y = position.y / regionSize.y;
+            return regions[x, y].GetTile(position);
         }
 
         public TileType GetTile(Vector2Int position, MapLayer layer) {
@@ -2787,16 +2767,6 @@ namespace Frontiers.Content.Maps {
             loaded = true;
         }
 
-        public Map(string name, int width, int height) {
-            // Create an empty map
-            this.name = name;
-            size = new(width, height);
-
-            InitializeTilemap();
-
-            loaded = true;
-        }
-
         public Map(string name, MapData mapData) {
             // Create a map with the given data
 
@@ -2805,8 +2775,8 @@ namespace Frontiers.Content.Maps {
             this.mapData = mapData;
             size = mapData.size;
 
-            // Initialize all the arrays on the tilemap
-            InitializeTilemap();
+            // Create an empty tilemap
+            tilemap = new(size, Vector2Int.one * Main.RegionSize);
 
             // Fill the tilemap with the given tile data
             LoadTilemapData(mapData.tilemapData.DecodeThis());
@@ -2815,27 +2785,25 @@ namespace Frontiers.Content.Maps {
             loaded = true;
         }
 
-        public void InitializeTilemap() {
-            // Create an empty tilemap
-            tilemap = new Tilemap(size, Vector2Int.one * Main.RegionSize);
-        }
-
         public void LoadTilemapData(string[,,] tileNameArray) {
             // Load the tilemap from an array of the names of the tiles 
 
             // Get the amount of layers
             int layers = (int)MapLayer.Total;
 
+            tilemap.HoldMeshUpdate(true);
+
             for (int x = 0; x < size.x; x++) {
                 for (int y = 0; y < size.y; y++) {
                     for (int z = 0; z < layers; z++) {
-
                         // Get the tile corresponding to the name and set on the tilemap
                         string name = tileNameArray[x, y, z];
                         if (name != null) tilemap.SetTile(GetTileType(name), new Vector2Int(x, y), (MapLayer)z);
                     }
                 }
             }
+
+            tilemap.HoldMeshUpdate(false);
         }
 
         public string[,,] SaveTilemapData() {
@@ -2920,6 +2888,14 @@ namespace Frontiers.Content.Maps {
 
         #region - Tilemaps -
 
+        public bool IsInBounds(Vector2 position) {
+            return position.x >= 0 && position.x < size.x && position.y >= 0 && position.y < size.y;
+        }
+
+        public bool IsInBounds(Vector2Int position) {
+            return position.x >= 0 && position.x < size.x && position.y >= 0 && position.y < size.y;
+        }
+
         public TileType GetTileType(string name) {
             // Get a tile type from a tile name
             return (TileType)ContentLoader.GetContentByName(name);
@@ -2949,9 +2925,12 @@ namespace Frontiers.Content.Maps {
 
         public bool CanPlaceBlockAt(Vector2Int position) {
             // Check if a block could be placed on a tile
-            TileType groundTile = GetMapTileTypeAt(MapLayer.Ground, position);
-            bool solidTileExists = tilemap.GetTile(position).IsSolid();
-            return !solidTileExists && groundTile != null && groundTile.allowBuildings;
+            Tile tile = tilemap.GetTile(position);
+
+            if (!tile.Layer(MapLayer.Ground).allowBuildings) return false;
+            else if (tile.IsSolid()) return false;
+
+            return true;
         }
 
         public void PlaceTile(MapLayer layer, Vector2Int position, TileType tile, int size) {
@@ -2980,7 +2959,6 @@ namespace Frontiers.Content.Maps {
 
             if (size == 1) {
                 tilemap.SetBlock(block, position);
-
                 return;
             }
 
@@ -2998,7 +2976,6 @@ namespace Frontiers.Content.Maps {
 
             if (size == 1) {
                 tilemap.SetBlock(null, position);
-
                 return;
             }
 

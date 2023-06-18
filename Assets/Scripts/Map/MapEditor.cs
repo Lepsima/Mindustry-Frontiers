@@ -43,7 +43,7 @@ public class MapEditor : MonoBehaviour {
     Tilemap tilemap;
     Map map;
 
-    private void Awake() {
+    private void Start() {
         AssetLoader.LoadAssets();
         ContentLoader.LoadContent();
 
@@ -60,6 +60,14 @@ public class MapEditor : MonoBehaviour {
 
         if (Input.GetKeyDown(KeyCode.X)) {
             placeEnabled = !placeEnabled;
+        }
+
+        if (Input.GetKeyDown(KeyCode.L)) {
+            ExecuteAllLayers();
+        }
+
+        if (Input.GetKeyDown(KeyCode.K)) {
+            SaveMap();
         }
 
         if (!placeEnabled) {
@@ -88,10 +96,6 @@ public class MapEditor : MonoBehaviour {
             map.tilemap.HoldMeshUpdate(false);
         }
 
-        if (Input.GetKeyDown(KeyCode.L)) {
-            ExecuteAllLayers();
-        }
-
         if (Input.GetMouseButtonDown(0)) {
             map.PlaceTile((MapLayer)currentLayer, mouseGridPos, loadedTiles[tileIndex]);
         }
@@ -99,6 +103,11 @@ public class MapEditor : MonoBehaviour {
         if (Input.GetMouseButtonDown(1)) {
             map.PlaceTile((MapLayer)currentLayer, mouseGridPos, null);
         }
+    }
+
+    public void SaveMap() {
+        map.Save();
+        MapLoader.SaveMap(map);
     }
 
     public void ExecuteAllLayers() {

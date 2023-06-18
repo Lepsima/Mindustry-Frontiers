@@ -97,14 +97,11 @@ public class ConveyorBlock : ItemBlock {
     }
 
     public override void GetAdjacentBlocks() {
+        base.GetAdjacentBlocks();
+
         next = GetFacingBlock() as ItemBlock;
         nextAsConveyor = next as ConveyorBlock;
         aligned = nextAsConveyor != null && nextAsConveyor.GetOrientation() == GetOrientation();
-    }
-
-    public override void UpdateAdjacentBlocks() {
-        if (!next) return;
-        next.GetAdjacentBlocks();
     }
 
     public override bool CanReciveItem(Item item) {

@@ -87,22 +87,14 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
         foreach (Transform child in children) child.gameObject.layer = layer;
     }
 
-    public static void SetOptionalSprite(Transform transform, Sprite sprite) {
+    public static SpriteRenderer SetOptionalSprite(Transform transform, Sprite sprite) {
         SpriteRenderer spriteRenderer = transform.GetComponent<SpriteRenderer>();
 
         if (!sprite) Destroy(transform.gameObject);
-        if (!sprite || !spriteRenderer) return;
+        if (!sprite || !spriteRenderer) return null;
 
         spriteRenderer.sprite = sprite;
-    }
-
-    public static void SetOptionalSprite(Transform transform, Sprite sprite, out SpriteRenderer finalSpriteRenderer) {
-        SpriteRenderer spriteRenderer = finalSpriteRenderer = transform.GetComponent<SpriteRenderer>();
-
-        if (!sprite) Destroy(transform.gameObject);
-        if (!sprite || !spriteRenderer) return;
-
-        spriteRenderer.sprite = sprite;
+        return spriteRenderer;
     }
 
     protected abstract void SetSprites();

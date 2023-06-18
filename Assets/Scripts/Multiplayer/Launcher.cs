@@ -7,6 +7,7 @@ using TMPro;
 using Photon.Realtime;
 using Photon.Pun.UtilityScripts;
 using Frontiers.Content;
+using Frontiers.Content.Maps;
 using Frontiers.Assets;
 using Frontiers.Teams;
 
@@ -36,6 +37,7 @@ public class Launcher : MonoBehaviourPunCallbacks {
     private void Start() {
         AssetLoader.LoadAssets();
         ContentLoader.LoadContent();
+        MapDisplayer.SetupAtlas();
 
         Debug.Log("Connecting to Master");
         PhotonNetwork.ConnectUsingSettings();

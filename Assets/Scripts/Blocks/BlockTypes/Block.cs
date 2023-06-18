@@ -19,6 +19,7 @@ public class Block : Entity {
     private SpriteRenderer glowSpriteRenderer;
 
     public float blinkInterval, blinkLenght, blinkOffset;
+    private bool glows = false;
 
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
@@ -41,35 +42,44 @@ public class Block : Entity {
         //Set collider size according to block size
         GetComponent<BoxCollider2D>().size = Vector2.one * Type.size;
         size = Type.size;
-
-        MapManager.blocks.Add(this);
         syncTime = 10f;
 
         if (!MapManager.TypeEquals(Type.type, typeof(ConstructionBlock))) Effect.PlayEffect("BuildFX", GetPosition(), size);
+
+        MapManager.Map.AddBlock(this);
+        Client.syncObjects.Add(SyncID, this);
     }
 
     protected override void SetSprites() {
         GetComponent<SpriteRenderer>().sprite = Type.sprite;
-       
-        SetOptionalSprite(transform.Find("Team"), Type.teamSprite, out SpriteRenderer teamSpriteRenderer);
-        SetOptionalSprite(transform.Find("Glow"), Type.glowSprite, out SpriteRenderer glowSpriteRenderer);
+
+        SpriteRenderer teamSpriteRenderer = SetOptionalSprite(transform.Find("Team"), Type.teamSprite);
+        SpriteRenderer glowSpriteRenderer = SetOptionalSprite(transform.Find("Glow"), Type.glowSprite);
+
         SetOptionalSprite(transform.Find("Top"), Type.topSprite);
         SetOptionalSprite(transform.Find("Bottom"), Type.bottomSprite);
 
         transform.Find("Shadow").localScale = 1.1f * Type.size * Vector2.one;
 
-        teamSpriteRenderer.color = teamColor;
-        glowSpriteRenderer.color = teamColor;
+        if (teamSpriteRenderer) {
+            teamSpriteRenderer.color = teamColor;
+        }
 
-        this.glowSpriteRenderer = glowSpriteRenderer;
+        if (glowSpriteRenderer) {
+            glowSpriteRenderer.color = teamColor;
+            this.glowSpriteRenderer = glowSpriteRenderer;
+            glows = true;
+        }
     }
 
     protected virtual void Update() {
         if (!Type.updates) return;
 
-        Color glowColor = teamColor;
-        glowColor.a = Mathf.Clamp01((Mathf.Sin(Time.time / Type.blinkInterval + Type.blinkOffset) + Type.blinkLength) * 0.5f);
-        glowSpriteRenderer.color = glowColor;
+        if (glows) {
+            Color glowColor = teamColor;
+            glowColor.a = Mathf.Clamp01((Mathf.Sin(Time.time / Type.blinkInterval + Type.blinkOffset) + Type.blinkLength) * 0.5f);
+            glowSpriteRenderer.color = glowColor;
+        }
     }
 
     public override void OnInventoryValueChange(object sender, EventArgs e) {
@@ -191,7 +201,9 @@ public class Block : Entity {
             RubbleGenerator.CreateRubble(GetPosition(), Type.size);
         }
 
-        MapManager.blocks.Remove(this);
+        MapManager.Map.RemoveBlock(this);
+        Client.syncObjects.Remove(SyncID);
+
         base.OnDestroy();
     }
 

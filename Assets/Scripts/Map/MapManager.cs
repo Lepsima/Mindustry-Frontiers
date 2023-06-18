@@ -13,9 +13,6 @@ public class MapManager : MonoBehaviour {
 
     public static Vector2Int mouseGridPos;
     public static bool mouseGridAllowsPlace;
-
-    public static List<Unit> units = new();
-    public static List<Block> blocks = new();
     public static int nextID;
 
     public Vector2 shardCorePosition, cruxCorePosition;
@@ -53,7 +50,7 @@ public class MapManager : MonoBehaviour {
         int size = selectedContent == null ? 1 : TypeEquals(selectedContent.GetType(), typeof(BlockType)) ? ((BlockType)selectedContent).size : 1;
         Vector2Int mouseGridPos = Vector2Int.CeilToInt(PlayerManager.mousePos - (Vector3.one * 0.5f) - (0.5f * size * Vector3.one));
 
-        mouseGridAllowsPlace = Map.CanPlaceBlockAt(mouseGridPos, size);
+        mouseGridAllowsPlace = Map.IsInBounds(mouseGridPos) && Map.CanPlaceBlockAt(mouseGridPos, size);
         MapManager.mouseGridPos = mouseGridPos;
     }
 
@@ -80,9 +77,6 @@ public class MapManager : MonoBehaviour {
         block.Set(syncID);
         block.Set(gridPosition, Quaternion.Euler(0, 0, orientation * 90f), blockType, GetID(), teamCode);
 
-        Map.AddBlock(block);
-        Client.syncObjects.Add(block.SyncID, block);
-
         return block;
     }
 
@@ -96,15 +90,10 @@ public class MapManager : MonoBehaviour {
         block.Set(syncID);
         block.Set(gridPosition, Quaternion.Euler(0, 0, orientation * 90f), blockType, GetID(), teamCode);
 
-        Map.AddBlock(block);
-        Client.syncObjects.Add(block.SyncID, block);
-
         return block;
     }
 
     public void DeleteBlock(Block block, bool destroyed) {
-        Map.RemoveBlock(block);
-        Client.syncObjects.Remove(block.SyncID);
         block.wasDestroyed = destroyed;
         Destroy(block.gameObject);
     }
@@ -118,15 +107,10 @@ public class MapManager : MonoBehaviour {
         unit.Set(position, Quaternion.Euler(0, 0, rotation), unitType, GetID(), teamCode);
         unit.SetVelocity(unitGameObject.transform.forward * 0.5f);
 
-        Map.AddUnit(unit);
-        Client.syncObjects.Add(unit.SyncID, unit);
-
         return unit;
     }
 
     public void DeleteUnit(Unit unit, bool destroyed) {
-        Map.RemoveUnit(unit);
-        Client.syncObjects.Remove(unit.SyncID);
         unit.wasDestroyed = destroyed;
         Destroy(unit.gameObject);
     }

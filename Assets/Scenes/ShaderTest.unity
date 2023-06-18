@@ -123,90 +123,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &67594068
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 67594070}
-  - component: {fileID: 67594069}
-  m_Layer: 0
-  m_Name: Bounds
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!212 &67594069
-SpriteRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 67594068}
-  m_Enabled: 1
-  m_CastShadows: 0
-  m_ReceiveShadows: 0
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 0
-  m_RayTraceProcedural: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 0
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.13333334}
-  m_FlipX: 0
-  m_FlipY: 0
-  m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
-  m_AdaptiveModeThreshold: 0.5
-  m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
-  m_SpriteSortPoint: 0
---- !u!4 &67594070
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 67594068}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 128, y: 128, z: 0}
-  m_LocalScale: {x: 256, y: 256, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &590606189
 GameObject:
   m_ObjectHideFlags: 0
@@ -217,6 +133,7 @@ GameObject:
   m_Component:
   - component: {fileID: 590606190}
   - component: {fileID: 590606191}
+  - component: {fileID: 590606192}
   m_Layer: 0
   m_Name: Map Loader
   m_TagString: Untagged
@@ -246,18 +163,22 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 590606189}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d4fb9d975d6f39441b800fe70c02e113, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  saveName: First in game map
+  saveName: Default Map 02
   regionSize: 32
-  size: {x: 1024, y: 1024}
+  size: {x: 512, y: 512}
   layers:
   - {fileID: 11400000, guid: 7d4f17b0458056c49918c82a2556f441, type: 2}
   - {fileID: 11400000, guid: e9d145e2b4ed2c04785f51e96e2f7945, type: 2}
+  - {fileID: 11400000, guid: e3a47aebb6f81cd4cbc6d0076c5c66e1, type: 2}
   - {fileID: 11400000, guid: 05a90cfa257f1484d9b78cf920b33df6, type: 2}
+  - {fileID: 11400000, guid: 113fa1f281df5ba4f9e2fd07540594ae, type: 2}
+  - {fileID: 11400000, guid: cac70fb1e40528648a7ef715461328e5, type: 2}
+  - {fileID: 11400000, guid: aa863f275d30099409f3fbe19495008f, type: 2}
   scale: 3
   threshold: 0.5
   octaves: 1
@@ -268,6 +189,22 @@ MonoBehaviour:
   tile1: 0
   tile2: 0
   placeEnabled: 0
+--- !u!114 &590606192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 590606189}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47141ada330aa28459cd39633a520d8f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  saveMode: 0
+  saveName: 
+  loadName: Default Map 02
+  regionSize: 64
 --- !u!1 &720177794
 GameObject:
   m_ObjectHideFlags: 0
@@ -323,7 +260,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 130
+  orthographic size: 530
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -347,7 +284,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 720177794}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 128, y: 128, z: -10}
+  m_LocalPosition: {x: 512, y: 512, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

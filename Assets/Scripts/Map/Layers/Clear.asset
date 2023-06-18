@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 63849c63d52d48d4499b729bf2bd9ffe, type: 3}
-  m_Name: Copper Layer
+  m_Name: Clear
   m_EditorClassIdentifier: 
   layerAction: 0
   seed: -1
-  scale: 51
-  threshold: 0.873
+  scale: 3.25
+  threshold: 0.5
   octaves: 4
-  persistance: 0.34
-  lacunarity: 3.28
+  persistance: 0.5
+  lacunarity: 1
   noiseLayer: 1
-  overrideIfNull: 0
-  tile1Name: ore-copper
+  overrideIfNull: 1
+  tile1Name: 
   tile2Name: 
   riverWidth: 0
   shoreWidth: 0

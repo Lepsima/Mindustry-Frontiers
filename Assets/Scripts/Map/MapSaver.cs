@@ -9,14 +9,18 @@ using System.Diagnostics;
 using Frontiers.Settings;
 
 public class MapSaver : MonoBehaviour {
-    public bool save = true;
-    public MeshRenderer meshRenderer;
-
-    public string saveName;
+    public bool saveMode = true;
     public Map map;
 
+    [Header("Save settings")]
+    public string saveName;
+
+    [Header("Load settings")]
+    public string loadName;
+    public int regionSize = 64;
+
     private void Start() {
-        if (save) {
+        if (saveMode) {
         } else {
             LoadMap();
         }
@@ -27,8 +31,9 @@ public class MapSaver : MonoBehaviour {
         AssetLoader.LoadAssets();
         ContentLoader.LoadContent();
 
-        Main.RegionSize = 64;
+        Main.RegionSize = regionSize;
         MapDisplayer.SetupAtlas();
-        //new Tilemap(new Vector2Int(1024, 1024), Vector2Int.one * Main.RegionSize);
+
+        MapLoader.LoadMap(loadName);
     }
 }

@@ -38,6 +38,8 @@ public class PlayerManager : MonoBehaviour {
 
         virtualCamera = GetComponent<CinemachineVirtualCamera>();
         Follow(playerTransform);
+
+        playerTransform.position = TeamUtilities.GetClosestAllyCoreBlock(playerTransform.position).GetPosition();
     }
 
     public bool IsFollowingPlayer() {
@@ -64,23 +66,23 @@ public class PlayerManager : MonoBehaviour {
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha1)) {
-            foreach (Unit unit in MapManager.units) Client.UnitChangeMode(unit, (int)UnitMode.Attack);
+            foreach (Unit unit in MapManager.Map.units) Client.UnitChangeMode(unit, (int)UnitMode.Attack);
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha2)) {
-            foreach (Unit unit in MapManager.units) Client.UnitChangeMode(unit, (int)UnitMode.Patrol);
+            foreach (Unit unit in MapManager.Map.units) Client.UnitChangeMode(unit, (int)UnitMode.Patrol);
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha3)) {
-            foreach (Unit unit in MapManager.units) Client.UnitChangeMode(unit, (int)UnitMode.Return);
+            foreach (Unit unit in MapManager.Map.units) Client.UnitChangeMode(unit, (int)UnitMode.Return);
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha4)) {
-            foreach (Unit unit in MapManager.units) Client.UnitChangeMode(unit, (int)UnitMode.Assist);
+            foreach (Unit unit in MapManager.Map.units) Client.UnitChangeMode(unit, (int)UnitMode.Assist);
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha5)) {
-            foreach (Unit unit in MapManager.units) Client.UnitChangeMode(unit, (int)UnitMode.Idling);
+            foreach (Unit unit in MapManager.Map.units) Client.UnitChangeMode(unit, (int)UnitMode.Idling);
         }
     }
 
@@ -142,10 +144,10 @@ public class PlayerManager : MonoBehaviour {
     public void ChangeFollowingUnit(int increment) {
         unitFollowIndex += increment;
 
-        if (unitFollowIndex >= MapManager.units.Count) unitFollowIndex = 0;
-        if (unitFollowIndex < 0) unitFollowIndex = MapManager.units.Count - 1;
+        if (unitFollowIndex >= MapManager.Map.units.Count) unitFollowIndex = 0;
+        if (unitFollowIndex < 0) unitFollowIndex = MapManager.Map.units.Count - 1;
         
-        Unit unit = MapManager.units[unitFollowIndex];
+        Unit unit = MapManager.Map.units[unitFollowIndex];
         Transform unitTransform = unit.transform;
 
         unit.OnDestroyed += OnFollowingUnitDestroyed;

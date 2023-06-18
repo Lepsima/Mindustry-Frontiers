@@ -78,7 +78,7 @@ public class RoomManager : MonoBehaviourPunCallbacks {
 
             // If this client is the master, spawn cores
             if (TeamUtilities.IsMaster()) {
-                MapLoader.LoadMap("SplitLands");
+                MapLoader.LoadMap("Default Map 02");
                 MapManager.Instance.InitializeCores(); 
             } else {
                 Client.RequestMap();

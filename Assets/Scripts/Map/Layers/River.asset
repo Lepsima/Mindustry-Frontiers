@@ -14,14 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   layerAction: 1
   seed: -1
-  scale: 738
-  threshold: 0.48
+  scale: 901
+  threshold: 0.395
   octaves: 2
-  persistance: 0.487
-  lacunarity: 0.49
+  persistance: 0.488
+  lacunarity: 4.12
   noiseLayer: 0
   overrideIfNull: 0
   tile1Name: water
   tile2Name: sand-water
-  riverWidth: 0.075
+  riverWidth: 0.06
   shoreWidth: 0.02

@@ -30,7 +30,7 @@ public class DrillBlock : ItemBlock {
         outputItems = new Item[1] { drillItem };
         inventory.SetAllowedItems(outputItems);
 
-        maxRotorVelocity = yieldPercent * 5f;
+        maxRotorVelocity = yieldPercent;
     }
 
     protected override void SetSprites() {
@@ -38,10 +38,13 @@ public class DrillBlock : ItemBlock {
 
         rotorTransfrom = transform.Find("Empty");
         rotorTransfrom.gameObject.AddComponent<SpriteRenderer>();
-        SetOptionalSprite(rotorTransfrom, AssetLoader.GetSprite(Type.name + "-rotator"), out SpriteRenderer spriteRenderer);
 
-        spriteRenderer.sortingLayerName = "Blocks";
-        spriteRenderer.sortingOrder = 3;
+        SpriteRenderer rotorSpriteRenderer = SetOptionalSprite(rotorTransfrom, AssetLoader.GetSprite(Type.name + "-rotator"));
+
+        if (rotorSpriteRenderer) {
+            rotorSpriteRenderer.sortingLayerName = "Blocks";
+            rotorSpriteRenderer.sortingOrder = 3;
+        }
     }
 
     public override void SetInventory() {

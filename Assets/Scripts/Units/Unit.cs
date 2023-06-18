@@ -5,6 +5,7 @@ using Frontiers.Settings;
 using Frontiers.Teams;
 using Photon.Pun;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 public class Unit : Entity, IArmed {
@@ -156,12 +157,11 @@ public class Unit : Entity, IArmed {
         }
 
         if (velocity.magnitude > 0) {
-            underTile = MapManager.Map.GetMapTileTypeAt(Map.MapLayer.Ground, shadow.transform.position);
+            underTile = GetGroundTile();
+            ParticleSystem.EmissionModule emissionModule = waterDeviationEffect.emission;
 
-            if (underTile != null) {
-                ParticleSystem.EmissionModule emissionModule = waterDeviationEffect.emission;
-                emissionModule.rateOverDistanceMultiplier = underTile.isWater ? 5f : 0f;
-            }
+            bool isWater = underTile != null && underTile.isWater;
+            emissionModule.rateOverDistanceMultiplier = isWater ? 5f : 0f;
         }
     }
 
@@ -194,19 +194,21 @@ public class Unit : Entity, IArmed {
         SetEffects();
         SetWeapons();
 
-        MapManager.units.Add(this);
-
         transform.SetPositionAndRotation(position, rotation);
         homePosition = transform.position;
 
         syncValues = 7;
+
+        MapManager.Map.AddUnit(this);
+        Client.syncObjects.Add(SyncID, this);
     }
 
     protected override void SetSprites() {
         spriteHolder.GetComponent<SpriteRenderer>().sprite = Type.sprite;
 
-        SetOptionalSprite(spriteHolder.Find("Cell"), Type.cellSprite, out teamSpriteRenderer);
+        teamSpriteRenderer = SetOptionalSprite(spriteHolder.Find("Cell"), Type.cellSprite);
         SetOptionalSprite(spriteHolder.Find("Outline"), Type.outlineSprite);
+
         teamSpriteRenderer.color = teamCode == TeamUtilities.GetLocalTeam() ? TeamUtilities.LocalTeamColor : TeamUtilities.EnemyTeamColor;
     }
 
@@ -271,6 +273,12 @@ public class Unit : Entity, IArmed {
     public override EntityType GetEntityType() => Type;
 
     public float GetHeight() => height;
+
+    public TileType GetGroundTile() {
+        Vector2 position = shadow.transform.position;
+        if (MapManager.Map.IsInBounds(position)) return null;
+        return MapManager.Map.GetMapTileTypeAt(Map.MapLayer.Ground, position);
+    }
 
     #endregion
 
@@ -457,7 +465,7 @@ public class Unit : Entity, IArmed {
             } else if (Vector2.Distance(patrolPosition, GetPosition()) < 5f || patrolPosition == Vector2.zero) {
 
                 // If no target or close to previous patrol point, create new one
-                Client.UnitChangePatrolPoint(this, Random.insideUnitCircle * Type.range + homePosition);
+                Client.UnitChangePatrolPoint(this, UnityEngine.Random.insideUnitCircle * Type.searchRange + homePosition);
 
             } else {
 
@@ -542,37 +550,37 @@ public class Unit : Entity, IArmed {
     private void HandleTargeting(bool useEnemyCoreAsDefault = false) {
         if (Target) {
             // Check if target is still valid
-            bool inShootRange = InShootRange(Target.GetPosition(), Type.fov);
-            targetLostTimer = inShootRange ? 0 : targetLostTimer + Time.deltaTime;
+            bool inRange = (Target as Unit) == null ? InSearchRange(Target.GetPosition()) : InShootRange(Target.GetPosition(), Type.fov);
+            targetLostTimer = inRange ? 0 : targetLostTimer + Time.deltaTime;
         }
 
-        if ((Target == null && targetSearchTimer < Time.time) || targetLostTimer > 3f) {
+        if ((Target == null && targetSearchTimer < Time.time) || targetLostTimer > 2f) {
             // Update target timers
             targetSearchTimer = Time.time + 1.5f;
             targetLostTimer = 0f;
 
             // Find target or get closest
-            Entity tempTarget = GetTarget();
-            Entity core = TeamUtilities.GetClosestCoreBlock(GetPosition(), TeamUtilities.GetEnemyTeam(teamCode));
-            Target = !tempTarget && useEnemyCoreAsDefault ? core : tempTarget;
+            Entity tempTarget = GetTarget(Type.priorityList);
+            if (!tempTarget && useEnemyCoreAsDefault) tempTarget = TeamUtilities.GetClosestCoreBlock(GetPosition(), TeamUtilities.GetEnemyTeam(teamCode));     
+            Target = tempTarget;
         }
     }
 
     private bool ValidTarget(Entity target) {
         if (!target) return false;
-        return Vector2.Distance(target.GetPosition(), GetPosition()) < Type.range;
+        return Vector2.Distance(target.GetPosition(), GetPosition()) < Type.searchRange;
     }
 
-    private Entity GetTarget(System.Type[] priorityList = null) {
+    private Entity GetTarget(Type[] priorityList = null) {
         //Default priority targets
-        if (priorityList == null) priorityList = new System.Type[5] { typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(StorageBlock), typeof(LandPadBlock) };
+        if (priorityList == null) priorityList = new Type[4] { typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) };
 
-        foreach(System.Type type in priorityList) {
+        foreach(Type type in priorityList) {
             //Search the next priority type
             Entity tempTarget;
 
-            if (type == typeof(Unit)) tempTarget = MapManager.Map.GetClosestEntityInView(GetPosition(), transform.up, Type.fov, type, TeamUtilities.GetEnemyTeam(teamCode));
-            else tempTarget = MapManager.Map.GetClosestEntityStrict(GetPosition(), type, TeamUtilities.GetEnemyTeam(teamCode));
+            if (type == typeof(Unit)) tempTarget = MapManager.Map.GetClosestEntityInView(GetPosition(), transform.up, Type.fov, typeof(Unit), TeamUtilities.GetEnemyTeam(teamCode));
+            else tempTarget = MapManager.Map.GetClosestEntity(GetPosition(), type, TeamUtilities.GetEnemyTeam(teamCode));
 
             //If target is valid, stop searching
             if (ValidTarget(tempTarget)) return tempTarget;
@@ -661,12 +669,12 @@ public class Unit : Entity, IArmed {
 
 
     #region - Math - 
-
+    public float angle;
     public bool InShootRange(Vector2 target, float fov) {
         if (!InRange(target)) return false;
 
         float cosAngle = Vector2.Dot((target - GetPosition()).normalized, transform.up);
-        float angle = Mathf.Acos(cosAngle) * Mathf.Rad2Deg;
+        angle = Mathf.Acos(cosAngle) * Mathf.Rad2Deg;
 
         return angle < fov;
     }
@@ -678,6 +686,8 @@ public class Unit : Entity, IArmed {
     }
 
     public bool InRange(Vector2 target) => Vector2.Distance(target, GetPosition()) < Type.range;
+
+    public bool InSearchRange(Vector2 target) => Vector2.Distance(target, GetPosition()) < Type.searchRange;
 
     public Vector2 GetDirection(Vector2 target) => Type.useAerodynamics ? (Vector2)transform.up : (target - GetPosition()).normalized;
 
@@ -707,10 +717,12 @@ public class Unit : Entity, IArmed {
 
         Effect.PlayEffect(Type.explosionFX, transform.position, size);
 
-        GameObject explosionBlastGameObject = Instantiate(AssetLoader.GetPrefab("explosion-blast"), GetPosition(), Quaternion.Euler(0f, 0f, Random.Range(0f, 360f)));
+        GameObject explosionBlastGameObject = Instantiate(AssetLoader.GetPrefab("explosion-blast"), GetPosition(), Quaternion.Euler(0f, 0f, UnityEngine.Random.Range(0f, 360f)));
         Destroy(explosionBlastGameObject, 10f);
 
-        MapManager.units.Remove(this);
+        MapManager.Map.RemoveUnit(this);
+        Client.syncObjects.Remove(SyncID);
+
         base.OnDestroy();
     }
 
