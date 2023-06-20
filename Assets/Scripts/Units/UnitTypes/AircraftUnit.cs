@@ -90,7 +90,7 @@ public class AircraftUnit : Unit {
 
     public override float GetEnginePower() {
         // Get the percent of power the engine should produce
-        float enginePower = Mathf.Clamp01(fuel > 0f ? 1f : 0f) * targetSpeed;
+        float enginePower = base.GetEnginePower();
         if (height > targetHeight) enginePower *= 0.75f;
         return enginePower * (height / Type.groundHeight);
     }
