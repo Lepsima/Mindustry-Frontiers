@@ -155,7 +155,7 @@ public class PlayerManager : MonoBehaviour {
         Follow(unitTransform);
     }
 
-    public void OnFollowingUnitDestroyed(object sender, Entity.DestroyEventArgs e) {
+    public void OnFollowingUnitDestroyed(object sender, Entity.EntityArg e) {
         // If there's a registered killer, follow that entity
         Follow(e.other ? e.other.transform : playerTransform);
     }

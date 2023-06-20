@@ -27,11 +27,26 @@ public class Unit : Entity, IArmed {
 
     #region - Current Status Vars -
     private Entity _target;
-    protected Entity Target { get { return _target; }  set { if (_target != value) _target = value; } }
+    protected Entity Target { 
+        get { 
+            return _target; 
+        }  
+        
+        set {
+            if (_target != value) { 
+                _target = value;
+                OnTargetChanged?.Invoke(this, new EntityArg { other = _target });
+            }
+        } 
+    }
+
+    public event EventHandler<EntityArg> OnTargetChanged;
+
     private LandPadBlock currentLandPadBlock;
     private Shadow shadow;
 
     protected UnitMode _mode = UnitMode.Return, lastUnitMode;
+    protected AssistSubState subStateMode = AssistSubState.Waiting;
 
     protected float gForce, angularGForce;
     protected Vector2 acceleration;
@@ -44,10 +59,17 @@ public class Unit : Entity, IArmed {
     protected float targetSpeed, targetHeight, enginePower, currentMass, lightPercent = 0f;
 
     protected float fuel, height, cargoMass;
-    bool isTakingOff, isLanded, isFleeing, areWeaponsActive;
+    bool isCoreUnit, isTakingOff, isLanded, isFleeing, areWeaponsActive;
+
+
+    protected ConstructionBlock constructingBlock;
 
     // Timers
-    private float targetSearchTimer, landPadSearchTimer, targetLostTimer, deactivateWeaponsTimer;
+    private float
+        targetSearchTimer, landPadSearchTimer, constructionSearchTimer,
+        targetLostTimer,
+        deactivateWeaponsTimer,
+        modeChangeRequestTimer;
 
     // The target position used in behaviours for the next frame
     Vector2 _position;
@@ -114,6 +136,13 @@ public class Unit : Entity, IArmed {
         Assist = 4,
         Idling = 5
     }
+
+    public enum AssistSubState {
+        Waiting = 0,
+        Collect = 1,
+        Deposit = 2,
+    }
+
 
     public UnitMode Mode { 
         set {
@@ -197,6 +226,8 @@ public class Unit : Entity, IArmed {
         transform.SetPositionAndRotation(position, rotation);
         homePosition = transform.position;
 
+        OnTargetChanged += OnTargetValueChange;
+
         syncValues = 7;
 
         MapManager.Map.AddUnit(this);
@@ -266,10 +297,6 @@ public class Unit : Entity, IArmed {
         base.SetInventory();
     }
 
-    public override void OnInventoryValueChange(object sender, System.EventArgs e) {
-        // Update inventory things
-    }
-
     public override EntityType GetEntityType() => Type;
 
     public float GetHeight() => height;
@@ -278,6 +305,64 @@ public class Unit : Entity, IArmed {
         Vector2 position = shadow.transform.position;
         if (MapManager.Map.IsInBounds(position)) return null;
         return MapManager.Map.GetMapTileTypeAt(Map.MapLayer.Ground, position);
+    }
+
+    #endregion
+
+
+    #region - Events -
+
+    public override void OnInventoryValueChange(object sender, EventArgs e) {
+        if (isCoreUnit) {
+            if (Mode != UnitMode.Assist) return;
+            UpdateSubBehaviour();
+        }
+    }
+
+    protected void OnTargetInventoryValueChange(object sender, EventArgs e) {
+        if (isCoreUnit) {
+            if (Mode != UnitMode.Assist) return;
+            UpdateSubBehaviour();
+        }
+    }
+
+    protected virtual void OnTargetValueChange(object sender, EntityArg e) {
+        if (isCoreUnit) {
+
+        }
+    }
+
+    #endregion
+
+
+    #region - Core Unit things - 
+    public void UpdateSubBehaviour() {
+        if (!constructingBlock && ConstructionBlock.blocksInConstruction.Count == 0) subStateMode = AssistSubState.Waiting;
+
+        // If has enough or the max amount of items to build the block, go directly to it, else go to the core to refill
+        bool hasMaxItems = inventory.HasToMax(constructingBlock.GetRestantItems());
+        bool hasUsefulItems = inventory.Empty(constructingBlock.GetRequiredItems()) && !inventory.Empty();
+        subStateMode = hasMaxItems || hasUsefulItems ? AssistSubState.Deposit : AssistSubState.Collect;
+    }
+
+    private ConstructionBlock TryGetConstructionBlock() {
+        if (constructionSearchTimer > Time.time) return null;
+        constructionSearchTimer = Time.time + 1f;
+
+        ConstructionBlock closestBlock = null;
+        float closestDistance = 100000f;
+
+        foreach (ConstructionBlock block in ConstructionBlock.blocksInConstruction) {
+            if (!Target.GetInventory().Has(block.GetRestantItems())) continue;
+            float distance = Vector2.Distance(block.GetPosition(), GetPosition());
+
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestBlock = block;
+            }
+        }
+
+        return closestBlock;
     }
 
     #endregion
@@ -508,12 +593,89 @@ public class Unit : Entity, IArmed {
 
     protected virtual void AssistBehaviour() {
         targetHeight = Type.flyHeight;
-        targetSpeed = 1f;
+        targetSpeed = 1f; 
+        
+        if (!isCoreUnit) {
+            Client.UnitChangeMode(this, (int)UnitMode.Return);
+            return;
+        }
+
+        // If there is no block to build, search for any other blocks in the map
+        if (constructingBlock == null) {
+            ConstructionBlock found = null;
+
+            if (ConstructionBlock.blocksInConstruction.Count != 0) found = TryGetConstructionBlock();
+            else subStateMode = AssistSubState.Waiting;
+
+            if (found != null) {
+                constructingBlock = found;
+                UpdateSubBehaviour();
+            }
+        }
+
+        // If there's nothing to do, go back to core and deposit all items
+        if (subStateMode == AssistSubState.Waiting) {
+            if (!Target) {
+                Client.UnitChangeMode(this, (int)UnitMode.Idling, true);
+                return;
+            }
+
+            if (inventory.Empty()) return;
+            float distanceToCore = Vector2.Distance(Target.GetPosition(), GetPosition());
+
+            if (distanceToCore < Type.itemPickupDistance) {
+                _move = false;
+
+                // Drop items to core
+                inventory.TransferAll(Target.GetInventory());
+            } else {
+                SetBehaviourPosition(Target.GetPosition());
+            }
+        }
+
+        // If needs items to build block, go to core and pickup items
+        if (subStateMode == AssistSubState.Collect) {
+            if (!Target) {
+                Client.UnitChangeMode(this, (int)UnitMode.Idling, true);
+                return;
+            }
+
+            float distanceToCore = Vector2.Distance(Target.GetPosition(), GetPosition());
+
+            if (distanceToCore < Type.itemPickupDistance) {
+                _move = false;
+
+                // Drop items to core
+                inventory.TransferAll(Target.GetInventory());
+
+                // Get only useful items
+                Target.GetInventory().TransferAll(inventory, ItemStack.ToItems(constructingBlock.GetRestantItems()));
+
+            } else {
+                SetBehaviourPosition(Target.GetPosition());
+            }
+        }
+
+        // If has items to build block, go to the block and deposit them
+        if (subStateMode == AssistSubState.Deposit) {
+            float distanceToConstruction = Vector2.Distance(constructingBlock.GetPosition(), GetPosition());
+
+            if (distanceToConstruction < Type.itemPickupDistance) {
+                _move = false;
+
+                // Drops items on the constructing block
+                inventory.TransferSubstractAmount(constructingBlock.GetInventory(), constructingBlock.GetRestantItems());
+            } else {
+                SetBehaviourPosition(constructingBlock.GetPosition());
+            }
+        }
     }
 
     protected virtual void IdlingBehaviour() {
         targetHeight = Type.flyHeight * 0.5f;
         targetSpeed = 0.5f;
+
+        SetBehaviourPosition(homePosition);
     }
 
     #endregion
@@ -706,6 +868,10 @@ public class Unit : Entity, IArmed {
     public float FuelPercent() => fuel / Type.fuelCapacity;
 
     public float AmmoPercent() => 1;
+
+    public bool CanRequest() => modeChangeRequestTimer < Time.time;
+
+    public void AddToRequestTimer() => modeChangeRequestTimer = Time.time + 1f;
 
     #endregion
 

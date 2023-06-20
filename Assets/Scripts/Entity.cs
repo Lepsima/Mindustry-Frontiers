@@ -10,9 +10,8 @@ using Frontiers.Assets;
 using Frontiers.Teams;
 
 public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
-    public event EventHandler<DestroyEventArgs> OnDestroyed;
-
-    public class DestroyEventArgs { public Entity other; }
+    public event EventHandler<EntityArg> OnDestroyed;
+    public class EntityArg { public Entity other; }
 
     private GameObject[] fires;
 
@@ -139,7 +138,7 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
 
     public virtual void OnDestroy() {
         if (!gameObject.scene.isLoaded) return;
-        OnDestroyed?.Invoke(this, new DestroyEventArgs { other = null });
+        OnDestroyed?.Invoke(this, new EntityArg { other = null });
     }
 
     public override string ToString() {

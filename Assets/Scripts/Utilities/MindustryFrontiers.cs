@@ -991,6 +991,8 @@ namespace Frontiers.Content {
         public float velocityCap = 2f, drag = 1f, bankAmount = 25f, bankSpeed = 5f, rotationSpeed = 90f;
         public bool useAerodynamics = true;
 
+        public float itemPickupDistance = 3f, buildSpeedMultiplier = 1f;
+
         public float range = 10f, searchRange = 15f, fov = 95;
 
         public float fuelCapacity = 60f, fuelConsumption = 1.5f, fuelRefillRate = 7.5f;
@@ -1014,10 +1016,14 @@ namespace Frontiers.Content {
         }
     }
 
-    public class CoreUnitType : UnitType {
-        public float itemPickupDistance = 3f, buildSpeedMultiplier = 1f;
+    public class MechUnitType : UnitType {
+        public MechUnitType(string name, Type type) : base(name, type) {
 
-        public CoreUnitType(string name, Type type) : base(name, type) {
+        }
+    }
+
+    public class AircraftUnitType : UnitType {
+        public AircraftUnitType(string name, Type type) : base(name, type) {
 
         }
     }
@@ -1145,7 +1151,7 @@ namespace Frontiers.Content {
                 fuelRefillRate = 7.5f
             };
 
-            poly = new CoreUnitType("poly", typeof(CoreUnit)) {
+            poly = new UnitType("poly", typeof(Unit)) {
                 priorityList = new Type[0],
                 useAerodynamics = false,
 

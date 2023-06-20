@@ -153,7 +153,8 @@ public class Client : MonoBehaviourPunCallbacks {
     }
 
     public static void UnitChangeMode(Unit unit, int mode, bool registerPrev = false) {
-        if (!PhotonNetwork.IsMasterClient || (int)unit.Mode == mode) return;
+        if (!PhotonNetwork.IsMasterClient || (int)unit.Mode == mode || !unit.CanRequest()) return;
+        unit.AddToRequestTimer();
         local.photonView.RPC(nameof(RPC_UnitChangeMode), RpcTarget.All, unit.SyncID, mode, registerPrev);
     }
 

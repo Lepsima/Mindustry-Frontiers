@@ -65,7 +65,7 @@ public class Weapon : MonoBehaviour {
         if (target) target.OnDestroyed += OnTargetDestroyed;
     }
 
-    private void OnTargetDestroyed(object sender, Entity.DestroyEventArgs e) {
+    private void OnTargetDestroyed(object sender, Entity.EntityArg e) {
         targetSearchTimer = 0;
     }
 
