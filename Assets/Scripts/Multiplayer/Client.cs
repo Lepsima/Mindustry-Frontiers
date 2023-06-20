@@ -149,7 +149,7 @@ public class Client : MonoBehaviourPunCallbacks {
     public void RPC_UnitTakeoff(int syncID) {
         if (isRecivingMap) return;
         Unit unit = (Unit)syncObjects[syncID];
-        unit.TakeOff();
+        unit.OnTakeOff();
     }
 
     public static void UnitChangeMode(Unit unit, int mode, bool registerPrev = false) {

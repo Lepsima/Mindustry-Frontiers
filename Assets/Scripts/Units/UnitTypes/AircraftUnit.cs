@@ -140,11 +140,27 @@ public class AircraftUnit : Unit {
         velocity = Type.force / 3 * transform.up;
     }
 
-    public override bool Land() {
-        bool hasLanded = base.Land();
-        if (!hasLanded) Client.DestroyUnit(this, true);
-        else SetDragTrailLenght(0);
-        return hasLanded;
+    public override void Land() {
+        if (Target is LandPadBlock landPad) {
+            float distance = Vector2.Distance(landPad.GetPosition(), transform.position);
+
+            if (distance > landPad.size * 0.75f) return;
+
+            //Land on landpad
+            if (!landPad.Land(this)) {
+                Client.DestroyUnit(this, true);
+                return;
+            }
+
+            currentLandPadBlock = landPad;
+
+            //Set landed true and stop completely the unit
+            isLanded = true;
+            velocity = Vector2.zero;
+
+            height = 0f;
+            SetDragTrailLenght(0);
+        }
     }
 
     #endregion
@@ -154,8 +170,8 @@ public class AircraftUnit : Unit {
     protected override void OnFloorTileChange() {
         base.OnFloorTileChange();
 
-        ParticleSystem.EmissionModule emissionModule = waterDeviationEffect.emission;
         bool isWater = FloorTile != null && FloorTile.isWater;
+        ParticleSystem.EmissionModule emissionModule = waterDeviationEffect.emission;
         emissionModule.rateOverDistanceMultiplier = isWater ? 5f : 0f;
     }
 

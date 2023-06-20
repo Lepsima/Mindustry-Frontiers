@@ -42,8 +42,8 @@ public abstract class Unit : Entity, IArmed {
 
         set {
             if (value != _floorTile) {
-                OnFloorTileChange();
                 _floorTile = value;
+                OnFloorTileChange();
             }
         }
     }
@@ -170,7 +170,7 @@ public abstract class Unit : Entity, IArmed {
     protected virtual void Update() {
         teamSpriteRenderer.color = CellColor();
         shadow.SetDistance(height);
-        if (velocity.sqrMagnitude > 0) FloorTile = GetGroundTile(); 
+        FloorTile = GetGroundTile(); 
 
         if (deactivateWeaponsTimer <= Time.time) {
             if (deactivateWeaponsTimer != 0f) {
@@ -209,6 +209,8 @@ public abstract class Unit : Entity, IArmed {
 
         name = Type.name + " " + teamCode;
         spriteHolder = transform.GetChild(0);
+        CreateTransforms();
+
         base.Set(position, rotation, type, id, teamCode);
 
         transform.localScale = Vector3.one * Type.size;
@@ -224,6 +226,7 @@ public abstract class Unit : Entity, IArmed {
 
         transform.SetPositionAndRotation(position, rotation);
         homePosition = transform.position;
+        FloorTile = null;
 
         OnTargetChanged += OnTargetValueChange;
 
@@ -283,6 +286,10 @@ public abstract class Unit : Entity, IArmed {
         hasInventory = true;
 
         base.SetInventory();
+    }
+
+    protected virtual void CreateTransforms() {
+
     }
 
     public override EntityType GetEntityType() => Type;
@@ -402,6 +409,7 @@ public abstract class Unit : Entity, IArmed {
 
 
     #region - Behaviours -
+    bool canShoot;
     protected virtual void AttackBehaviour() {
         HandleTargeting();
 
@@ -418,7 +426,7 @@ public abstract class Unit : Entity, IArmed {
 
         if (InRange(_position) && DoesStopToShoot()) _move = false;
 
-        bool canShoot = InShootRange(_position, weapons[0].Type.maxTargetDeviation);
+        canShoot = InShootRange(_position, weapons[0].Type.maxTargetDeviation);
         if (canShoot != areWeaponsActive) SetWeaponsActive(canShoot);
     }
 
@@ -457,7 +465,7 @@ public abstract class Unit : Entity, IArmed {
         if (Target is LandPadBlock) {
             //If close to landpad, land
             float distance = Vector2.Distance(Target.GetPosition(), GetPosition());
-            if (distance < ((Block)Target).Type.size / 2 + 0.5f && velocity.magnitude < 5f) TakeOff();
+            if (distance < ((Block)Target).Type.size / 2 + 0.5f && velocity.magnitude < 5f) Land();
 
             //Move towards target
             SetBehaviourPosition(Target.GetPosition());
@@ -565,21 +573,20 @@ public abstract class Unit : Entity, IArmed {
         isTakingOff = false;
     }
 
-    public virtual bool Land() {
+    public virtual void Land() {
         if (Target is LandPadBlock landPad){
+            float distance = Vector2.Distance(landPad.GetPosition(), transform.position);
+
+            if (distance > landPad.size * 0.75f) return;
+
             //Land on landpad
-            if (!landPad.Land(this)) return false;
+            if (!landPad.Land(this)) return;
             currentLandPadBlock = landPad;
 
             //Set landed true and stop completely the unit
             isLanded = true;
             velocity = Vector2.zero;
-
-            height = 0f;
-            return true;
         }
-
-        return false;
     }
 
 
@@ -641,7 +648,7 @@ public abstract class Unit : Entity, IArmed {
 
     public TileType GetGroundTile() {
         Vector2 position = shadow.transform.position;
-        if (MapManager.Map.IsInBounds(position)) return null;
+        if (!MapManager.Map.IsInBounds(position)) return null;
         return MapManager.Map.GetMapTileTypeAt(Map.MapLayer.Ground, position);
     }
 
@@ -649,12 +656,12 @@ public abstract class Unit : Entity, IArmed {
         return true;
     }
 
+    float angle;
     public bool InShootRange(Vector2 target, float fov) {
         if (!InRange(target)) return false;
 
-        float cosAngle = Vector2.Dot((target - GetPosition()).normalized, transform.up);
-        float angle = Mathf.Acos(cosAngle) * Mathf.Rad2Deg;
-
+        Vector2 relative = target - GetPosition();
+        angle = Vector2.Angle(relative, transform.up);
         return angle < fov;
     }
 
@@ -703,7 +710,7 @@ public abstract class Unit : Entity, IArmed {
 
     public abstract bool IsFleeing();
 
-    public bool InRange(Vector2 target) => Vector2.Distance(target, GetPosition()) < Type.range;
+    public bool InRange(Vector2 target) => Vector2.Distance(target, GetPosition()) < (Type.range - 0.05f);
 
     public bool InSearchRange(Vector2 target) => Vector2.Distance(target, GetPosition()) < Type.searchRange;
 
@@ -727,7 +734,7 @@ public abstract class Unit : Entity, IArmed {
 
     public bool CanRequest() => modeChangeRequestTimer < Time.time;
 
-    public void AddToRequestTimer() => modeChangeRequestTimer = Time.time + 1f;
+    public void AddToRequestTimer() => modeChangeRequestTimer = Time.time + 0.1f;
 
     #endregion
 

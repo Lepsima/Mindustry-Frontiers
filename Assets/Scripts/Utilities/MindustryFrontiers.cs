@@ -1026,8 +1026,42 @@ namespace Frontiers.Content {
     }
 
     public class MechUnitType : UnitType {
+        [JsonIgnore] public Sprite legSprite, baseSprite;
+        public float legStepDistance = 0.15f;
         public MechUnitType(string name, Type type) : base(name, type) {
+            legSprite = AssetLoader.GetSprite(name + "-leg");
+            baseSprite = AssetLoader.GetSprite(name + "-base");
+        }
 
+        public override void Rotate(Unit unit, Vector2 position) {
+            if (!unit.CanRotate()) return;
+
+            // Quirky quaternion stuff to make the unit rotate slowly -DO NOT TOUCH-
+            Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, (position - unit.GetPosition()).normalized);
+            desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
+
+            float speed = rotationSpeed * Time.fixedDeltaTime;
+            unit.transform.rotation = Quaternion.RotateTowards(unit.transform.rotation, desiredRotation, speed);
+        }
+
+        public override void Move(Unit unit, Vector2 position) {
+            if (!unit.CanMove()) {
+                unit.SetVelocity(Vector2.zero);
+                return;
+            }
+
+            // Get the direction
+            Vector2 targetDirection = (position - unit.GetPosition()).normalized;
+
+            // Set velocity
+            unit.SetVelocity(unit.GetSimilarity(unit.transform.up, targetDirection) * velocityCap * targetDirection);
+        }
+
+        public override void UpdateBehaviour(Unit unit, Vector2 position) {
+            // Consume fuel based on fuelConsumption x enginePower
+            unit.ConsumeFuel(fuelConsumption * unit.GetEnginePower() * Time.fixedDeltaTime);
+            Move(unit, position);      
+            Rotate(unit, position);        
         }
     }
 
@@ -1036,11 +1070,14 @@ namespace Frontiers.Content {
         public bool useAerodynamics = true;
 
         public float force = 500f;
+
         public AircraftUnitType(string name, Type type) : base(name, type) {
 
         }
 
         public override void Rotate(Unit unit, Vector2 position) {
+            if (!unit.CanRotate()) return;
+
             // Power is reduced if: g-forces are high, is close to the target or if the behavoiur is fleeing
             float rotationPower = unit.GetRotationPower();
 
@@ -1057,6 +1094,8 @@ namespace Frontiers.Content {
         }
 
         public override void Move(Unit unit, Vector2 position) {
+            if (unit.CanMove()) return;
+
             // A value from 0 to 1 that indicates the power output percent of the engines
             float enginePower = unit.GetEnginePower();
 
@@ -1075,20 +1114,17 @@ namespace Frontiers.Content {
         public override void UpdateBehaviour(Unit unit, Vector2 position) {
             // Consume fuel based on fuelConsumption x enginePower
             unit.ConsumeFuel(fuelConsumption * unit.GetEnginePower() * Time.fixedDeltaTime);
-
-            if (unit.CanMove()) {
-                Move(unit, position);
-            }
-
-            if (unit.CanRotate()) {
-                Rotate(unit, position);
-            }
+            Move(unit, position);
+            Rotate(unit, position);     
         }
     }
 
     public class Units {
         public const UnitType none = null;
-        public static UnitType flare, horizon, zenith, poly;
+        public static UnitType 
+            flare, horizon, zenith,  // Assault - air
+            poly,                    // Support - air
+            dagger;                  // Assault - ground
 
         public static void Load() {
             flare = new AircraftUnitType("flare", typeof(AircraftUnit)) {
@@ -1218,6 +1254,33 @@ namespace Frontiers.Content {
                 buildSpeedMultiplier = 1f,
                 itemPickupDistance = 6f,
             };
+
+            dagger = new MechUnitType("dagger", typeof(MechUnit)) {
+                weapons = new WeaponMount[1] {
+                    new WeaponMount(Weapons.daggerWeapon, new Vector2(0.29187f, 0.1562f), true, true),
+                },
+
+                priorityList = new Type[5] { typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(ItemBlock), typeof(Block) },
+
+                health = 140f,
+                size = 1.5f,
+                velocityCap = 4f,
+
+                rotationSpeed = 80f,
+
+                range = 15f,
+                searchRange = 20f,
+                fov = 80f,
+                groundHeight = 0.2f,
+
+                fuelCapacity = 525f,
+                fuelConsumption = 2.5f,
+                fuelRefillRate = 24.5f,
+
+                emptyMass = 7.05f,
+                itemMass = 2.2f,
+                fuelMass = 12.25f,
+            };
         }
     }
 
@@ -1281,7 +1344,7 @@ namespace Frontiers.Content {
         public static WeaponType smallAutoWeapon, tempestWeapon, stingerWeapon, pathWeapon, spreadWeapon;
 
         //Unit weapons
-        public static WeaponType flareWeapon, horizonBombBay, zenithMissiles;
+        public static WeaponType flareWeapon, horizonBombBay, zenithMissiles, daggerWeapon;
 
         // Item related weapons 
         public static WeaponType missileRack;
@@ -1305,6 +1368,17 @@ namespace Frontiers.Content {
                 clipSize = 25,
                 shootTime = 0.15f,
                 reloadTime = 5f
+            };
+
+            daggerWeapon = new WeaponType("dagger-weapon") {
+                bulletType = Bullets.bigBullet,
+                shootOffset = new Vector2(0, 0.24f),
+                
+                recoil = 0.1f,
+                returnSpeed = 2f,
+                clipSize = 3,
+                shootTime = 0.33f,
+                reloadTime = 1.5f,
             };
 
             horizonBombBay = new WeaponType("horizon-bomb-bay") {
@@ -1577,7 +1651,7 @@ namespace Frontiers.Content {
 
     public class Bullets {
         public const BulletType none = null;
-        public static BulletType basicBullet, bombBullet, missileBullet;
+        public static BulletType basicBullet, bigBullet, bombBullet, missileBullet;
 
         public static void Load() {
             basicBullet = new BulletType() {
@@ -1585,6 +1659,13 @@ namespace Frontiers.Content {
                 lifeTime = 0.35f,
                 buildingDamageMultiplier = 2f,
                 velocity = 90f
+            };
+
+            bigBullet = new BulletType() {
+                damage = 15f,
+                lifeTime = 0.45f,
+                buildingDamageMultiplier = 3f,
+                velocity = 70f
             };
 
             bombBullet = new BombBulletType() {
