@@ -1052,7 +1052,7 @@ namespace Frontiers.Content {
             float prevRotation = unit.transform.eulerAngles.z;
 
             unit.transform.rotation = Quaternion.RotateTowards(unit.transform.rotation, desiredRotation, speed);
-            float gForce = (unit.transform.eulerAngles.z - prevRotation) * Time.deltaTime * 10f;
+            float gForce = (unit.transform.eulerAngles.z - prevRotation) * Time.fixedDeltaTime * 10f;
             unit.Tilt(gForce * bankAmount);
         }
 

@@ -168,8 +168,6 @@ public abstract class Unit : Entity, IArmed {
     }
 
     protected virtual void Update() {
-        HandleBehaviour();
-
         teamSpriteRenderer.color = CellColor();
         shadow.SetDistance(height);
         if (velocity.sqrMagnitude > 0) FloorTile = GetGroundTile(); 
@@ -196,6 +194,7 @@ public abstract class Unit : Entity, IArmed {
 
     //Physics management
     protected virtual void FixedUpdate() {
+        HandleBehaviour();
         HandlePhysics();
     }
 
@@ -671,7 +670,7 @@ public abstract class Unit : Entity, IArmed {
 
     public virtual float GetEnginePower() {
         // Get the percent of power the engine should produce
-        return Mathf.Clamp01(fuel > 0f ? 1f : 0f) * targetSpeed;
+        return Mathf.Clamp01(fuel > 0f ? 1f * targetSpeed : 0f);
     }
 
     public virtual float GetRotationPower() {
