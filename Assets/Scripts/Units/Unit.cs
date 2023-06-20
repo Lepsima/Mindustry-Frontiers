@@ -670,7 +670,7 @@ public abstract class Unit : Entity, IArmed {
 
     public virtual float GetEnginePower() {
         // Get the percent of power the engine should produce
-        return Mathf.Clamp01(fuel > 0f ? 1f * targetSpeed : 0f);
+        return fuel > 0f ? 1f * targetSpeed : 0f;
     }
 
     public virtual float GetRotationPower() {
