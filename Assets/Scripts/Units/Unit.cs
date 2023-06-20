@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 
-public class Unit : Entity, IArmed {
+public abstract class Unit : Entity, IArmed {
     public new UnitType Type { protected set; get; }
     public TileType underTile;
 
@@ -41,8 +41,6 @@ public class Unit : Entity, IArmed {
     }
 
     public event EventHandler<EntityArg> OnTargetChanged;
-
-    private LandPadBlock currentLandPadBlock;
     private Shadow shadow;
 
     protected UnitMode _mode = UnitMode.Return, lastUnitMode;
@@ -56,11 +54,10 @@ public class Unit : Entity, IArmed {
     protected Vector2 homePosition;
     public Vector2 patrolPosition = Vector2.zero;
 
-    protected float targetSpeed, targetHeight, enginePower, currentMass, lightPercent = 0f;
+    protected float targetSpeed, currentMass;
 
     protected float fuel, height, cargoMass;
-    bool isCoreUnit, isTakingOff, isLanded, isFleeing, areWeaponsActive;
-
+    protected bool isCoreUnit, isLanded, areWeaponsActive;
 
     protected ConstructionBlock constructingBlock;
 
@@ -102,13 +99,12 @@ public class Unit : Entity, IArmed {
         _target = syncObject ? syncObject as Entity : null;
     }
 
-    public void ChangeMode(int mode, bool registerPrev) {
+    public virtual void ChangeMode(int mode, bool registerPrev) {
         if ((UnitMode)mode == UnitMode.Attack && unarmed) mode = (int)UnitMode.Patrol;
-        if (registerPrev) lastUnitMode = (UnitMode)mode;
-
+     
+        lastUnitMode = registerPrev ? Mode : (UnitMode)mode;
         Mode = (UnitMode)mode;
         Target = null;
-        isFleeing = false;
 
         targetLostTimer = 0;
         landPadSearchTimer = 0;
@@ -208,7 +204,7 @@ public class Unit : Entity, IArmed {
             return;
         }
 
-        name = "Unit Team : " + teamCode;
+        name = Type.name + " " + teamCode;
         spriteHolder = transform.GetChild(0);
         base.Set(position, rotation, type, id, teamCode);
 
@@ -217,7 +213,7 @@ public class Unit : Entity, IArmed {
         hasInventory = true;
 
         fuel = Type.fuelCapacity;
-        height = Type.flyHeight / 2;
+        height = Type.groundHeight / 2;
         health = Type.health;
 
         SetEffects();
@@ -279,11 +275,11 @@ public class Unit : Entity, IArmed {
             if (particleSystem.name == "WaterDeviationFX") waterDeviationEffect = particleSystem;
         }
 
-        shadow.SetDistance(Type.flyHeight);
+        shadow.SetDistance(Type.groundHeight);
         shadow.SetSprite(Type.spriteFull);
     }
 
-    private void SetDragTrailLenght(float time) {
+    protected void SetDragTrailLenght(float time) {
         foreach (TrailRenderer tr in trailRenderers) tr.time = Mathf.Abs(time);
     } //Simulate drag trails
 
@@ -299,13 +295,6 @@ public class Unit : Entity, IArmed {
 
     public override EntityType GetEntityType() => Type;
 
-    public float GetHeight() => height;
-
-    public TileType GetGroundTile() {
-        Vector2 position = shadow.transform.position;
-        if (MapManager.Map.IsInBounds(position)) return null;
-        return MapManager.Map.GetMapTileTypeAt(Map.MapLayer.Ground, position);
-    }
 
     #endregion
 
@@ -369,87 +358,7 @@ public class Unit : Entity, IArmed {
 
 
     #region - Behaviour -
-    /// <summary>
-    /// The main function to handle the unit physics
-    /// Handles: Movement, Rotation, Height and Fuel Consumption
-    /// </summary>
-    public void HandlePhysics() {
-        // Get distance to behaviour target
-        float distance = Vector2.Distance(_position, transform.position);
-
-        // A value from 0 to 1 that indicates the power output percent of the engines
-        enginePower = Mathf.Clamp01(fuel > 0f ? 1f : 0f) * targetSpeed;
-
-        // If the current height is higher than should be, lower engine power on purpose
-        if (height > targetHeight) enginePower *= 0.75f;
-        enginePower *= height / Type.flyHeight;
-
-        // Consume fuel based on fuelConsumption x enginePower
-        fuel -= Type.fuelConsumption * enginePower * Time.fixedDeltaTime;
-
-        float fuelMass = FuelPercent() * Type.fuelMass;
-        float cargoMass = 0;
-        currentMass = Type.emptyMass + fuelMass + cargoMass;
-
-        // If only 10s of fuel left, enable return mode
-        if (fuel / Type.fuelConsumption < 10f) Client.UnitChangeMode(this, (int)UnitMode.Return, true);
-
-        if (_rotate) {
-            // Power is reduced if: g-forces are high, is close to the target or if the behavoiur is fleeing
-            float rotationPower = Mathf.Clamp01(2 / gForce);
-            if (distance < 5f || isFleeing) rotationPower *= Mathf.Clamp01(distance / 10);
-
-            // Quirky quaternion stuff to make the unit rotate slowly -DO NOT TOUCH-
-            Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, (_position - GetPosition()).normalized);
-            desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
-
-            float prevRotation = transform.eulerAngles.z;
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRotation, Type.rotationSpeed * rotationPower * Time.fixedDeltaTime);
-            angularGForce = (transform.eulerAngles.z - prevRotation) * Time.deltaTime * 10f;
-        }
-
-        if (_move) {
-            // If isn't landed or taking off, calculate normal movement physics
-            if (!isLanded && !isTakingOff) {
-
-                // Get the direction
-                Vector2 direction = GetDirection(_position);
-                Vector2 targetDirection = (_position - GetPosition()).normalized;
-
-                // Get acceleration and drag values based on direction
-                float similarity = GetSimilarity(transform.up, targetDirection);
-                enginePower *= isFleeing ? 1 : (similarity > 0.5f ? similarity : 0.1f);
-
-                acceleration += enginePower * Type.force / currentMass * direction.normalized;
-
-                // Tilt the unit according to accelDot
-                spriteHolder.localEulerAngles = new Vector3(0, Mathf.LerpAngle(spriteHolder.localEulerAngles.y, angularGForce * Type.bankAmount, Type.bankSpeed * Time.fixedDeltaTime), 0);
-            }
-        }
-
-        // Height behaviour
-        if (!isLanded) {
-            // If is taking off climb until half fly height
-            if (isTakingOff) height = Mathf.Clamp(Time.fixedDeltaTime * Type.flyHeight / 6 + height, 0, Type.flyHeight);
-            else {
-                float liftForce = 3;
-                float fallForce = -3;
-
-                // Change height increase or decrease based on enginePower
-                bool isFalling = enginePower <= 0 || targetHeight < height;
-                height = Mathf.Clamp((isFalling ? fallForce : liftForce) * Time.fixedDeltaTime + height, 0, Type.flyHeight);
-
-                // If is touching ground, crash
-                if (height < 0.05f) Land();
-            }
-        }
-
-        // Drag force inversely proportional to velocity
-        acceleration -= (1 - Type.drag * 0.33f * Time.fixedDeltaTime) * (velocity * transform.up);
-
-        // Drag force inversely proportional to direction
-        acceleration -= (1 - Type.drag * 0.67f * Time.fixedDeltaTime) * velocity;
-
+    public virtual void HandlePhysics() {
         // Calculate velocity and position
         velocity = Vector2.ClampMagnitude(acceleration * Time.fixedDeltaTime + velocity, Type.velocityCap);
         transform.position += (Vector3)velocity * Time.fixedDeltaTime;
@@ -458,6 +367,8 @@ public class Unit : Entity, IArmed {
         gForce = (acceleration * Time.fixedDeltaTime).magnitude;
         acceleration = Vector2.zero;
     }
+
+    public abstract void HandleHeight();
 
     public void HandleBehaviour() {
         _move = true;
@@ -487,10 +398,12 @@ public class Unit : Entity, IArmed {
 
         if (!Target) SetWeaponsActive(false);
 
+        Type.UpdateBehaviour(this, _position);
+        if (!isLanded) HandleHeight();
+
         // Visual things
         SetDragTrailLenght(gForce * 0.3f);
         shadow.SetDistance(height);
-        //frontLight.intensity = lightPercent;
     }
 
     protected void SetBehaviourPosition(Vector2 target) => _position = target;
@@ -498,75 +411,45 @@ public class Unit : Entity, IArmed {
 
     #region - Behaviours -
     protected virtual void AttackBehaviour() {
-        targetHeight = Type.flyHeight;
-        targetSpeed = 1f;
+        HandleTargeting();
 
-        //If is landed, takeoff
-        if (isLanded) Client.UnitTakeOff(this);
-        else if (!isTakingOff) {
-            // Default target search
-            if (!isFleeing) HandleTargeting(true);
-            else {
-                if (Vector2.Distance(patrolPosition, GetPosition()) < 5f) isFleeing = false;
-                else SetBehaviourPosition(patrolPosition);
-            }
-
-            // If there's not even an enemy core, set unit to return
-            if (!Target) {
-                Client.UnitChangeMode(this, (int)UnitMode.Return);
-            } else if (!isFleeing) {
-                AttackSubBehaviour(Target.GetPosition());
-            }
-
-            // Once gets too close, run far away for the next run
-            if (Type.useAerodynamics && Vector2.Distance(_position, transform.position) < 2f) { 
-                isFleeing = true;
-
-                // Where 25f is the flee distance
-                patrolPosition = GetPosition() + (Vector2)transform.up * 25f;
-
-                // Turn off weapons
-                deactivateWeaponsTimer = Time.time + 0.75f;
+        if (!Target || unarmed) {
+            if (lastUnitMode != UnitMode.Attack || unarmed) {
+                Client.UnitChangeMode(this, (int)lastUnitMode);
+                return;
+            } else {
+                Target = TeamUtilities.GetClosestCoreBlock(GetPosition(), TeamUtilities.GetEnemyTeam(teamCode));
+                if (!Target) Client.UnitChangeMode(this, (int)UnitMode.Return);
             }
         }
+        SetBehaviourPosition(Target.GetPosition());
+
+        if (InRange(_position) && StopToShoot()) _move = false;
+
+        bool canShoot = InShootRange(_position, weapons[0].Type.maxTargetDeviation);
+        if (canShoot != areWeaponsActive) SetWeaponsActive(canShoot);
     }
 
     protected virtual void PatrolBehaviour() {
-        targetHeight = Type.flyHeight;
-        targetSpeed = 0.9f;
+        // Default target search
+        HandleTargeting();
 
-        //If is landed, takeoff
-        if (isLanded) TakeOff();
-        else if (!isTakingOff) {
-            // Default target search
-            HandleTargeting();
-
-
-            if (Target) {
-
-                // If a target was found, attack
-                AttackSubBehaviour(Target.GetPosition());
-
-            } else if (Vector2.Distance(patrolPosition, GetPosition()) < 5f || patrolPosition == Vector2.zero) {
-
-                // If no target or close to previous patrol point, create new one
-                Client.UnitChangePatrolPoint(this, UnityEngine.Random.insideUnitCircle * Type.searchRange + homePosition);
-
-            } else {
-
-                // Then move to the patrol point
-                SetBehaviourPosition(patrolPosition); 
-
-            }
+        // If target found, switch to attack
+        if (Target) {     
+            Client.UnitChangeMode(this, (int)UnitMode.Attack, true);
+            return;
+        } 
+        
+        if (Vector2.Distance(patrolPosition, GetPosition()) < 5f || patrolPosition == Vector2.zero) {
+            // If no target or close to previous patrol point, create new one
+            Client.UnitChangePatrolPoint(this, UnityEngine.Random.insideUnitCircle * Type.searchRange + homePosition);
+        } else {
+            // Then move to the patrol point
+            SetBehaviourPosition(patrolPosition);
         }
     }
 
     protected virtual void ReturnBehaviour() {
-        if (isLanded) return;
-
-        targetHeight = Type.flyHeight * 0.5f;
-        targetSpeed = 0.5f;
-
         //If target block is invalid, get closest landpad
         bool isInvalid = !Target || !(Target is LandPadBlock) || !(Target as LandPadBlock).CanLand(this);
         if (landPadSearchTimer < Time.time && isInvalid) {
@@ -577,24 +460,20 @@ public class Unit : Entity, IArmed {
             // Confirm target change
             if (targetLandPad) Target = targetLandPad;
         }
-        
+
         // If couldnt't find any landpads, continue as patrol mode
         if (Target is LandPadBlock) {
             //If close to landpad, land
             float distance = Vector2.Distance(Target.GetPosition(), GetPosition());
-            if (distance < ((Block)Target).Type.size / 2 + 0.5f && velocity.magnitude < 5f) Land(Target as LandPadBlock);
+            if (distance < ((Block)Target).Type.size / 2 + 0.5f && velocity.magnitude < 5f) TakeOff();
 
             //Move towards target
             SetBehaviourPosition(Target.GetPosition());
 
         } else PatrolBehaviour();
-        
     }
 
-    protected virtual void AssistBehaviour() {
-        targetHeight = Type.flyHeight;
-        targetSpeed = 1f; 
-        
+    protected virtual void AssistBehaviour() {   
         if (!isCoreUnit) {
             Client.UnitChangeMode(this, (int)UnitMode.Return);
             return;
@@ -672,35 +551,20 @@ public class Unit : Entity, IArmed {
     }
 
     protected virtual void IdlingBehaviour() {
-        targetHeight = Type.flyHeight * 0.5f;
-        targetSpeed = 0.5f;
-
         SetBehaviourPosition(homePosition);
     }
 
     #endregion
 
-    #region - Sub Behaviours -
+    public virtual void TakeOff() {
 
-    /// <summary>
-    /// A sub behaviour used for attacking a target at any time in the main behaviour
-    /// </summary>
-    /// <param name="target">The target's position</param>
-    private void AttackSubBehaviour(Vector2 target) {
-        if (unarmed) return;
-        if (!Type.useAerodynamics && InRange(target)) _move = false;
-
-        SetBehaviourPosition(target);
-
-        if (Target) {
-            bool canShoot = InShootRange(target, weapons[0].Type.maxTargetDeviation);
-            if (canShoot != areWeaponsActive) SetWeaponsActive(canShoot);
-        } else {
-            SetWeaponsActive(false);
-        }
     }
 
-    #endregion
+    public virtual void Land() {
+
+    }
+
+
 
     /// <summary>
     /// Fully autonomous target search, includes:
@@ -709,7 +573,7 @@ public class Unit : Entity, IArmed {
     ///  - Optional default target enemy core
     /// </summary>
     /// <param name="useEnemyCoreAsDefault">Enables the default target</param>
-    private void HandleTargeting(bool useEnemyCoreAsDefault = false) {
+    protected void HandleTargeting(bool useEnemyCoreAsDefault = false) {
         if (Target) {
             // Check if target is still valid
             bool inRange = (Target as Unit) == null ? InSearchRange(Target.GetPosition()) : InShootRange(Target.GetPosition(), Type.fov);
@@ -728,12 +592,12 @@ public class Unit : Entity, IArmed {
         }
     }
 
-    private bool ValidTarget(Entity target) {
+    protected bool ValidTarget(Entity target) {
         if (!target) return false;
         return Vector2.Distance(target.GetPosition(), GetPosition()) < Type.searchRange;
     }
 
-    private Entity GetTarget(Type[] priorityList = null) {
+    protected Entity GetTarget(Type[] priorityList = null) {
         //Default priority targets
         if (priorityList == null) priorityList = new Type[4] { typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) };
 
@@ -753,90 +617,24 @@ public class Unit : Entity, IArmed {
 
     #endregion
 
-
-    #region - Landing / Takeoff - 
-
-    //Land unit on the ground, if obstructed: crash, THIS CURRENTLY CRASHES(into the map) THE UNIT ALWAYS
-    public void Land() {
-        MapCrash();
-        /*
-        //If there's no ground to land, crash
-        if (!MapManager.Instance.GetMapTileAt(transform.position)) {
-            MapCrash();
-            return;
-        }
-
-        //If there's a solid block on the landsite, crash
-        if (MapManager.Instance.GetSolidTileAt(transform.position) && MapManager.Instance.GetBlockAt(Vector2Int.CeilToInt(transform.position)).Type.solid) MapCrash();
-
-        //Set landed true and stop completely the unit
-        isLanded = true;
-        velocity = Vector2.zero;
-        spriteHolder.localScale = Vector3.one * 0.7f;
-        SetTrailTime(0);
-        */
-    }
-   
-    public void Land(LandPadBlock landPad) {
-        //Land on landpad
-        if (!landPad.Land(this)) return;
-        currentLandPadBlock = landPad;
-
-        //Set landed true and stop completely the unit
-        isLanded = true;
-        velocity = Vector2.zero;
-        //spriteHolder.localScale = Vector3.one * 0.7f;
-
-        height = 0f;
-        SetDragTrailLenght(0);
-    } //Land unit on a near landpad
-
-
-    //When crash into the map
-    public void MapCrash() {
-        //Crash effects: TODO
-        Client.DestroyUnit(this, true);
-    }
-
-
-    //Take off from land
-    public void TakeOff() {
-        if (isTakingOff || !isLanded) return;
-
-        //Start takeOff
-        isTakingOff = true;
-        isLanded = false;
-        velocity = Vector2.zero;
-
-        //Allow free movement in ±3s
-        Invoke(nameof(EndTakeOff), 3f);
-
-        //Play particle system
-        Effect.PlayEffect("TakeoffFX", transform.position, size);
-    }
-
-
-    //Enable physics movement
-    private void EndTakeOff() {
-        //If is landed on a landpad, takeoff from it
-        if (currentLandPadBlock) currentLandPadBlock.TakeOff(this);
-        currentLandPadBlock = null;
-
-        //Takeoff ended, allowing free movement
-        isTakingOff = false;
-        //spriteHolder.localScale = Vector3.one;
-        velocity = Type.force / 3 * transform.up;
-    }
-    #endregion
-
-
     #region - Math - 
-    public float angle;
+    public float GetHeight() => height;
+
+    public TileType GetGroundTile() {
+        Vector2 position = shadow.transform.position;
+        if (MapManager.Map.IsInBounds(position)) return null;
+        return MapManager.Map.GetMapTileTypeAt(Map.MapLayer.Ground, position);
+    }
+
+    protected virtual bool StopToShoot() {
+        return true;
+    }
+
     public bool InShootRange(Vector2 target, float fov) {
         if (!InRange(target)) return false;
 
         float cosAngle = Vector2.Dot((target - GetPosition()).normalized, transform.up);
-        angle = Mathf.Acos(cosAngle) * Mathf.Rad2Deg;
+        float angle = Mathf.Acos(cosAngle) * Mathf.Rad2Deg;
 
         return angle < fov;
     }
@@ -847,11 +645,46 @@ public class Unit : Entity, IArmed {
         return impact;
     }
 
+    public Vector2 GetBehaviourPosition() {
+        return _position;
+    }
+
+    public virtual float GetEnginePower() {
+        // Get the percent of power the engine should produce
+        return Mathf.Clamp01(fuel > 0f ? 1f : 0f) * targetSpeed;
+    }
+
+    public virtual float GetRotationPower() {
+        return 1;
+    }
+
+    public void ConsumeFuel(float amount) {
+        // Consume fuel and update fuel mass
+        fuel -= amount;
+        float fuelMass = FuelPercent() * Type.fuelMass;
+        currentMass = Type.emptyMass + cargoMass + fuelMass;
+
+        // If only 10s of fuel left, enable return mode
+        if (fuel / Type.fuelConsumption < Type.fuelLeftToReturn) Client.UnitChangeMode(this, (int)UnitMode.Return, true);
+    }
+
+    public virtual bool CanMove() {
+        return _move && !isLanded;
+    }
+
+    public virtual bool CanRotate() {
+        return _rotate && !isLanded;
+    }
+
+    public void Accelerate(Vector2 amount) {
+        acceleration += amount / currentMass;
+    }
+
     public bool InRange(Vector2 target) => Vector2.Distance(target, GetPosition()) < Type.range;
 
     public bool InSearchRange(Vector2 target) => Vector2.Distance(target, GetPosition()) < Type.searchRange;
 
-    public Vector2 GetDirection(Vector2 target) => Type.useAerodynamics ? (Vector2)transform.up : (target - GetPosition()).normalized;
+    public virtual Vector2 GetDirection(Vector2 target) => (target - GetPosition()).normalized;
 
     //How much is the second vector pointing like other vector (0 = exact, 1 == oposite)
     public float GetForwardDotProduct(Vector2 v1, Vector2 v2) => Vector2.Dot(v1.normalized, v2.normalized) / 2 + 0.5f;
@@ -890,6 +723,10 @@ public class Unit : Entity, IArmed {
         Client.syncObjects.Remove(SyncID);
 
         base.OnDestroy();
+    }
+
+    public void MaintainWeaponsActive(float time) {
+        deactivateWeaponsTimer = Time.time + time;
     }
 
     public void SetWeaponsActive(bool value) {

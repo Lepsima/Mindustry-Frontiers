@@ -988,18 +988,15 @@ namespace Frontiers.Content {
         [JsonIgnore] public Type[] priorityList = null;
 
         public float size = 1.5f;
-        public float velocityCap = 2f, drag = 1f, bankAmount = 25f, bankSpeed = 5f, rotationSpeed = 90f;
-        public bool useAerodynamics = true;
+        public float velocityCap = 2f, rotationSpeed = 90f;
 
         public float itemPickupDistance = 3f, buildSpeedMultiplier = 1f;
 
         public float range = 10f, searchRange = 15f, fov = 95;
+        public float groundHeight = 18f;
 
-        public float fuelCapacity = 60f, fuelConsumption = 1.5f, fuelRefillRate = 7.5f;
+        public float fuelCapacity = 60f, fuelConsumption = 1.5f, fuelRefillRate = 7.5f, fuelLeftToReturn = 10f;
 
-        public float flyHeight = 18f;
-
-        public float force = 500f;
         public float emptyMass = 10f, fuelMass = 3.5f;
 
         public WeaponMount[] weapons = new WeaponMount[0];
@@ -1014,6 +1011,18 @@ namespace Frontiers.Content {
             canGetOnFire = true;
             maximumFires = 2;
         }
+
+        public virtual void Rotate(Unit unit, Vector2 position) {
+
+        }
+
+        public virtual void Move(Unit unit, Vector2 position) {
+
+        }
+
+        public virtual void UpdateBehaviour(Unit unit, Vector2 position) {
+
+        }
     }
 
     public class MechUnitType : UnitType {
@@ -1023,17 +1032,66 @@ namespace Frontiers.Content {
     }
 
     public class AircraftUnitType : UnitType {
+        public float drag = 1f, bankAmount = 25f, bankSpeed = 5f;
+        public bool useAerodynamics = true;
+
+        public float force = 500f;
         public AircraftUnitType(string name, Type type) : base(name, type) {
 
+        }
+
+        public override void Rotate(Unit unit, Vector2 position) {
+            // Power is reduced if: g-forces are high, is close to the target or if the behavoiur is fleeing
+            float rotationPower = unit.GetRotationPower();
+
+            // Quirky quaternion stuff to make the unit rotate slowly -DO NOT TOUCH-
+            Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, (position - unit.GetPosition()).normalized);
+            desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
+
+            float speed = rotationSpeed * rotationPower * Time.fixedDeltaTime;
+            float prevRotation = unit.transform.eulerAngles.z;
+
+            unit.transform.rotation = Quaternion.RotateTowards(unit.transform.rotation, desiredRotation, speed);
+            float gForce = (unit.transform.eulerAngles.z - prevRotation) * Time.deltaTime * 10f;
+            unit.Tilt(gForce * bankAmount);
+        }
+
+        public override void Move(Unit unit, Vector2 position) {
+            // A value from 0 to 1 that indicates the power output percent of the engines
+            float enginePower = unit.GetEnginePower();
+
+            // Get the direction
+            Vector2 direction = unit.GetDirection(position);
+            Vector2 targetDirection = (position - unit.GetPosition()).normalized;
+
+            // Get acceleration and drag values based on direction
+            float similarity = unit.GetSimilarity(unit.transform.up, targetDirection);
+            enginePower *= unit.IsFleeing() ? 1 : (similarity > 0.5f ? similarity : 0.1f);
+
+            // Accelerate
+            unit.Accelerate(enginePower * force * direction.normalized);
+        }
+
+        public override void UpdateBehaviour(Unit unit, Vector2 position) {
+            // Consume fuel based on fuelConsumption x enginePower
+            unit.ConsumeFuel(fuelConsumption * unit.GetEnginePower() * Time.fixedDeltaTime);
+
+            if (unit.CanMove()) {
+                Move(unit, position);
+            }
+
+            if (unit.CanRotate()) {
+                Rotate(unit, position);
+            }
         }
     }
 
     public class Units {
         public const UnitType none = null;
-        public static UnitType flare, horizon, zenith, pulse, poly;
+        public static UnitType flare, horizon, zenith, poly;
 
         public static void Load() {
-            flare = new UnitType("flare", typeof(Unit)) {
+            flare = new AircraftUnitType("flare", typeof(AircraftUnit)) {
                 weapons = new WeaponMount[1] {
                     new WeaponMount(Weapons.flareWeapon, new Vector2(-0.25f, 0.3f), true),
                 },
@@ -1052,7 +1110,7 @@ namespace Frontiers.Content {
                 range = 10f,
                 searchRange = 15f,
                 fov = 100f,
-                flyHeight = 18f,
+                groundHeight = 18f,
 
                 fuelCapacity = 120f,
                 fuelConsumption = 1.25f,
@@ -1064,7 +1122,7 @@ namespace Frontiers.Content {
                 fuelMass = 3.5f,
             };
 
-            horizon = new UnitType("horizon", typeof(Unit)) {
+            horizon = new AircraftUnitType("horizon", typeof(AircraftUnit)) {
                 weapons = new WeaponMount[1] {
                     new WeaponMount(Weapons.horizonBombBay, Vector2.zero, false),
                 },
@@ -1084,7 +1142,7 @@ namespace Frontiers.Content {
                 range = 3f,
                 searchRange = 20f,
                 fov = 110f,
-                flyHeight = 12f,
+                groundHeight = 12f,
 
                 fuelCapacity = 240f,
                 fuelConsumption = 2.15f,
@@ -1096,7 +1154,7 @@ namespace Frontiers.Content {
                 fuelMass = 5f,
             };
 
-            zenith = new UnitType("zenith", typeof(Unit)) {
+            zenith = new AircraftUnitType("zenith", typeof(AircraftUnit)) {
                 weapons = new WeaponMount[1] {
                     new WeaponMount(Weapons.zenithMissiles, new Vector2(0.4f, -0.15f), true, true),
                 },
@@ -1116,7 +1174,7 @@ namespace Frontiers.Content {
                 range = 15f,
                 searchRange = 20f,
                 fov = 90f,
-                flyHeight = 12f,
+                groundHeight = 12f,
 
                 fuelCapacity = 325f,
                 fuelConsumption = 2.25f,
@@ -1130,28 +1188,7 @@ namespace Frontiers.Content {
                 maximumFires = 3,
             };
 
-            pulse = new UnitType("pulse", typeof(Unit)) {
-                weapons = new WeaponMount[1] {
-                    new WeaponMount(Weapons.smallAutoWeapon, new Vector2(0.43675f, 0.15f), true),
-                },
-
-                priorityList = null,
-                useAerodynamics = false,
-
-                health = 250f,
-                velocityCap = 2f,
-                drag = 1.5f,
-                rotationSpeed = 100f,
-                bankAmount = 40f,
-                range = 22.5f,
-                fov = 120f,
-
-                fuelCapacity = 90f,
-                fuelConsumption = 1.5f,
-                fuelRefillRate = 7.5f
-            };
-
-            poly = new UnitType("poly", typeof(Unit)) {
+            poly = new AircraftUnitType("poly", typeof(AircraftUnit)) {
                 priorityList = new Type[0],
                 useAerodynamics = false,
 
@@ -1167,7 +1204,7 @@ namespace Frontiers.Content {
                 range = 10f,
                 searchRange = 25f,
                 fov = 180f,
-                flyHeight = 9f,
+                groundHeight = 9f,
 
                 fuelCapacity = 580f,
                 fuelConsumption = 0.22f,
@@ -1519,7 +1556,7 @@ namespace Frontiers.Content {
 
             // Bomb bullets don't work on block turrets
             float height = ((Unit)bullet.weapon.parentEntity).GetHeight();
-            float maxHeight = ((Unit)bullet.weapon.parentEntity).Type.flyHeight;
+            float maxHeight = ((Unit)bullet.weapon.parentEntity).Type.groundHeight;
 
             while (height > 0f) {
                 height -= fallVelocity * Time.deltaTime;
