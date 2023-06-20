@@ -417,7 +417,7 @@ public abstract class Unit : Entity, IArmed {
         }
         SetBehaviourPosition(Target.GetPosition());
 
-        if (InRange(_position) && StopToShoot()) _move = false;
+        if (InRange(_position) && DoesStopToShoot()) _move = false;
 
         bool canShoot = InShootRange(_position, weapons[0].Type.maxTargetDeviation);
         if (canShoot != areWeaponsActive) SetWeaponsActive(canShoot);
@@ -646,7 +646,7 @@ public abstract class Unit : Entity, IArmed {
         return MapManager.Map.GetMapTileTypeAt(Map.MapLayer.Ground, position);
     }
 
-    protected virtual bool StopToShoot() {
+    protected virtual bool DoesStopToShoot() {
         return true;
     }
 
@@ -699,6 +699,10 @@ public abstract class Unit : Entity, IArmed {
     public void Accelerate(Vector2 amount) {
         acceleration += amount / currentMass;
     }
+
+    public abstract void Tilt(float value);
+
+    public abstract bool IsFleeing();
 
     public bool InRange(Vector2 target) => Vector2.Distance(target, GetPosition()) < Type.range;
 

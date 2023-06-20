@@ -70,7 +70,7 @@ public class AircraftUnit : Unit {
 
     public override Vector2 GetDirection(Vector2 target) => Type.useAerodynamics ? transform.up : (target - GetPosition()).normalized;
 
-    public void Tilt(float targetAngle) {
+    public override void Tilt(float targetAngle) {
         float lerpVal = Mathf.LerpAngle(spriteHolder.localEulerAngles.y, targetAngle, Type.bankSpeed * Time.fixedDeltaTime);
         spriteHolder.localEulerAngles = new Vector3(0, lerpVal, 0);
     }
@@ -84,7 +84,7 @@ public class AircraftUnit : Unit {
         if (height < 0.05f) Land();
     }
 
-    protected override bool StopToShoot() {
+    protected override bool DoesStopToShoot() {
         return !Type.useAerodynamics;
     }
 
@@ -105,7 +105,8 @@ public class AircraftUnit : Unit {
     public bool IsFalling() {
         return targetHeight < height;
     }
-    public bool IsFleeing() {
+
+    public override bool IsFleeing() {
         return isFleeing;
     }
 
