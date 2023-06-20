@@ -10,14 +10,11 @@ using UnityEngine;
 
 public abstract class Unit : Entity, IArmed {
     public new UnitType Type { protected set; get; }
-    public TileType underTile;
+
 
     #region - References -
     protected Transform spriteHolder;
     protected SpriteRenderer teamSpriteRenderer;
-
-    TrailRenderer[] trailRenderers;
-    [SerializeField] ParticleSystem waterDeviationEffect;
 
     readonly List<Weapon> weapons = new();
     public bool unarmed = true;
@@ -26,7 +23,6 @@ public abstract class Unit : Entity, IArmed {
 
 
     #region - Current Status Vars -
-    private Entity _target;
     protected Entity Target { 
         get { 
             return _target; 
@@ -39,9 +35,23 @@ public abstract class Unit : Entity, IArmed {
             }
         } 
     }
+    private Entity _target;
 
-    public event EventHandler<EntityArg> OnTargetChanged;
-    private Shadow shadow;
+    public TileType FloorTile {
+        get { return _floorTile; }
+
+        set {
+            if (value != _floorTile) {
+                OnFloorTileChange();
+                _floorTile = value;
+            }
+        }
+    }
+    private TileType _floorTile;
+
+    protected LandPadBlock currentLandPadBlock;
+    protected event EventHandler<EntityArg> OnTargetChanged;
+    protected Shadow shadow;
 
     protected UnitMode _mode = UnitMode.Return, lastUnitMode;
     protected AssistSubState subStateMode = AssistSubState.Waiting;
@@ -57,13 +67,15 @@ public abstract class Unit : Entity, IArmed {
     protected float targetSpeed, currentMass;
 
     protected float fuel, height, cargoMass;
-    protected bool isCoreUnit, isLanded, areWeaponsActive;
+    protected bool isCoreUnit, isLanded, isTakingOff, areWeaponsActive;
 
     protected ConstructionBlock constructingBlock;
 
     // Timers
     private float
-        targetSearchTimer, landPadSearchTimer, constructionSearchTimer,
+        targetSearchTimer, 
+        landPadSearchTimer, 
+        constructionSearchTimer,
         targetLostTimer,
         deactivateWeaponsTimer,
         modeChangeRequestTimer;
@@ -104,15 +116,6 @@ public abstract class Unit : Entity, IArmed {
      
         lastUnitMode = registerPrev ? Mode : (UnitMode)mode;
         Mode = (UnitMode)mode;
-        Target = null;
-
-        targetLostTimer = 0;
-        landPadSearchTimer = 0;
-        targetSearchTimer = 0;
-        deactivateWeaponsTimer = 0;
-
-        homePosition = GetPosition();
-        SetWeaponsActive(false);
     }
 
     [PunRPC]
@@ -139,11 +142,20 @@ public abstract class Unit : Entity, IArmed {
         Deposit = 2,
     }
 
-
     public UnitMode Mode { 
         set {
-            _mode = value; 
-            Target = null;
+            if(value != _mode) {
+                _mode = value;
+                Target = null;
+
+                targetLostTimer = 0;
+                landPadSearchTimer = 0;
+                targetSearchTimer = 0;
+                deactivateWeaponsTimer = 0;
+
+                homePosition = GetPosition();
+                SetWeaponsActive(false);
+            }
         } 
 
         get { 
@@ -152,24 +164,24 @@ public abstract class Unit : Entity, IArmed {
     }
 
     protected virtual void Start() {
-        // Add temporal ammo
-        //inventory.Add(Items.missileX1, 10);
+ 
     }
 
     protected virtual void Update() {
         HandleBehaviour();
 
-        if (deactivateWeaponsTimer <= Time.time) {
+        teamSpriteRenderer.color = CellColor();
+        shadow.SetDistance(height);
+        if (velocity.sqrMagnitude > 0) FloorTile = GetGroundTile(); 
 
-            if(deactivateWeaponsTimer != 0f) {
+        if (deactivateWeaponsTimer <= Time.time) {
+            if (deactivateWeaponsTimer != 0f) {
                 SetWeaponsActive(false);
                 deactivateWeaponsTimer = 0f;
             }
         }
 
-        teamSpriteRenderer.color = CellColor();
-
-        if (isLanded && fuel < Type.fuelCapacity) {
+        if (currentLandPadBlock != null && fuel < Type.fuelCapacity) {
             if (fuel < Type.fuelCapacity) {
                 fuel += Type.fuelRefillRate * Time.deltaTime;
 
@@ -179,14 +191,6 @@ public abstract class Unit : Entity, IArmed {
                     Client.UnitChangeMode(this, (int)lastUnitMode);
                 }
             }
-        }
-
-        if (velocity.magnitude > 0) {
-            underTile = GetGroundTile();
-            ParticleSystem.EmissionModule emissionModule = waterDeviationEffect.emission;
-
-            bool isWater = underTile != null && underTile.isWater;
-            emissionModule.rateOverDistanceMultiplier = isWater ? 5f : 0f;
         }
     }
 
@@ -267,22 +271,11 @@ public abstract class Unit : Entity, IArmed {
         weapons.Add(weapon);
     }
 
-    private void SetEffects() {
-        trailRenderers = (TrailRenderer[])transform.GetComponentsInChildren<TrailRenderer>(true).Clone();
+    protected virtual void SetEffects() {
         shadow = transform.GetComponentInChildren<Shadow>();
-
-        foreach (ParticleSystem particleSystem in gameObject.GetComponentsInChildren<ParticleSystem>()) {
-            if (particleSystem.name == "WaterDeviationFX") waterDeviationEffect = particleSystem;
-        }
-
         shadow.SetDistance(Type.groundHeight);
         shadow.SetSprite(Type.spriteFull);
     }
-
-    protected void SetDragTrailLenght(float time) {
-        foreach (TrailRenderer tr in trailRenderers) tr.time = Mathf.Abs(time);
-    } //Simulate drag trails
-
 
     public void SetVelocity(Vector2 velocity) => this.velocity = velocity;
 
@@ -319,6 +312,10 @@ public abstract class Unit : Entity, IArmed {
         if (isCoreUnit) {
 
         }
+    }
+
+    protected virtual void OnFloorTileChange() {
+
     }
 
     #endregion
@@ -400,10 +397,6 @@ public abstract class Unit : Entity, IArmed {
 
         Type.UpdateBehaviour(this, _position);
         if (!isLanded) HandleHeight();
-
-        // Visual things
-        SetDragTrailLenght(gForce * 0.3f);
-        shadow.SetDistance(height);
     }
 
     protected void SetBehaviourPosition(Vector2 target) => _position = target;
@@ -556,12 +549,38 @@ public abstract class Unit : Entity, IArmed {
 
     #endregion
 
-    public virtual void TakeOff() {
+    public void TakeOff() {
+        Client.UnitTakeOff(this);
+    }
+
+    public virtual void OnTakeOff() {
 
     }
 
-    public virtual void Land() {
+    protected virtual void EndTakeOff() {
+        //If is landed on a landpad, takeoff from it
+        if (currentLandPadBlock) currentLandPadBlock.TakeOff(this);
+        currentLandPadBlock = null;
 
+        //Takeoff ended, allowing free movement
+        isTakingOff = false;
+    }
+
+    public virtual bool Land() {
+        if (Target is LandPadBlock landPad){
+            //Land on landpad
+            if (!landPad.Land(this)) return false;
+            currentLandPadBlock = landPad;
+
+            //Set landed true and stop completely the unit
+            isLanded = true;
+            velocity = Vector2.zero;
+
+            height = 0f;
+            return true;
+        }
+
+        return false;
     }
 
 
@@ -617,7 +636,8 @@ public abstract class Unit : Entity, IArmed {
 
     #endregion
 
-    #region - Math - 
+
+    #region - Math & Getters- 
     public float GetHeight() => height;
 
     public TileType GetGroundTile() {

@@ -5,10 +5,12 @@ using Frontiers.Content;
 
 public class AircraftUnit : Unit {
     public new AircraftUnitType Type { get => (AircraftUnitType)base.Type; protected set => base.Type = value; }
-    private LandPadBlock currentLandPadBlock;
+
+    TrailRenderer[] trailRenderers;
+    [SerializeField] ParticleSystem waterDeviationEffect;
 
     protected float targetHeight;
-    protected bool isTakingOff, isFleeing;
+    protected bool isFleeing;
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
@@ -16,6 +18,7 @@ public class AircraftUnit : Unit {
 
     protected override void Update() {
         base.Update();
+        SetDragTrailLenght(gForce * 0.3f);
     }
 
     protected override void FixedUpdate() {
@@ -48,7 +51,24 @@ public class AircraftUnit : Unit {
         }
     }
 
-    public override Vector2 GetDirection(Vector2 target) => Type.useAerodynamics ? (Vector2)transform.up : (target - GetPosition()).normalized;
+    protected override void SetEffects() {
+        base.SetEffects();
+        trailRenderers = (TrailRenderer[])transform.GetComponentsInChildren<TrailRenderer>(true).Clone();
+
+
+        foreach (ParticleSystem particleSystem in gameObject.GetComponentsInChildren<ParticleSystem>()) {
+            if (particleSystem.name == "WaterDeviationFX") waterDeviationEffect = particleSystem;
+        }
+    }
+
+    protected void SetDragTrailLenght(float time) {
+        foreach (TrailRenderer tr in trailRenderers) tr.time = Mathf.Abs(time);
+    } 
+
+
+    #region - Math & Getters -
+
+    public override Vector2 GetDirection(Vector2 target) => Type.useAerodynamics ? transform.up : (target - GetPosition()).normalized;
 
     public void Tilt(float targetAngle) {
         float lerpVal = Mathf.LerpAngle(spriteHolder.localEulerAngles.y, targetAngle, Type.bankSpeed * Time.fixedDeltaTime);
@@ -61,7 +81,7 @@ public class AircraftUnit : Unit {
         height = Mathf.Clamp((isFalling ? fallForce : liftForce) * Time.fixedDeltaTime + height, 0, Type.groundHeight);
 
         // If is touching ground, crash
-        if (height < 0.05f) Land(null);
+        if (height < 0.05f) Land();
     }
 
     protected override bool StopToShoot() {
@@ -96,38 +116,10 @@ public class AircraftUnit : Unit {
     public override bool CanRotate() {
         return base.CanRotate() && !isTakingOff;
     }
+    #endregion
 
     #region - Landing / Takeoff - 
-
-    //Land unit on the ground, if obstructed: crash, THIS CURRENTLY CRASHES(into the map) THE UNIT ALWAYS
-    public void Land() {
-        MapCrash();
-    }
-
-    public void Land(LandPadBlock landPad) {
-        //Land on landpad
-        if (!landPad.Land(this)) return;
-        currentLandPadBlock = landPad;
-
-        //Set landed true and stop completely the unit
-        isLanded = true;
-        velocity = Vector2.zero;
-        //spriteHolder.localScale = Vector3.one * 0.7f;
-
-        height = 0f;
-        SetDragTrailLenght(0);
-    } //Land unit on a near landpad
-
-
-    //When crash into the map
-    public void MapCrash() {
-        //Crash effects: TODO
-        Client.DestroyUnit(this, true);
-    }
-
-
-    //Take off from land
-    public void TakeOff() {
+    public override void OnTakeOff() {
         if (isTakingOff || !isLanded) return;
 
         //Start takeOff
@@ -142,19 +134,33 @@ public class AircraftUnit : Unit {
         Effect.PlayEffect("TakeoffFX", transform.position, size);
     }
 
-
-    //Enable physics movement
-    private void EndTakeOff() {
-        //If is landed on a landpad, takeoff from it
-        if (currentLandPadBlock) currentLandPadBlock.TakeOff(this);
-        currentLandPadBlock = null;
-
-        //Takeoff ended, allowing free movement
-        isTakingOff = false;
-        //spriteHolder.localScale = Vector3.one;
+    protected override void EndTakeOff() {
+        base.EndTakeOff();
         velocity = Type.force / 3 * transform.up;
     }
+
+    public override bool Land() {
+        bool hasLanded = base.Land();
+        if (!hasLanded) Client.DestroyUnit(this, true);
+        else SetDragTrailLenght(0);
+        return hasLanded;
+    }
+
     #endregion
+
+    #region - Events - 
+
+    protected override void OnFloorTileChange() {
+        base.OnFloorTileChange();
+
+        ParticleSystem.EmissionModule emissionModule = waterDeviationEffect.emission;
+        bool isWater = FloorTile != null && FloorTile.isWater;
+        emissionModule.rateOverDistanceMultiplier = isWater ? 5f : 0f;
+    }
+
+    #endregion
+
+    #region - Behaviour -
 
     protected override void AttackBehaviour() {
         targetHeight = Type.groundHeight;
@@ -212,4 +218,6 @@ public class AircraftUnit : Unit {
 
         base.IdlingBehaviour();
     }
+
+    #endregion
 }
