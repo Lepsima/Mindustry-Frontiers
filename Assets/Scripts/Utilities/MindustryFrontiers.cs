@@ -1027,7 +1027,7 @@ namespace Frontiers.Content {
 
     public class MechUnitType : UnitType {
         [JsonIgnore] public Sprite legSprite, baseSprite;
-        public float legStepDistance = 0.15f;
+        public float baseRotationSpeed = 90f, legStepDistance = 0.25f, sideSway = 0.075f, frontSway = 0.01f;
         public MechUnitType(string name, Type type) : base(name, type) {
             legSprite = AssetLoader.GetSprite(name + "-leg");
             baseSprite = AssetLoader.GetSprite(name + "-base");
@@ -1061,15 +1061,17 @@ namespace Frontiers.Content {
             // Consume fuel based on fuelConsumption x enginePower
             unit.ConsumeFuel(fuelConsumption * unit.GetEnginePower() * Time.fixedDeltaTime);
             Move(unit, position);      
-            Rotate(unit, position);        
+            Rotate(unit, unit.GetTargetPosition());        
         }
     }
 
     public class AircraftUnitType : UnitType {
         public float drag = 1f, bankAmount = 25f, bankSpeed = 5f;
         public bool useAerodynamics = true;
-
         public float force = 500f;
+
+        public bool hasTrails = true;
+        public Vector2 trailOffset;
 
         public AircraftUnitType(string name, Type type) : base(name, type) {
 

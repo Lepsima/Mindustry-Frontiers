@@ -2,11 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Frontiers.Content;
+using Frontiers.Assets;
 
 public class AircraftUnit : Unit {
     public new AircraftUnitType Type { get => (AircraftUnitType)base.Type; protected set => base.Type = value; }
 
-    TrailRenderer[] trailRenderers;
+    TrailRenderer rTrailRenderer;
+    TrailRenderer lTrailRenderer;
     [SerializeField] ParticleSystem waterDeviationEffect;
 
     protected float targetHeight;
@@ -51,19 +53,22 @@ public class AircraftUnit : Unit {
         }
     }
 
-    protected override void SetEffects() {
-        base.SetEffects();
-        trailRenderers = (TrailRenderer[])transform.GetComponentsInChildren<TrailRenderer>(true).Clone();
-
-
-        foreach (ParticleSystem particleSystem in gameObject.GetComponentsInChildren<ParticleSystem>()) {
-            if (particleSystem.name == "WaterDeviationFX") waterDeviationEffect = particleSystem;
-        }
+    protected void SetDragTrailLenght(float time) {
+        time = Mathf.Abs(time);
+        rTrailRenderer.time = time;
+        lTrailRenderer.time = time;
     }
 
-    protected void SetDragTrailLenght(float time) {
-        foreach (TrailRenderer tr in trailRenderers) tr.time = Mathf.Abs(time);
-    } 
+    protected override void CreateTransforms() {
+        waterDeviationEffect = transform.CreateEffect("WaterDeviationFX", Vector2.zero, Quaternion.identity, 0f);
+
+        GameObject prefab = AssetLoader.GetPrefab("UnitTrail");
+        Vector2 leftOffset = Type.trailOffset;
+        leftOffset.x *= -1f;
+
+        rTrailRenderer = Instantiate(prefab, Type.trailOffset, Quaternion.identity, transform).GetComponent<TrailRenderer>();
+        lTrailRenderer = Instantiate(prefab, leftOffset, Quaternion.identity, transform).GetComponent<TrailRenderer>();
+    }
 
 
     #region - Math & Getters -

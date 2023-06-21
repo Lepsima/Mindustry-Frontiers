@@ -169,7 +169,7 @@ public abstract class Unit : Entity, IArmed {
 
     protected virtual void Update() {
         teamSpriteRenderer.color = CellColor();
-        shadow.SetDistance(height);
+        if (shadow) shadow.SetDistance(height);
         FloorTile = GetGroundTile(); 
 
         if (deactivateWeaponsTimer <= Time.time) {
@@ -646,7 +646,7 @@ public abstract class Unit : Entity, IArmed {
     #region - Math & Getters- 
     public float GetHeight() => height;
 
-    public TileType GetGroundTile() {
+    public virtual TileType GetGroundTile() {
         Vector2 position = shadow.transform.position;
         if (!MapManager.Map.IsInBounds(position)) return null;
         return MapManager.Map.GetMapTileTypeAt(Map.MapLayer.Ground, position);
@@ -725,6 +725,10 @@ public abstract class Unit : Entity, IArmed {
     public float GetSimilarity(Vector2 v1, Vector2 v2) => 1 - Vector2.Angle(v1, v2) / 180f;
 
     public Vector2 GetVelocity() => velocity;
+
+    public Entity GetTarget() => Target;
+
+    public Vector2 GetTargetPosition() => Target && !unarmed ? Target.GetPredictedPosition(transform.position, transform.up * weapons[0].Type.bulletType.velocity) : GetBehaviourPosition();
 
     public float HealthPercent() => health / Type.health;
 
