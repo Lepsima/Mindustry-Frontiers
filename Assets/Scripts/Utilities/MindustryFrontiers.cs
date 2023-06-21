@@ -1027,7 +1027,7 @@ namespace Frontiers.Content {
 
     public class MechUnitType : UnitType {
         [JsonIgnore] public Sprite legSprite, baseSprite;
-        public float baseRotationSpeed = 90f, legStepDistance = 0.25f, sideSway = 0.075f, frontSway = 0.01f;
+        public float baseRotationSpeed = 90f, legStepDistance = 0.2f, sideSway = 0.075f, frontSway = 0.01f;
         public MechUnitType(string name, Type type) : base(name, type) {
             legSprite = AssetLoader.GetSprite(name + "-leg");
             baseSprite = AssetLoader.GetSprite(name + "-base");
@@ -1126,7 +1126,7 @@ namespace Frontiers.Content {
         public static UnitType 
             flare, horizon, zenith,  // Assault - air
             poly,                    // Support - air
-            dagger;                  // Assault - ground
+            dagger, fortress;        // Assault - ground
 
         public static void Load() {
             flare = new AircraftUnitType("flare", typeof(AircraftUnit)) {
@@ -1266,7 +1266,12 @@ namespace Frontiers.Content {
 
                 health = 140f,
                 size = 1.5f,
-                velocityCap = 4f,
+                velocityCap = 3.75f,
+
+                baseRotationSpeed = 90f,
+                legStepDistance = 0.2f,
+                sideSway = 0.075f,
+                frontSway = 0.01f,
 
                 rotationSpeed = 80f,
 
@@ -1282,6 +1287,38 @@ namespace Frontiers.Content {
                 emptyMass = 7.05f,
                 itemMass = 2.2f,
                 fuelMass = 12.25f,
+            };
+
+            fortress = new MechUnitType("fortress", typeof(MechUnit)) {
+                weapons = new WeaponMount[1] {
+                    new WeaponMount(Weapons.fortressWeapon, new Vector2(0.32f, 0.04f), true, true),
+                },
+
+                priorityList = new Type[5] { typeof(MechUnit), typeof(TurretBlock), typeof(CoreBlock), typeof(ItemBlock), typeof(Block) },
+
+                health = 140f,
+                size = 3.125f,
+                velocityCap = 3.22f,
+
+                baseRotationSpeed = 50f,
+                legStepDistance = 0.2f,
+                sideSway = 0.075f,
+                frontSway = 0.01f,
+
+                rotationSpeed = 60f,
+
+                range = 20f,
+                searchRange = 25f,
+                fov = 100f,
+                groundHeight = 0.2f,
+
+                fuelCapacity = 1080f,
+                fuelConsumption = 5.25f,
+                fuelRefillRate = 54.75f,
+
+                emptyMass = 17.5f,
+                itemMass = 3f,
+                fuelMass = 23.5f,
             };
         }
     }
@@ -1346,7 +1383,7 @@ namespace Frontiers.Content {
         public static WeaponType smallAutoWeapon, tempestWeapon, stingerWeapon, pathWeapon, spreadWeapon;
 
         //Unit weapons
-        public static WeaponType flareWeapon, horizonBombBay, zenithMissiles, daggerWeapon;
+        public static WeaponType flareWeapon, horizonBombBay, zenithMissiles, daggerWeapon, fortressWeapon;
 
         // Item related weapons 
         public static WeaponType missileRack;
@@ -1376,6 +1413,17 @@ namespace Frontiers.Content {
                 bulletType = Bullets.bigBullet,
                 shootOffset = new Vector2(0, 0.24f),
                 
+                recoil = 0.1f,
+                returnSpeed = 2f,
+                clipSize = 3,
+                shootTime = 0.33f,
+                reloadTime = 1.5f,
+            };
+
+            fortressWeapon = new WeaponType("fortress-weapon") {
+                bulletType = Bullets.bigBullet,
+                shootOffset = new Vector2(0.1f, 0.64f),
+
                 recoil = 0.1f,
                 returnSpeed = 2f,
                 clipSize = 3,
