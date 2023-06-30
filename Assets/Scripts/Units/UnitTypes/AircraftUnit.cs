@@ -62,12 +62,20 @@ public class AircraftUnit : Unit {
     protected override void CreateTransforms() {
         waterDeviationEffect = transform.CreateEffect("WaterDeviationFX", Vector2.zero, Quaternion.identity, 0f);
 
+        // Get the prefab for the trail
         GameObject prefab = AssetLoader.GetPrefab("UnitTrail");
+
+        // Get the opposite trail offset
         Vector2 leftOffset = Type.trailOffset;
         leftOffset.x *= -1f;
 
-        rTrailRenderer = Instantiate(prefab, Type.trailOffset, Quaternion.identity, transform).GetComponent<TrailRenderer>();
-        lTrailRenderer = Instantiate(prefab, leftOffset, Quaternion.identity, transform).GetComponent<TrailRenderer>();
+        // Instantiate the right sided trail
+        rTrailRenderer = Instantiate(prefab, transform).GetComponent<TrailRenderer>();
+        rTrailRenderer.transform.localPosition = Type.trailOffset;
+
+        // Instantiate the left sided trail
+        lTrailRenderer = Instantiate(prefab, transform).GetComponent<TrailRenderer>();
+        lTrailRenderer.transform.localPosition = leftOffset;
     }
 
 
@@ -76,13 +84,17 @@ public class AircraftUnit : Unit {
     public override Vector2 GetDirection(Vector2 target) => Type.useAerodynamics ? transform.up : (target - GetPosition()).normalized;
 
     public override void Tilt(float targetAngle) {
+        // Lerps the roll rotation of the unit transform towards the target angle
         float lerpVal = Mathf.LerpAngle(spriteHolder.localEulerAngles.y, targetAngle, Type.bankSpeed * Time.fixedDeltaTime);
         spriteHolder.localEulerAngles = new Vector3(0, lerpVal, 0);
     }
 
     public void ChangeHeight(bool isFalling) {
+        // Default values
         float liftForce = 3;
         float fallForce = -3;
+
+        // Update the current height
         height = Mathf.Clamp((isFalling ? fallForce : liftForce) * Time.fixedDeltaTime + height, 0, Type.groundHeight);
 
         // If is touching ground, crash
@@ -101,6 +113,7 @@ public class AircraftUnit : Unit {
     }
 
     public override float GetRotationPower() {
+        // Get the power at wich the unit should rotate
         float power = Mathf.Clamp01(2 / gForce);
         float distance = Vector2.Distance(GetBehaviourPosition(), transform.position);
         if (distance < 5f || isFleeing) power *= Mathf.Clamp01(distance / 10);
@@ -142,13 +155,17 @@ public class AircraftUnit : Unit {
 
     protected override void EndTakeOff() {
         base.EndTakeOff();
+
+        // Apply takeoff boost
         velocity = Type.force / 3 * transform.up;
     }
 
     public override void Land() {
+        // If the current target is a landing pad
         if (Target is LandPadBlock landPad) {
-            float distance = Vector2.Distance(landPad.GetPosition(), transform.position);
 
+            // Check if it's close enough to land
+            float distance = Vector2.Distance(landPad.GetPosition(), transform.position);
             if (distance > landPad.size * 0.75f) return;
 
             //Land on landpad
@@ -157,12 +174,12 @@ public class AircraftUnit : Unit {
                 return;
             }
 
+            // When landed, set the current landing pad to the target one
             currentLandPadBlock = landPad;
 
             //Set landed true and stop completely the unit
             isLanded = true;
             velocity = Vector2.zero;
-
             height = 0f;
             SetDragTrailLenght(0);
         }
@@ -175,6 +192,7 @@ public class AircraftUnit : Unit {
     protected override void OnFloorTileChange() {
         base.OnFloorTileChange();
 
+        // Change the water deviation emmision property depending on the tile below the shadow
         bool isWater = FloorTile != null && FloorTile.isWater;
         ParticleSystem.EmissionModule emissionModule = waterDeviationEffect.emission;
         emissionModule.rateOverDistanceMultiplier = isWater ? 5f : 0f;

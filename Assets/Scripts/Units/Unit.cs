@@ -647,6 +647,7 @@ public abstract class Unit : Entity, IArmed {
     public float GetHeight() => height;
 
     public virtual TileType GetGroundTile() {
+        // Get the map tile below the shadow (for 3d perspecive realism)
         Vector2 position = shadow.transform.position;
         if (!MapManager.Map.IsInBounds(position)) return null;
         return MapManager.Map.GetMapTileTypeAt(Map.MapLayer.Ground, position);

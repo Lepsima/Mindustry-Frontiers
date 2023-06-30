@@ -1053,8 +1053,11 @@ namespace Frontiers.Content {
             // Get the direction
             Vector2 targetDirection = (position - unit.GetPosition()).normalized;
 
+            float similarity = unit.GetSimilarity(unit.transform.up, targetDirection);
+            float enginePower = unit.GetEnginePower();
+
             // Set velocity
-            unit.SetVelocity(unit.GetSimilarity(unit.transform.up, targetDirection) * velocityCap * targetDirection);
+            unit.SetVelocity(similarity * enginePower * velocityCap * targetDirection);
         }
 
         public override void UpdateBehaviour(Unit unit, Vector2 position) {
@@ -1096,7 +1099,7 @@ namespace Frontiers.Content {
         }
 
         public override void Move(Unit unit, Vector2 position) {
-            if (unit.CanMove()) return;
+            if (!unit.CanMove()) return;
 
             // A value from 0 to 1 that indicates the power output percent of the engines
             float enginePower = unit.GetEnginePower();
