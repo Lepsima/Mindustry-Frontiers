@@ -5,8 +5,6 @@ using Frontiers.Content;
 using Frontiers.Content.Maps;
 
 public class MechUnit : Unit {
-    public float randomNumberMultiplier = 0.5f;
-    public float legSpeed;
     public new MechUnitType Type { get => (MechUnitType)base.Type; protected set => base.Type = value; }
 
     protected Transform baseTransform, leftLegTransform, rightLegTransform;
@@ -16,7 +14,6 @@ public class MechUnit : Unit {
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
-        legSpeed = Type.velocityCap / Type.legStepDistance * 0.5f;
     }
 
     protected override void Update() {
@@ -24,15 +21,11 @@ public class MechUnit : Unit {
 
         // Get the amount of walked distance since the last frame, used for the leg visuals
         float walkedDistance = Vector2.Distance(lastPosition, transform.position);
-        walkTime += walkedDistance / Type.velocityCap;
+        this.walkTime += walkedDistance;
         lastPosition = transform.position;
 
         // Update the mech things
         HandleMech();
-    }
-
-    protected override void FixedUpdate() {
-        base.FixedUpdate();
     }
 
     protected override void CreateTransforms() {
@@ -88,39 +81,29 @@ public class MechUnit : Unit {
         baseTransform.rotation = Quaternion.RotateTowards(baseTransform.rotation, desiredRotation, speed);
 
         // Get the y position of each leg
-        float legDistance = walkTime * legSpeed;
+        float legDistance = walkTime / Type.legStepDistance * 0.5f;
 
-        float l = GetLegPosition(legDistance / Mathf.PI - 0.5f);
-        float r = GetLegPosition(legDistance / Mathf.PI + 0.5f);
+        // Get each leg cycle position
+        float lCycle = GetLegPosition(legDistance - 0.5f);
+        float rCycle = GetLegPosition(legDistance + 0.5f);
 
-        /*
-        float leftLegY = Mathf.Sin(legDistance) * Type.legStepDistance;
-        float rightLegY = Mathf.Sin(legDistance + Mathf.PI) * Type.legStepDistance;
-        */
+        // Set left leg position, scale and color
+        leftLegTransform.localPosition = new Vector3(0, lCycle * Type.legStepDistance / size, 0);
+        leftLegSpriteRenderer.color = Color.Lerp(Color.gray, Color.white, Mathf.Max(lCycle, 0));
+        leftLegTransform.localScale = new Vector3(1, Mathf.Min(lCycle, 0) + 1f, 1);
 
-        float leftLegY = l * Type.legStepDistance;
-        float rightLegY = r * Type.legStepDistance;
-
-        // Get the time in the walk cicle with half offset
-        float leftLegT = Mathf.Sin(legDistance + Mathf.PI * 0.5f);
-        float rightLegT = Mathf.Sin(legDistance + Mathf.PI * 1.5f);
-
-        // Apply position and color to the left leg
-        leftLegTransform.localPosition = new Vector3(0, leftLegY, 0);
-        leftLegSpriteRenderer.color = Color.Lerp(Color.gray, Color.white, Mathf.Max(leftLegT, 0));
-
-        // Apply position and color to the right leg
-        rightLegTransform.localPosition = new Vector3(0, rightLegY, 0);
-        rightLegSpriteRenderer.color = Color.Lerp(Color.gray, Color.white, Mathf.Max(rightLegT, 0));
+        // Set right leg position, scale and color
+        rightLegTransform.localPosition = new Vector3(0, rCycle * Type.legStepDistance / size, 0);
+        rightLegSpriteRenderer.color = Color.Lerp(Color.gray, Color.white, Mathf.Max(rCycle, 0));
+        rightLegTransform.localScale = new Vector3(1, Mathf.Min(rCycle, -0.2f) + 1.2f, 1);
 
         // Get the current sway of the unit
-        float frontSway = Mathf.Sin(legDistance * 2f) * Type.frontSway;
-        float sideSway = Mathf.Sin(legDistance) * Type.sideSway;
+        float frontSway = GetLegPosition(legDistance * 2f - 1f) * Type.frontSway;
+        float sideSway = lCycle * Type.sideSway;
 
         // Apply sway to the unit body
         spriteHolder.transform.localPosition = new Vector3(sideSway, frontSway, 0);
     }
-
     private float GetLegPosition(float time) {
         float a = time % 1;
         float b = Mathf.Sign(time % 2 - 1);
@@ -149,4 +132,33 @@ public class MechUnit : Unit {
     public override bool IsFleeing() {
         return false;
     }
+
+    #region - Behaviour -
+
+    protected override void AttackBehaviour() {
+        targetSpeed = 1f;
+        base.AttackBehaviour();
+    }
+
+    protected override void PatrolBehaviour() {
+        targetSpeed = 0.8f;
+        base.PatrolBehaviour();
+    }
+
+    protected override void ReturnBehaviour() {
+        targetSpeed = 0.65f;
+        base.ReturnBehaviour();
+    }
+
+    protected override void AssistBehaviour() {
+        targetSpeed = 0.8f;
+        base.AssistBehaviour();
+    }
+
+    protected override void IdlingBehaviour() {
+        targetSpeed = 0f;
+        base.IdlingBehaviour();
+    }
+
+    #endregion
 }

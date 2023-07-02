@@ -1272,7 +1272,7 @@ namespace Frontiers.Content {
                 velocityCap = 3.75f,
 
                 baseRotationSpeed = 90f,
-                legStepDistance = 0.2f,
+                legStepDistance = 0.6f,
                 sideSway = 0.075f,
                 frontSway = 0.01f,
 
@@ -1304,7 +1304,7 @@ namespace Frontiers.Content {
                 velocityCap = 3.22f,
 
                 baseRotationSpeed = 50f,
-                legStepDistance = 0.2f,
+                legStepDistance = 1.25f,
                 sideSway = 0.075f,
                 frontSway = 0.01f,
 

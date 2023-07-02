@@ -23,10 +23,6 @@ public class AircraftUnit : Unit {
         SetDragTrailLenght(gForce * 0.3f);
     }
 
-    protected override void FixedUpdate() {
-        base.FixedUpdate();
-    }
-
     public override void ChangeMode(int mode, bool registerPrev) {
         base.ChangeMode(mode, registerPrev);
         isFleeing = false;
@@ -216,7 +212,7 @@ public class AircraftUnit : Unit {
             else SetBehaviourPosition(patrolPosition);
         }
 
-        if (Type.useAerodynamics && Vector2.Distance(Target.GetPosition(), transform.position) < 2f) {
+        if (Target && Type.useAerodynamics && Vector2.Distance(Target.GetPosition(), transform.position) < 2f) {
             isFleeing = true;
             patrolPosition = GetPosition() + (Vector2)transform.up * 25f;
 
