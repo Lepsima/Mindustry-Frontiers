@@ -31,6 +31,14 @@ public class Bullet {
         Type.pool.Return(transform.gameObject);
         weapon.ReturnBullet(this);
     }
+
+    public Vector2 GetPosition() {
+        return transform.position;
+    }
+
+    public byte GetTeam() {
+        return weapon.parentEntity.GetTeam();
+    }
 }
 
 public static class BulletManager {

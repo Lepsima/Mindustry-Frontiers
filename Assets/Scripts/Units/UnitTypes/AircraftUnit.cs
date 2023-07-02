@@ -164,7 +164,7 @@ public class AircraftUnit : Unit {
             float distance = Vector2.Distance(landPad.GetPosition(), transform.position);
             if (distance > landPad.size * 0.75f) return;
 
-            //Land on landpad
+            //If landpad is not avilable, crash
             if (!landPad.Land(this)) {
                 Client.DestroyUnit(this, true);
                 return;
@@ -178,6 +178,8 @@ public class AircraftUnit : Unit {
             velocity = Vector2.zero;
             height = 0f;
             SetDragTrailLenght(0);
+        } else {
+            Client.DestroyUnit(this, true);
         }
     }
 

@@ -1074,7 +1074,7 @@ namespace Frontiers.Content {
         public float force = 500f;
 
         public bool hasTrails = true;
-        public Vector2 trailOffset;
+        public Vector2 trailOffset = Vector2.zero;
 
         public AircraftUnitType(string name, Type type) : base(name, type) {
 
@@ -1134,11 +1134,13 @@ namespace Frontiers.Content {
         public static void Load() {
             flare = new AircraftUnitType("flare", typeof(AircraftUnit)) {
                 weapons = new WeaponMount[1] {
-                    new WeaponMount(Weapons.flareWeapon, new Vector2(-0.25f, 0.3f), true),
+                    new WeaponMount(Weapons.flareWeapon, new(-0.25f, 0.3f), true),
                 },
 
                 priorityList = new Type[5] { typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(ItemBlock), typeof(Block) },
                 useAerodynamics = true,
+
+                trailOffset = new(0.375f, -0.45f),
 
                 health = 75f,
                 size = 1.5f,
@@ -1153,7 +1155,7 @@ namespace Frontiers.Content {
                 fov = 100f,
                 groundHeight = 18f,
 
-                fuelCapacity = 120f,
+                fuelCapacity = 12.0f,
                 fuelConsumption = 1.25f,
                 fuelRefillRate = 8.25f,
 
@@ -1197,7 +1199,7 @@ namespace Frontiers.Content {
 
             zenith = new AircraftUnitType("zenith", typeof(AircraftUnit)) {
                 weapons = new WeaponMount[1] {
-                    new WeaponMount(Weapons.zenithMissiles, new Vector2(0.4f, -0.15f), true, true),
+                    new WeaponMount(Weapons.zenithMissiles, new(0.25f, 0f), true, true),
                 },
 
                 priorityList = new Type[5] { typeof(TurretBlock), typeof(Unit), typeof(ItemBlock), typeof(Block), typeof(CoreBlock) },
@@ -1554,7 +1556,7 @@ namespace Frontiers.Content {
         public string bulletName;
 
         public float damage = 10f, buildingDamageMultiplier = 1f, velocity = 100f, lifeTime = 1f, size = 0.05f;
-        public float blastRadius = -1f, minimumBlastDamage = 0f;
+        public float blastRadius = -1f, blastRadiusFalloff = -1f, minimumBlastDamage = 0f;
 
         public float Range { get => velocity * lifeTime; }
 
@@ -1581,6 +1583,10 @@ namespace Frontiers.Content {
             return blastRadius > 0;
         }
 
+        public DamageHandler.Area Area() {
+            return new DamageHandler.Area(damage, minimumBlastDamage, blastRadius, buildingDamageMultiplier, blastRadiusFalloff);
+        }
+
         public virtual IEnumerator BulletBehaviour(Bullet bullet) {
             Transform transform = bullet.transform;
             int mask = bullet.mask;
@@ -1595,6 +1601,8 @@ namespace Frontiers.Content {
             transform.GetComponent<TrailRenderer>().Clear();
 
             while (distance > 0) {
+                if (!transform) break;
+
                 transform.position = Vector2.Lerp(startPosition, hitPos, 1 - (distance / startingDistance));
                 distance -= Time.deltaTime * velocity;
 

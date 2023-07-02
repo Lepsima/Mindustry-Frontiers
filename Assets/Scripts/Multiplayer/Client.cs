@@ -187,21 +187,7 @@ public class Client : MonoBehaviourPunCallbacks {
         if (isRecivingMap) return;
         Entity entity = (Entity)syncObjects[syncID];
         BulletType bulletType = (BulletType)ContentLoader.GetContentById(bulletID);
-
-        if (entity.TryGetComponent(out IDamageable damageable)) damageable.Damage(bulletType.damage);
-
-        if (bulletType.HasBlastDamage()) {
-            foreach (Collider2D collider in Physics2D.OverlapCircleAll(entity.GetPosition(), bulletType.blastRadius, TeamUtilities.GetTeamMask(entity.GetTeam()))) {
-                if (collider.transform.TryGetComponent(out IDamageable areaDamageable)) {
-
-                    float distance = Vector2.Distance(entity.transform.position, collider.transform.position);
-                    areaDamageable.Damage(bulletType.Damage(areaDamageable, distance));
-                }
-            }
-
-        } else {
-
-        }
+        DamageHandler.BulletHit(bulletType, entity);     
     }
 
 
@@ -215,7 +201,7 @@ public class Client : MonoBehaviourPunCallbacks {
     public void RPC_Damage(int syncID, float damage) {
         if (isRecivingMap) return;
         Entity entity = (Entity)syncObjects[syncID];
-        entity.Damage(damage);
+        DamageHandler.Damage(new(damage), entity);
     }
 
     public static void AddItem(Entity entity, Item item, int amount) {

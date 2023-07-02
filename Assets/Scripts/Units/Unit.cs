@@ -418,6 +418,8 @@ public abstract class Unit : Entity, IArmed {
                 if (!Target) Client.UnitChangeMode(this, (int)UnitMode.Return);
             }
         }
+
+        if (!Target) return;
         SetBehaviourPosition(Target.GetPosition());
 
         if (InRange(_position) && DoesStopToShoot()) _move = false;
