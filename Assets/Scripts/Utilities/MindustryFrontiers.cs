@@ -1124,11 +1124,36 @@ namespace Frontiers.Content {
         }
     }
 
+    public class HelicopterUnitType : AircraftUnitType {
+        [JsonIgnore] public Rotor[] rotors;
+        public float rotorVelocity, rotorBlurVelocity;
+
+        public HelicopterUnitType(string name, Type type) : base(name, type) {
+
+        }
+
+        public class Rotor {
+            [JsonIgnore] public Sprite sprite, blurSprite, topSprite;
+
+            /// <summary>
+            /// Creates a rotor container
+            /// </summary>
+            /// <param name="unitName">Name of the unit that has this rotor</param>
+            /// <param name="rotorName">Name for the rotor in case a unit uses multiple rotor variants</param>
+            public Rotor(string unitName, string rotorName = "rotor") {
+                sprite = AssetLoader.GetSprite($"{unitName}-{rotorName}");
+                blurSprite = AssetLoader.GetSprite($"{unitName}-{rotorName}-blur");
+                topSprite = AssetLoader.GetSprite($"{unitName}-{rotorName}-top");
+            }
+        }
+    }
+
     public class Units {
         public const UnitType none = null;
         public static UnitType 
             flare, horizon, zenith,  // Assault - air
             poly,                    // Support - air
+            sonar,                    // Helicopter - air
             dagger, fortress;        // Assault - ground
 
         public static void Load() {
@@ -1260,6 +1285,10 @@ namespace Frontiers.Content {
 
                 buildSpeedMultiplier = 1f,
                 itemPickupDistance = 6f,
+            };
+
+            sonar = new HelicopterUnitType("sonar", typeof(AircraftUnit)) {
+                //TODO
             };
 
             dagger = new MechUnitType("dagger", typeof(MechUnit)) {
