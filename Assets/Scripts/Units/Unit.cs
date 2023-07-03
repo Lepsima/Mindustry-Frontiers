@@ -66,7 +66,7 @@ public abstract class Unit : Entity, IArmed {
 
     protected float targetSpeed, currentMass;
 
-    protected float fuel, height, cargoMass;
+    protected float fuel, height, cargoMass, enginePower;
     protected bool isCoreUnit, isLanded, isTakingOff, areWeaponsActive;
 
     protected ConstructionBlock constructingBlock;
@@ -192,6 +192,7 @@ public abstract class Unit : Entity, IArmed {
     protected virtual void FixedUpdate() {
         HandleBehaviour();
         HandlePhysics();
+        enginePower = CalculateEnginePower();
     }
 
     //Initialize the unit
@@ -359,7 +360,7 @@ public abstract class Unit : Entity, IArmed {
     #region - Behaviour -
     public virtual void HandlePhysics() {
         // Calculate velocity and position
-        velocity = Vector2.ClampMagnitude(acceleration * Time.fixedDeltaTime + velocity, Type.velocityCap);
+        velocity = Vector2.ClampMagnitude(acceleration * Time.fixedDeltaTime + velocity, Type.maxVelocity);
         transform.position += (Vector3)velocity * Time.fixedDeltaTime;
 
         // Calculate g-force and reset acceleration
@@ -674,9 +675,13 @@ public abstract class Unit : Entity, IArmed {
         return _position;
     }
 
-    public virtual float GetEnginePower() {
+    public float GetEnginePower() {
+        return enginePower;
+    }
+
+    public virtual float CalculateEnginePower() {
         // Get the percent of power the engine should produce
-        return fuel > 0f ? 1f * targetSpeed : 0f;
+        return fuel <= 0 || isLanded ? 0f : targetSpeed;
     }
 
     public virtual float GetRotationPower() {

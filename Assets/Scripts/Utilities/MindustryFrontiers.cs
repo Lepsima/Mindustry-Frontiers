@@ -988,7 +988,7 @@ namespace Frontiers.Content {
         [JsonIgnore] public Type[] priorityList = null;
 
         public float size = 1.5f;
-        public float velocityCap = 2f, rotationSpeed = 90f;
+        public float maxVelocity = 2f, rotationSpeed = 90f;
 
         public float itemPickupDistance = 3f, buildSpeedMultiplier = 1f;
 
@@ -1057,7 +1057,7 @@ namespace Frontiers.Content {
             float enginePower = unit.GetEnginePower();
 
             // Set velocity
-            unit.SetVelocity(similarity * enginePower * velocityCap * targetDirection);
+            unit.SetVelocity(similarity * enginePower * maxVelocity * targetDirection);
         }
 
         public override void UpdateBehaviour(Unit unit, Vector2 position) {
@@ -1069,9 +1069,11 @@ namespace Frontiers.Content {
     }
 
     public class AircraftUnitType : UnitType {
-        public float drag = 1f, bankAmount = 25f, bankSpeed = 5f;
-        public bool useAerodynamics = true;
-        public float force = 500f;
+        public float drag = 1f, force = 500f;
+        public float bankAmount = 25f, bankSpeed = 5f;
+        public bool useAerodynamics = true, hasDragTrails = true;
+
+        public float takeoffTime = 3f, takeoffHeight = 0.5f; // Takeoff height is measured in a percentage of ground height
 
         public bool hasTrails = true;
         public Vector2 trailOffset = Vector2.zero;
@@ -1124,27 +1126,11 @@ namespace Frontiers.Content {
         }
     }
 
-    public class HelicopterUnitType : AircraftUnitType {
-        [JsonIgnore] public Rotor[] rotors;
-        public float rotorVelocity, rotorBlurVelocity;
+    public class CopterUnitType : AircraftUnitType {
+        public UnitRotor[] rotors;
 
-        public HelicopterUnitType(string name, Type type) : base(name, type) {
-
-        }
-
-        public class Rotor {
-            [JsonIgnore] public Sprite sprite, blurSprite, topSprite;
-
-            /// <summary>
-            /// Creates a rotor container
-            /// </summary>
-            /// <param name="unitName">Name of the unit that has this rotor</param>
-            /// <param name="rotorName">Name for the rotor in case a unit uses multiple rotor variants</param>
-            public Rotor(string unitName, string rotorName = "rotor") {
-                sprite = AssetLoader.GetSprite($"{unitName}-{rotorName}");
-                blurSprite = AssetLoader.GetSprite($"{unitName}-{rotorName}-blur");
-                topSprite = AssetLoader.GetSprite($"{unitName}-{rotorName}-top");
-            }
+        public CopterUnitType(string name, Type type) : base(name, type) {
+            useAerodynamics = hasDragTrails = false; // Copters don't do that
         }
     }
 
@@ -1153,7 +1139,7 @@ namespace Frontiers.Content {
         public static UnitType 
             flare, horizon, zenith,  // Assault - air
             poly,                    // Support - air
-            sonar,                    // Helicopter - air
+            sonar,                   // Copter - air
             dagger, fortress;        // Assault - ground
 
         public static void Load() {
@@ -1169,7 +1155,7 @@ namespace Frontiers.Content {
 
                 health = 75f,
                 size = 1.5f,
-                velocityCap = 20f,
+                maxVelocity = 20f,
                 drag = 0.1f,
 
                 rotationSpeed = 160f,
@@ -1200,7 +1186,7 @@ namespace Frontiers.Content {
 
                 health = 215f,
                 size = 2.25f,
-                velocityCap = 10f,
+                maxVelocity = 10f,
                 itemCapacity = 25,
                 drag = 0.2f,
 
@@ -1232,7 +1218,7 @@ namespace Frontiers.Content {
 
                 health = 825f,
                 size = 3.5f,
-                velocityCap = 7.5f,
+                maxVelocity = 7.5f,
                 itemCapacity = 50,
                 drag = 0.5f,
 
@@ -1262,7 +1248,7 @@ namespace Frontiers.Content {
 
                 health = 255f,
                 size = 1.875f,
-                velocityCap = 9f,
+                maxVelocity = 9f,
                 itemCapacity = 120,
                 drag = 1f,
 
@@ -1287,8 +1273,39 @@ namespace Frontiers.Content {
                 itemPickupDistance = 6f,
             };
 
-            sonar = new HelicopterUnitType("sonar", typeof(AircraftUnit)) {
-                //TODO
+            sonar = new CopterUnitType("sonar", typeof(CopterUnit)) {
+                rotors = new UnitRotor[1] {
+                    new UnitRotor("sonar-rotor", new(0f, 0.14f), 3f, 1f, 0.667f, 1f),
+                },
+
+                weapons = new WeaponMount[1] {
+                    new WeaponMount(Weapons.zenithMissiles, new Vector2(0.4f, 0.1562f), true),
+                },
+
+                priorityList = new Type[4] { typeof(MechUnit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
+
+                health = 395f,
+                size = 2.25f,
+                maxVelocity = 7f,
+                itemCapacity = 35,
+                drag = 0.5f,
+
+                rotationSpeed = 80f,
+                bankAmount = 80f,
+
+                range = 12f,
+                searchRange = 17.5f,
+                fov = 160f,
+                groundHeight = 8f,
+
+                fuelCapacity = 560f,
+                fuelConsumption = 3.65f,
+                fuelRefillRate = 18.25f,
+
+                force = 600f,
+                emptyMass = 13.5f,
+                itemMass = 12.25f,
+                fuelMass = 7.25f,
             };
 
             dagger = new MechUnitType("dagger", typeof(MechUnit)) {
@@ -1300,7 +1317,7 @@ namespace Frontiers.Content {
 
                 health = 140f,
                 size = 1.5f,
-                velocityCap = 3.75f,
+                maxVelocity = 3.75f,
 
                 baseRotationSpeed = 90f,
                 legStepDistance = 0.6f,
@@ -1332,7 +1349,7 @@ namespace Frontiers.Content {
 
                 health = 140f,
                 size = 3.125f,
-                velocityCap = 3.22f,
+                maxVelocity = 3.22f,
 
                 baseRotationSpeed = 50f,
                 legStepDistance = 1.25f,
@@ -2447,6 +2464,36 @@ namespace Frontiers.Content {
         }
     }
 
+    public struct UnitRotor {
+        [JsonIgnore] public Sprite sprite, blurSprite, topSprite;
+        public Vector2 offset;
+        public float
+            velocity,        // The maximum rotor angular velocity
+            velocityIncrease, // The maximum velocity gain per second
+            blurStart,        // The angular vel at wich the rotor sprite starts to interpolate to the blur sprite
+            blurEnd;          // The angular vel at wich the rotor completely switches to the blur sprite
+
+        /// <summary>
+        /// Creates a rotor container
+        /// </summary>
+        /// <param name="unitName">The name of the unit and the rotor, example "flare-rotor"</param>
+        public UnitRotor(string unitName, Vector2 offset, float velocity, float velocityIncrease, float blurStart, float blurEnd) {
+            sprite = AssetLoader.GetSprite($"{unitName}");
+            blurSprite = AssetLoader.GetSprite($"{unitName}-blur");
+            topSprite = AssetLoader.GetSprite($"{unitName}-top");
+
+            this.velocity = velocity;
+            this.velocityIncrease = velocityIncrease;
+            this.blurStart = blurStart;
+            this.blurEnd = blurEnd;
+            this.offset = offset;
+        }
+
+        public float BlurValue(float velocity) {
+            return Mathf.Clamp01(velocity - blurStart / blurEnd - blurStart);
+        }
+    }
+
     #endregion
 }
 
@@ -3103,10 +3150,6 @@ namespace Frontiers.Content.Maps {
         #region - Tilemaps -
 
         public bool IsInBounds(Vector2 position) {
-            return position.x >= 0 && position.x < size.x && position.y >= 0 && position.y < size.y;
-        }
-
-        public bool IsInBounds(Vector2Int position) {
             return position.x >= 0 && position.x < size.x && position.y >= 0 && position.y < size.y;
         }
 

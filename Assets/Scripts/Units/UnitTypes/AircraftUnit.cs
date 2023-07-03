@@ -14,6 +14,8 @@ public class AircraftUnit : Unit {
     protected float targetHeight;
     protected bool isFleeing;
 
+    protected float liftVelocity = 0f;
+
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
     }
@@ -39,39 +41,61 @@ public class AircraftUnit : Unit {
     }
 
     public override void HandleHeight() {
-        // If is taking off climb until half fly height
         if (isTakingOff) {
-            ChangeHeight(false);
+            // Apply a custom force to simulate takeoff
+            float takeoffAccel = (2f * Type.groundHeight * Type.takeoffHeight) / (Type.takeoffTime * Type.takeoffTime);
+            liftVelocity += takeoffAccel * Time.fixedDeltaTime;
+
         } else {
-            // Change height increase or decrease based on velocity
-            bool isFalling = velocity.sqrMagnitude <= 0.05f || IsFalling();
-            ChangeHeight(isFalling);
+            // Calculate lift force
+            float liftAccel = Type.force * GetEnginePower() / currentMass;
+
+            Debug.Log(liftAccel + " liftacc");
+            float dbgB = (liftAccel - 9.81f) * Time.fixedDeltaTime;
+
+
+            Debug.Log(dbgB + " lifttot");
+            liftVelocity += dbgB;
+        }
+
+        // Update the current height
+        height = Mathf.Clamp(height + liftVelocity * Time.fixedDeltaTime, 0, Type.groundHeight);
+
+        // If is touching and moving towards the ground, crash
+        if (height == 0f && liftVelocity < 0f) { 
+            Land();
+            liftVelocity = 0f;
         }
     }
 
     protected void SetDragTrailLenght(float time) {
+        if (!Type.hasDragTrails) return;
         time = Mathf.Abs(time);
         rTrailRenderer.time = time;
         lTrailRenderer.time = time;
     }
 
     protected override void CreateTransforms() {
-        waterDeviationEffect = transform.CreateEffect("WaterDeviationFX", Vector2.zero, Quaternion.identity, 0f);
+        if (Type.useAerodynamics) {
+            waterDeviationEffect = transform.CreateEffect("WaterDeviationFX", Vector2.zero, Quaternion.identity, 0f);
+        }
 
-        // Get the prefab for the trail
-        GameObject prefab = AssetLoader.GetPrefab("UnitTrail");
+        if (Type.hasDragTrails) {
+            // Get the prefab for the trail
+            GameObject prefab = AssetLoader.GetPrefab("UnitTrail");
 
-        // Get the opposite trail offset
-        Vector2 leftOffset = Type.trailOffset;
-        leftOffset.x *= -1f;
+            // Get the opposite trail offset
+            Vector2 leftOffset = Type.trailOffset;
+            leftOffset.x *= -1f;
 
-        // Instantiate the right sided trail
-        rTrailRenderer = Instantiate(prefab, transform).GetComponent<TrailRenderer>();
-        rTrailRenderer.transform.localPosition = Type.trailOffset;
+            // Instantiate the right sided trail
+            rTrailRenderer = Instantiate(prefab, transform).GetComponent<TrailRenderer>();
+            rTrailRenderer.transform.localPosition = Type.trailOffset;
 
-        // Instantiate the left sided trail
-        lTrailRenderer = Instantiate(prefab, transform).GetComponent<TrailRenderer>();
-        lTrailRenderer.transform.localPosition = leftOffset;
+            // Instantiate the left sided trail
+            lTrailRenderer = Instantiate(prefab, transform).GetComponent<TrailRenderer>();
+            lTrailRenderer.transform.localPosition = leftOffset;
+        }
     }
 
 
@@ -85,25 +109,13 @@ public class AircraftUnit : Unit {
         spriteHolder.localEulerAngles = new Vector3(0, lerpVal, 0);
     }
 
-    public void ChangeHeight(bool isFalling) {
-        // Default values
-        float liftForce = 3;
-        float fallForce = -3;
-
-        // Update the current height
-        height = Mathf.Clamp((isFalling ? fallForce : liftForce) * Time.fixedDeltaTime + height, 0, Type.groundHeight);
-
-        // If is touching ground, crash
-        if (height < 0.05f) Land();
-    }
-
     protected override bool DoesStopToShoot() {
         return !Type.useAerodynamics;
     }
 
-    public override float GetEnginePower() {
+    public override float CalculateEnginePower() {
         // Get the percent of power the engine should produce
-        float enginePower = base.GetEnginePower();
+        float enginePower = base.CalculateEnginePower();
         if (height > targetHeight) enginePower *= 0.75f;
         return enginePower * (height / Type.groundHeight);
     }
@@ -142,8 +154,8 @@ public class AircraftUnit : Unit {
         isLanded = false;
         velocity = Vector2.zero;
 
-        //Allow free movement in ±3s
-        Invoke(nameof(EndTakeOff), 3f);
+        //Allow free movement
+        Invoke(nameof(EndTakeOff), Type.takeoffTime);
 
         //Play particle system
         Effect.PlayEffect("TakeoffFX", transform.position, size);
@@ -153,6 +165,7 @@ public class AircraftUnit : Unit {
         base.EndTakeOff();
 
         // Apply takeoff boost
+        // TODO
         velocity = Type.force / 3 * transform.up;
     }
 
@@ -190,10 +203,12 @@ public class AircraftUnit : Unit {
     protected override void OnFloorTileChange() {
         base.OnFloorTileChange();
 
-        // Change the water deviation emmision property depending on the tile below the shadow
-        bool isWater = FloorTile != null && FloorTile.isWater;
-        ParticleSystem.EmissionModule emissionModule = waterDeviationEffect.emission;
-        emissionModule.rateOverDistanceMultiplier = isWater ? 5f : 0f;
+        if (Type.useAerodynamics) {
+            // Change the water deviation emmision property depending on the tile below the shadow
+            bool isWater = FloorTile != null && FloorTile.isWater;
+            ParticleSystem.EmissionModule emissionModule = waterDeviationEffect.emission;
+            emissionModule.rateOverDistanceMultiplier = isWater ? 5f : 0f;
+        }
     }
 
     #endregion
@@ -238,7 +253,7 @@ public class AircraftUnit : Unit {
         if (isLanded) return;
 
         targetHeight = Type.groundHeight * 0.5f;
-        targetSpeed = 0.5f;
+        targetSpeed = 0.55f;
 
         base.ReturnBehaviour();
     }
