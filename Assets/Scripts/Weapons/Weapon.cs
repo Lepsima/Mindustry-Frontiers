@@ -109,13 +109,13 @@ public class Weapon : MonoBehaviour {
         return angle < maxDeviation;
     }
 
-    private Entity GetTarget(System.Type[] priorityList = null) {
+    private Entity GetTarget(Type[] priorityList = null) {
         //Default priority targets
-        if (priorityList == null) priorityList = new System.Type[3] { typeof(Unit), typeof(TurretBlock), typeof(Block) };
+        if (priorityList == null) priorityList = new Type[3] { typeof(Unit), typeof(TurretBlock), typeof(Block) };
 
-        foreach (System.Type type in priorityList) {
+        foreach (Type type in priorityList) {
             //Search the next priority type
-            Entity tempTarget = MapManager.Map.GetClosestEntity(transform.position, type, TeamUtilities.GetEnemyTeam(parentEntity.GetTeam())) as Entity;
+            Entity tempTarget = MapManager.Map.GetClosestEntity(transform.position, type, TeamUtilities.GetEnemyTeam(parentEntity.GetTeam()));
 
             //If target is valid, stop searching
             if (ValidTarget(tempTarget)) return tempTarget;

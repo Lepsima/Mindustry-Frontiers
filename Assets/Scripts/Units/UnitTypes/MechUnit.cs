@@ -160,5 +160,9 @@ public class MechUnit : Unit {
         base.IdlingBehaviour();
     }
 
+    protected override bool StopsToShoot() {
+        return true;
+    }
+
     #endregion
 }

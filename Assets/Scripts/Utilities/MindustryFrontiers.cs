@@ -1223,7 +1223,7 @@ namespace Frontiers.Content {
                 size = 3.5f,
                 maxVelocity = 7.5f,
                 itemCapacity = 50,
-                drag = 0.5f,
+                drag = 2f,
 
                 rotationSpeed = 70f,
                 bankAmount = 20f,
@@ -1291,7 +1291,7 @@ namespace Frontiers.Content {
                 size = 2.25f,
                 maxVelocity = 7f,
                 itemCapacity = 35,
-                drag = 0.5f,
+                drag = 3f,
 
                 rotationSpeed = 80f,
                 bankAmount = 80f,
@@ -1320,7 +1320,7 @@ namespace Frontiers.Content {
                 },
 
                 weapons = new WeaponMount[1] {
-                    new WeaponMount(Weapons.zenithMissiles, new Vector2(0.4f, 0.1562f), true),
+                    new WeaponMount(Weapons.fotonWeapon, new Vector2(0.26f, 0.145f), true),
                 },
 
                 priorityList = new Type[4] { typeof(MechUnit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
@@ -1329,7 +1329,7 @@ namespace Frontiers.Content {
                 size = 3.5f,
                 maxVelocity = 9f,
                 itemCapacity = 50,
-                drag = 0.75f,
+                drag = 3.5f,
 
                 rotationSpeed = 60f,
                 bankAmount = 0f,
@@ -1488,6 +1488,7 @@ namespace Frontiers.Content {
             smallAutoWeapon = new WeaponType("small-auto-weapon") {
                 bulletType = Bullets.basicBullet,
                 shootOffset = new Vector2(0, 0.37f),
+
                 recoil = 0f,
                 clipSize = 25,
                 shootTime = 0.15f,
@@ -1497,11 +1498,22 @@ namespace Frontiers.Content {
             flareWeapon = new WeaponType("flare-weapon") {
                 bulletType = Bullets.basicBullet,
                 shootOffset = new Vector2(0, 0.37f),
+
                 recoil = 0.075f,
                 returnSpeed = 3f,
                 clipSize = 25,
                 shootTime = 0.15f,
                 reloadTime = 5f
+            };
+
+            fotonWeapon = new WeaponType("foton-weapon") {
+                bulletType = Bullets.missileBullet,
+                shootOffset = new Vector2(0, 0.37f),
+
+                recoil = 0f,
+                clipSize = 3,
+                shootTime = 0.2f,
+                reloadTime = 2f
             };
 
             daggerWeapon = new WeaponType("dagger-weapon") {
@@ -1687,7 +1699,6 @@ namespace Frontiers.Content {
             float distance = Vector2.Distance(startPosition, hitPos);
             float startingDistance = distance;
 
-            transform.position = startPosition;
             transform.GetComponent<TrailRenderer>().Clear();
 
             while (distance > 0) {
@@ -1745,12 +1756,58 @@ namespace Frontiers.Content {
     }
 
     [Serializable]
-    public class HomingBulletType : BasicBulletType {
+    public class MissileBulletType : BasicBulletType {
         public float homingStrength = 30f;
-        public bool canUpdateTarget = false;
+        public bool canUpdateTarget = false, explodeOnDespawn = true;
         
-        public HomingBulletType(string name = null, string bulletName = "missile") : base(name, bulletName) {
+        public MissileBulletType(string name = null, string bulletName = "missile") : base(name, bulletName) {
             despawnFX = "BulletHitFX";
+        }
+
+
+        public override IEnumerator BulletBehaviour(Bullet bullet) {
+            // Get the bullet transform;
+            Transform transform = bullet.transform;
+
+            // The target the missile should follow
+            byte enemyTeam = TeamUtilities.GetEnemyTeam(bullet.GetTeam());
+            Transform target = MapManager.Map.GetClosestEntity(transform.position, enemyTeam).transform;
+
+            bool hasCollided = false;
+            transform.GetComponent<TrailRenderer>().Clear();
+
+            while (!hasCollided) {
+                if (!transform) break;
+
+                // Try to update target
+                if (!target && canUpdateTarget) target = MapManager.Map.GetClosestEntity(transform.position, enemyTeam).transform;
+                
+                // Move forward
+                transform.position += Time.deltaTime * velocity * transform.forward;
+
+                // If has target rotate towards it
+                if (target) {
+                    Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, target.position - transform.position);
+                    desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
+                    transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRotation, homingStrength * Time.fixedDeltaTime);
+                }
+
+                // Check for collision
+                if (Physics2D.OverlapCircle(transform.position, size, bullet.mask)) {
+                    bullet.OnBulletCollision();
+                    hasCollided = true;
+                    break;
+                }
+
+                yield return null;
+            }
+
+            // If has not collided, explode anyways
+            if (!hasCollided && explodeOnDespawn) {
+                bullet.OnBulletCollision();
+            }
+
+            bullet.Return();
         }
     }
 
@@ -1791,11 +1848,9 @@ namespace Frontiers.Content {
                 yield return null;
             }
 
-            if (Physics2D.OverlapCircle(transform.position, size, mask)) {
-                bullet.OnBulletCollision();
-            }
-
-            Effect.PlayEffect(despawnFX, transform.position, 1f);
+            if (Physics2D.OverlapCircle(transform.position, size, mask)) bullet.OnBulletCollision();
+            else Effect.PlayEffect(despawnFX, transform.position, 1f);
+            
             bullet.Return();
         }
     }
@@ -1827,7 +1882,7 @@ namespace Frontiers.Content {
                 fallVelocity = 4f
             };
 
-            missileBullet = new HomingBulletType() {
+            missileBullet = new MissileBulletType() {
                 damage = 100f,
                 minimumBlastDamage = 25f,
                 blastRadius = 1f,

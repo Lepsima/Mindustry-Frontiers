@@ -12,11 +12,12 @@ using Cinemachine;
 using UnitMode = Unit.UnitMode;
 
 public class PlayerManager : MonoBehaviour {
-    [SerializeField] float moveSpeed = 15f;
+    [SerializeField] float moveSpeed = 2f;
     [SerializeField] float zoomSpeed = 30f;
     [SerializeField] float zoomInMultiplier = 2f;
     [SerializeField] float zoomOutMultiplier = 1f;
-    [SerializeField] [Range(1, 50)] float zoomClampMax = 40f;
+    [SerializeField] [Range(1, 50)] float zoomClampMin = 10f;
+    [SerializeField] [Range(1, 50)] float zoomClampMax = 50f;
 
     public static PlayerManager Instance;
     public Entity selectedEntity;
@@ -47,7 +48,7 @@ public class PlayerManager : MonoBehaviour {
     }
 
     public void Update() {
-        playerTransform.position += new Vector3(Input.GetAxis("Horizontal") * moveSpeed, Input.GetAxis("Vertical") * moveSpeed, 0) * Time.deltaTime;
+        playerTransform.position += Time.deltaTime * virtualCamera.m_Lens.OrthographicSize * new Vector3(Input.GetAxis("Horizontal") * moveSpeed, Input.GetAxis("Vertical") * moveSpeed, 0);
         mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
         if (buildMode) HandleBuildMode();
@@ -118,7 +119,7 @@ public class PlayerManager : MonoBehaviour {
 
             float delta = Input.mouseScrollDelta.y;
             float change = delta * zoomSpeed * ( delta < 0f ? zoomOutMultiplier : zoomInMultiplier) * Time.deltaTime;
-            virtualCamera.m_Lens.OrthographicSize = Mathf.Clamp(virtualCamera.m_Lens.OrthographicSize - change, 1, zoomClampMax);
+            virtualCamera.m_Lens.OrthographicSize = Mathf.Clamp(virtualCamera.m_Lens.OrthographicSize - change, zoomClampMin, zoomClampMax);
         }
     }
 

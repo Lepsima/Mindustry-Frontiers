@@ -406,7 +406,6 @@ public abstract class Unit : Entity, IArmed {
 
 
     #region - Behaviours -
-    bool canShoot;
     protected virtual void AttackBehaviour() {
         HandleTargeting();
 
@@ -423,9 +422,9 @@ public abstract class Unit : Entity, IArmed {
         if (!Target) return;
         SetBehaviourPosition(Target.GetPosition());
 
-        if (InRange(_position) && DoesStopToShoot()) _move = false;
+        if (InRange(_position) && StopsToShoot()) _move = false;
 
-        canShoot = InShootRange(_position, weapons[0].Type.maxTargetDeviation);
+        bool canShoot = InShootRange(_position, weapons[0].Type.maxTargetDeviation);
         if (canShoot != areWeaponsActive) SetWeaponsActive(canShoot);
     }
 
@@ -660,9 +659,7 @@ public abstract class Unit : Entity, IArmed {
         return MapManager.Map.GetMapTileTypeAt(Map.MapLayer.Ground, position);
     }
 
-    protected virtual bool DoesStopToShoot() {
-        return true;
-    }
+    protected abstract bool StopsToShoot();
 
     float angle;
     public bool InShootRange(Vector2 target, float fov) {

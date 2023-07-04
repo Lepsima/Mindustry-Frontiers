@@ -214,8 +214,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49272ce7b10903d4f954b6949d987caa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 15
-  zoomClampMax: 40
+  moveSpeed: 1
+  zoomSpeed: 30
+  zoomInMultiplier: 2
+  zoomOutMultiplier: 1
+  zoomClampMin: 10
+  zoomClampMax: 50
   selectedEntity: {fileID: 0}
   buildMode: 0
   unitFollowIndex: 0

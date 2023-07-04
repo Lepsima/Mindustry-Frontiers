@@ -111,7 +111,7 @@ public class AircraftUnit : Unit {
         spriteHolder.localEulerAngles = new Vector3(0, lerpVal, 0);
     }
 
-    protected override bool DoesStopToShoot() {
+    protected override bool StopsToShoot() {
         return !Type.useAerodynamics;
     }
 
@@ -139,7 +139,7 @@ public class AircraftUnit : Unit {
     }
 
     public override bool CanMove() {
-        return base.CanRotate() && !isTakingOff;
+        return base.CanMove() && !isTakingOff;
     }
 
     public override bool CanRotate() {
