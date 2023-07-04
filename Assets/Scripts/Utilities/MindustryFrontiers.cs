@@ -1285,7 +1285,7 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.zenithMissiles, new Vector2(0.4f, 0.1562f), true),
                 },
 
-                priorityList = new Type[4] { typeof(MechUnit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
+                priorityList = new Type[5] { typeof(MechUnit), typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
 
                 health = 395f,
                 size = 2.25f,
@@ -1323,7 +1323,7 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.fotonWeapon, new Vector2(0.26f, 0.145f), true),
                 },
 
-                priorityList = new Type[4] { typeof(MechUnit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
+                priorityList = new Type[5] { typeof(MechUnit), typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
 
                 health = 750f,
                 size = 3.5f,
@@ -1758,7 +1758,7 @@ namespace Frontiers.Content {
     [Serializable]
     public class MissileBulletType : BasicBulletType {
         public float homingStrength = 30f;
-        public bool canUpdateTarget = false, explodeOnDespawn = true;
+        public bool canUpdateTarget = true, explodeOnDespawn = true;
         
         public MissileBulletType(string name = null, string bulletName = "missile") : base(name, bulletName) {
             despawnFX = "BulletHitFX";
@@ -1776,14 +1776,18 @@ namespace Frontiers.Content {
             bool hasCollided = false;
             transform.GetComponent<TrailRenderer>().Clear();
 
-            while (!hasCollided) {
+            float lifeTime = Time.time + this.lifeTime;
+            while (!hasCollided || Time.time >= lifeTime) {
                 if (!transform) break;
 
                 // Try to update target
-                if (!target && canUpdateTarget) target = MapManager.Map.GetClosestEntity(transform.position, enemyTeam).transform;
+                if (!target && canUpdateTarget) {
+                    target = MapManager.Map.GetClosestEntity(transform.position, enemyTeam).transform;
+                    if (!target) break;
+                }
                 
                 // Move forward
-                transform.position += Time.deltaTime * velocity * transform.forward;
+                transform.position += Time.deltaTime * velocity * transform.up;
 
                 // If has target rotate towards it
                 if (target) {
@@ -1887,7 +1891,7 @@ namespace Frontiers.Content {
                 minimumBlastDamage = 25f,
                 blastRadius = 1f,
                 buildingDamageMultiplier = 2f,
-                velocity = 25f,
+                velocity = 15f,
                 lifeTime = 5f,
                 homingStrength = 120f,
             };
