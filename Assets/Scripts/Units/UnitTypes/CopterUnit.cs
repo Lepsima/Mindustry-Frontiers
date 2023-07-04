@@ -10,73 +10,102 @@ public class CopterUnit : AircraftUnit {
     public float maxRotorOutput;
 
     public class Rotor {
-        public SpriteRenderer spriteRenderer;
-        public SpriteRenderer blurSpriteRenderer;
+        public RotorBlade[] blades;
 
         public Transform transform;
         public UnitRotor Type;
 
         public float velocity;
+        public float position;
 
         public Rotor(Transform parent, UnitRotor Type) {
             this.Type = Type;
 
-            // Create rotor top transform
-            Transform rotorTop = new GameObject("Rotor-Top", typeof(SpriteRenderer)).transform;
-            rotorTop.parent = parent;
-            rotorTop.localPosition = Type.offset;
-            rotorTop.localRotation = Quaternion.identity;
-            rotorTop.localScale = Vector3.one;
+            // Create rotor top
+            transform = new GameObject("Rotor-Top", typeof(SpriteRenderer)).transform;
+            transform.parent = parent;
+            transform.localPosition = Type.offset;
+            transform.localRotation = Quaternion.identity;
+            transform.localScale = Vector3.one;
 
             // Set the top sprite
-            SpriteRenderer topSpriteRenderer = rotorTop.GetComponent<SpriteRenderer>();
+            SpriteRenderer topSpriteRenderer = transform.GetComponent<SpriteRenderer>();
             topSpriteRenderer.sprite = Type.topSprite;
             topSpriteRenderer.sortingLayerName = "Units";
             topSpriteRenderer.sortingOrder = 12;
 
-            // Create the rotor transform
-            transform = new GameObject("Rotor", typeof(SpriteRenderer)).transform;
-            transform.parent = rotorTop;
-            transform.localPosition = Vector3.zero;
-            transform.localRotation = Quaternion.identity;
-            transform.localScale = Vector3.one;
-
-            // Set the rotor sprite
-            spriteRenderer = transform.GetComponent<SpriteRenderer>();
-            spriteRenderer.sprite = Type.sprite;
-            spriteRenderer.sortingLayerName = "Units";
-            spriteRenderer.sortingOrder = 10;
-
-            // Create the rotor blur transform
-            Transform blurTransform = new GameObject("Rotor-blur", typeof(SpriteRenderer)).transform;
-            blurTransform.parent = transform;
-            blurTransform.localPosition = Vector3.zero;
-            blurTransform.localRotation = Quaternion.identity;
-            blurTransform.localScale = Vector3.one;
-
-            // Set the rotor blur transform
-            blurSpriteRenderer = blurTransform.GetComponent<SpriteRenderer>();
-            blurSpriteRenderer.sprite = Type.blurSprite;
-            blurSpriteRenderer.sortingLayerName = "Units";
-            blurSpriteRenderer.sortingOrder = 11;
+            // Create all the blades
+            blades = new RotorBlade[Type.blades.Length];
+            for (int i = 0; i < Type.blades.Length; i++) blades[i] = new(transform, Type, Type.blades[i]);
         }
 
         public void Update(float power, float deltaTime) {
-            // Change velocity
             float deltaVel = Mathf.Sign(power) * Type.velocityIncrease * deltaTime;
             velocity = Mathf.Clamp(velocity + deltaVel, 0, Type.velocity);
+            position += velocity * deltaTime;
 
-            // Rotate
-            transform.localEulerAngles += new Vector3(0f, 0f, velocity * deltaTime * 360f);
+            // Prevent large numbers
+            if (position > 1f) position--;
 
-            // Update sprite blur
-            float blurValue = Type.BlurValue(velocity);
-            spriteRenderer.color = new Color(1f, 1f, 1f, 1f - blurValue);
-            blurSpriteRenderer.color = new Color(1f, 1f, 1f, blurValue);
+            // Update each blade
+            for (int i = 0; i < blades.Length; i++) blades[i].Update(position, velocity);
         }
 
         public float Output() {
             return velocity / Type.velocity;
+        }
+
+        public class RotorBlade {
+            public SpriteRenderer spriteRenderer;
+            public SpriteRenderer blurSpriteRenderer;
+
+            public Transform transform;
+            public UnitRotor Type;
+
+            public float modifier;
+            public float offset;
+
+            public RotorBlade(Transform parent, UnitRotor Type, UnitRotorBlade rotorBladeType) {
+                this.Type = Type;
+                modifier = rotorBladeType.counterClockwise ? -360f : 360f;
+                offset = rotorBladeType.offset;
+
+                // Create the rotor transform
+                transform = new GameObject("Rotor", typeof(SpriteRenderer)).transform;
+                transform.parent = parent;
+                transform.localPosition = Vector3.zero;
+                transform.localRotation = Quaternion.identity;
+                transform.localScale = Vector3.one;
+
+                // Set the rotor sprite
+                spriteRenderer = transform.GetComponent<SpriteRenderer>();
+                spriteRenderer.sprite = Type.sprite;
+                spriteRenderer.sortingLayerName = "Units";
+                spriteRenderer.sortingOrder = 10;
+
+                // Create the rotor blur transform
+                Transform blurTransform = new GameObject("Rotor-blur", typeof(SpriteRenderer)).transform;
+                blurTransform.parent = transform;
+                blurTransform.localPosition = Vector3.zero;
+                blurTransform.localRotation = Quaternion.identity;
+                blurTransform.localScale = Vector3.one;
+
+                // Set the rotor blur transform
+                blurSpriteRenderer = blurTransform.GetComponent<SpriteRenderer>();
+                blurSpriteRenderer.sprite = Type.blurSprite;
+                blurSpriteRenderer.sortingLayerName = "Units";
+                blurSpriteRenderer.sortingOrder = 11;
+            }
+
+            public void Update(float position, float velocity) {
+                // Update rotation
+                transform.localEulerAngles = new Vector3(0f, 0f, position * modifier + offset);
+
+                // Update sprite blur
+                float blurValue = Type.BlurValue(velocity);
+                spriteRenderer.color = new Color(1f, 1f, 1f, 1f - blurValue);
+                blurSpriteRenderer.color = new Color(1f, 1f, 1f, blurValue);
+            }
         }
     }
 

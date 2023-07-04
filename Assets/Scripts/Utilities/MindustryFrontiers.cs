@@ -1142,7 +1142,7 @@ namespace Frontiers.Content {
         public static UnitType 
             flare, horizon, zenith,  // Assault - air
             poly,                    // Support - air
-            sonar,                   // Copter - air
+            sonar, foton,            // Copter - air
             dagger, fortress;        // Assault - ground
 
         public static void Load() {
@@ -1311,6 +1311,44 @@ namespace Frontiers.Content {
                 fuelMass = 7.25f,
             };
 
+            foton = new CopterUnitType("foton", typeof(CopterUnit)) {
+                rotors = new UnitRotor[] {
+                    new UnitRotor("foton-rotor", new(0f, 0.15f), 6f, 1.5f, 1.5f, 2.25f, new UnitRotorBlade[2] {
+                        new UnitRotorBlade(0f, false),
+                        new UnitRotorBlade(0f, true)
+                    }),
+                },
+
+                weapons = new WeaponMount[1] {
+                    new WeaponMount(Weapons.zenithMissiles, new Vector2(0.4f, 0.1562f), true),
+                },
+
+                priorityList = new Type[4] { typeof(MechUnit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
+
+                health = 750f,
+                size = 3.5f,
+                maxVelocity = 9f,
+                itemCapacity = 50,
+                drag = 0.75f,
+
+                rotationSpeed = 60f,
+                bankAmount = 0f,
+
+                range = 12f,
+                searchRange = 17.5f,
+                fov = 360f,
+                groundHeight = 12f,
+
+                fuelCapacity = 950f,
+                fuelConsumption = 5.5f,
+                fuelRefillRate = 30.45f,
+
+                force = 985f,
+                emptyMass = 21.75f,
+                itemMass = 15.25f,
+                fuelMass = 10f,
+            };
+
             dagger = new MechUnitType("dagger", typeof(MechUnit)) {
                 weapons = new WeaponMount[1] {
                     new WeaponMount(Weapons.daggerWeapon, new Vector2(0.29187f, 0.1562f), true, true),
@@ -1437,7 +1475,10 @@ namespace Frontiers.Content {
         public static WeaponType smallAutoWeapon, tempestWeapon, stingerWeapon, pathWeapon, spreadWeapon;
 
         //Unit weapons
-        public static WeaponType flareWeapon, horizonBombBay, zenithMissiles, daggerWeapon, fortressWeapon;
+        public static WeaponType 
+            flareWeapon, horizonBombBay, zenithMissiles,
+            sonarWeapon, fotonWeapon,
+            daggerWeapon, fortressWeapon;
 
         // Item related weapons 
         public static WeaponType missileRack;
@@ -2469,6 +2510,7 @@ namespace Frontiers.Content {
 
     public struct UnitRotor {
         [JsonIgnore] public Sprite sprite, blurSprite, topSprite;
+        public UnitRotorBlade[] blades;
         public Vector2 offset;
         public float
             velocity,        // The maximum rotor angular velocity
@@ -2480,20 +2522,52 @@ namespace Frontiers.Content {
         /// Creates a rotor container
         /// </summary>
         /// <param name="unitName">The name of the unit and the rotor, example "flare-rotor"</param>
-        public UnitRotor(string unitName, Vector2 offset, float velocity, float velocityIncrease, float blurStart, float blurEnd) {
+        public UnitRotor(string unitName, Vector2 offset, float velocity, float velocityIncrease, float blurStart, float blurEnd, UnitRotorBlade[] blades) {
             sprite = AssetLoader.GetSprite($"{unitName}");
             blurSprite = AssetLoader.GetSprite($"{unitName}-blur");
             topSprite = AssetLoader.GetSprite($"{unitName}-top");
+
+            this.blades = blades;
+            this.offset = offset;
 
             this.velocity = velocity;
             this.velocityIncrease = velocityIncrease;
             this.blurStart = blurStart;
             this.blurEnd = blurEnd;
+        }
+
+        /// <summary>
+        /// Creates a rotor container
+        /// </summary>
+        /// <param name="unitName">The name of the unit and the rotor, example "flare-rotor"</param>
+        public UnitRotor(string unitName, Vector2 offset, float velocity, float velocityIncrease, float blurStart, float blurEnd, int blades = 1) {
+            sprite = AssetLoader.GetSprite($"{unitName}");
+            blurSprite = AssetLoader.GetSprite($"{unitName}-blur");
+            topSprite = AssetLoader.GetSprite($"{unitName}-top");
+
+            this.blades = new UnitRotorBlade[blades];
+            for (int i = 0; i < blades; i++) this.blades[i] = new(360f / blades * i);
+
             this.offset = offset;
+
+            this.velocity = velocity;
+            this.velocityIncrease = velocityIncrease;
+            this.blurStart = blurStart;
+            this.blurEnd = blurEnd;
         }
 
         public float BlurValue(float velocity) {
             return Mathf.Clamp01(velocity - blurStart / blurEnd - blurStart);
+        }
+    }
+
+    public struct UnitRotorBlade {
+        public bool counterClockwise;
+        public float offset;
+
+        public UnitRotorBlade(float offset, bool counterClockwise = false) {
+            this.offset = offset;
+            this.counterClockwise = counterClockwise;
         }
     }
 
