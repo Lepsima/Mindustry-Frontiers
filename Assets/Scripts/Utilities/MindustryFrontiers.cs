@@ -1782,8 +1782,9 @@ namespace Frontiers.Content {
 
                 // Try to update target
                 if (!target && canUpdateTarget) {
-                    target = MapManager.Map.GetClosestEntity(transform.position, enemyTeam).transform;
-                    if (!target) break;
+                    Entity nTarget = MapManager.Map.GetClosestEntity(transform.position, enemyTeam);
+                    if (!nTarget) break;
+                    target = nTarget.transform;
                 }
                 
                 // Move forward
