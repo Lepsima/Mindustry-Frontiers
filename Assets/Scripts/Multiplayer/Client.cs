@@ -88,7 +88,8 @@ public class Client : MonoBehaviourPunCallbacks {
     [PunRPC]
     public void RPC_DestroyBlock(int syncID, bool destroyed) {
         if (isRecivingMap) return;
-        MapManager.Instance.DeleteBlock((Block)syncObjects[syncID], destroyed);
+        Block block = (Block)syncObjects[syncID];
+        block.Kill(destroyed);
     }
 
 
@@ -123,7 +124,8 @@ public class Client : MonoBehaviourPunCallbacks {
     [PunRPC]
     public void RPC_DestroyUnit(int syncID, bool destroyed) {
         if (isRecivingMap) return;
-        MapManager.Instance.DeleteUnit((Unit)syncObjects[syncID], destroyed);
+        Unit unit = (Unit)syncObjects[syncID];
+        unit.Kill(destroyed);
     }
 
 

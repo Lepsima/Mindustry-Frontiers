@@ -32,7 +32,7 @@ public class CopterUnit : AircraftUnit {
             SpriteRenderer topSpriteRenderer = rotorTop.GetComponent<SpriteRenderer>();
             topSpriteRenderer.sprite = Type.topSprite;
             topSpriteRenderer.sortingLayerName = "Units";
-            topSpriteRenderer.sortingOrder = 10;
+            topSpriteRenderer.sortingOrder = 12;
 
             // Create the rotor transform
             transform = new GameObject("Rotor", typeof(SpriteRenderer)).transform;
@@ -45,7 +45,7 @@ public class CopterUnit : AircraftUnit {
             spriteRenderer = transform.GetComponent<SpriteRenderer>();
             spriteRenderer.sprite = Type.sprite;
             spriteRenderer.sortingLayerName = "Units";
-            spriteRenderer.sortingOrder = 11;
+            spriteRenderer.sortingOrder = 10;
 
             // Create the rotor blur transform
             Transform blurTransform = new GameObject("Rotor-blur", typeof(SpriteRenderer)).transform;
@@ -58,12 +58,12 @@ public class CopterUnit : AircraftUnit {
             blurSpriteRenderer = blurTransform.GetComponent<SpriteRenderer>();
             blurSpriteRenderer.sprite = Type.blurSprite;
             blurSpriteRenderer.sortingLayerName = "Units";
-            blurSpriteRenderer.sortingOrder = 12;
+            blurSpriteRenderer.sortingOrder = 11;
         }
 
         public void Update(float power, float deltaTime) {
             // Change velocity
-            float deltaVel = power * Type.velocityIncrease * deltaTime;
+            float deltaVel = Mathf.Sign(power) * Type.velocityIncrease * deltaTime;
             velocity = Mathf.Clamp(velocity + deltaVel, 0, Type.velocity);
 
             // Rotate
@@ -98,7 +98,7 @@ public class CopterUnit : AircraftUnit {
     protected override void Update() {
         base.Update();
 
-        float power = isTakingOff ? 1f : GetEnginePower();
+        float power = isLanded ? -1f : 1f;
         UpdateRotors(power, Time.deltaTime);
     }
 

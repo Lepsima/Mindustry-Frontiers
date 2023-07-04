@@ -11,10 +11,8 @@ public class AircraftUnit : Unit {
     TrailRenderer lTrailRenderer;
     [SerializeField] ParticleSystem waterDeviationEffect;
 
-    protected float targetHeight;
-    protected bool isFleeing;
-
-    protected float liftVelocity = 0f;
+    protected float targetHeight, liftVelocity = 0f;
+    protected bool isFleeing, isWreck;
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
@@ -48,22 +46,16 @@ public class AircraftUnit : Unit {
 
         } else {
             // Calculate lift force
-            float liftAccel = Type.force * GetEnginePower() / currentMass;
-
-            Debug.Log(liftAccel + " liftacc");
-            float dbgB = (liftAccel - 9.81f) * Time.fixedDeltaTime;
-
-
-            Debug.Log(dbgB + " lifttot");
-            liftVelocity += dbgB;
+            float liftAccel = isWreck ? 0 : Type.force * GetEnginePower() / currentMass;
+            liftVelocity = Mathf.Clamp((liftAccel - 9.81f) * Time.fixedDeltaTime + liftVelocity, -5f, Type.maxLiftVelocity);
         }
 
         // Update the current height
         height = Mathf.Clamp(height + liftVelocity * Time.fixedDeltaTime, 0, Type.groundHeight);
 
         // If is touching and moving towards the ground, crash
-        if (height == 0f && liftVelocity < 0f) { 
-            Land();
+        if (height == 0f && liftVelocity < 0f) {
+            Crash();
             liftVelocity = 0f;
         }
     }
@@ -95,6 +87,16 @@ public class AircraftUnit : Unit {
             // Instantiate the left sided trail
             lTrailRenderer = Instantiate(prefab, transform).GetComponent<TrailRenderer>();
             lTrailRenderer.transform.localPosition = leftOffset;
+        }
+    }
+
+    public override void Kill(bool destroyed) {
+        if (!isWreck && Type.hasWreck && destroyed) {
+            health = Type.wreckHealth;
+            isWreck = true;
+        }
+        else {
+            base.Kill(destroyed);           
         }
     }
 
@@ -169,31 +171,11 @@ public class AircraftUnit : Unit {
         velocity = Type.force / 3 * transform.up;
     }
 
-    public override void Land() {
-        // If the current target is a landing pad
-        if (Target is LandPadBlock landPad) {
+    public override void Dock(LandPadBlock landpad) {
+        base.Dock(landpad);
 
-            // Check if it's close enough to land
-            float distance = Vector2.Distance(landPad.GetPosition(), transform.position);
-            if (distance > landPad.size * 0.75f) return;
-
-            //If landpad is not avilable, crash
-            if (!landPad.Land(this)) {
-                Client.DestroyUnit(this, true);
-                return;
-            }
-
-            // When landed, set the current landing pad to the target one
-            currentLandPadBlock = landPad;
-
-            //Set landed true and stop completely the unit
-            isLanded = true;
-            velocity = Vector2.zero;
-            height = 0f;
-            SetDragTrailLenght(0);
-        } else {
-            Client.DestroyUnit(this, true);
-        }
+        height = 0f;
+        SetDragTrailLenght(0);
     }
 
     #endregion

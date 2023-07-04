@@ -136,6 +136,11 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
         }
     }
 
+    public virtual void Kill(bool destroyed) {
+        if (this is Unit unit) MapManager.Instance.DeleteUnit(unit, destroyed);
+        else if (this is Block block) MapManager.Instance.DeleteBlock(block, destroyed);
+    }
+
     public virtual void OnDestroy() {
         if (!gameObject.scene.isLoaded) return;
         OnDestroyed?.Invoke(this, new EntityArg { other = null });

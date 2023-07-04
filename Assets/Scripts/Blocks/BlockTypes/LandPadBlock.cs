@@ -11,12 +11,9 @@ public class LandPadBlock : Block {
 
     public bool CanLand(Unit unit) => unit.Type.size <= Type.unitSize && !IsFull() && !landedUnits.Contains(unit) && unit.GetTeam() == teamCode;
 
-    public bool Land(Unit unit) {
-        if (!CanLand(unit)) return false;
-
+    public void Land(Unit unit) {
         unit.transform.position = GetLandPosition(landedUnits.Count);
         landedUnits.Add(unit);
-        return true;
     }
 
     private Vector2 GetLandPosition(int index) {

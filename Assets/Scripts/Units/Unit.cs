@@ -190,9 +190,9 @@ public abstract class Unit : Entity, IArmed {
 
     //Physics management
     protected virtual void FixedUpdate() {
+        enginePower = CalculateEnginePower();
         HandleBehaviour();
         HandlePhysics();
-        enginePower = CalculateEnginePower();
     }
 
     //Initialize the unit
@@ -573,22 +573,30 @@ public abstract class Unit : Entity, IArmed {
     }
 
     public virtual void Land() {
-        if (Target is LandPadBlock landPad){
-            float distance = Vector2.Distance(landPad.GetPosition(), transform.position);
+        if (!Target) Crash();
 
-            if (distance > landPad.size * 0.75f) return;
+        LandPadBlock landpad = Target as LandPadBlock;
 
-            //Land on landpad
-            if (!landPad.Land(this)) return;
-            currentLandPadBlock = landPad;
+        bool isLandpad = landpad != null;
+        bool isNear = Vector2.Distance(Target.GetPosition(), transform.position) < Target.size * 0.65f;
+        bool canDock = isLandpad && landpad.CanLand(this);
 
-            //Set landed true and stop completely the unit
-            isLanded = true;
-            velocity = Vector2.zero;
-        }
+        if (isNear && canDock) Dock(landpad);
+        else Crash();
     }
 
+    public virtual void Dock(LandPadBlock landpad) {
+        landpad.Land(this);
+        currentLandPadBlock = landpad;
 
+        //Set landed true and stop completely the unit
+        isLanded = true;
+        velocity = Vector2.zero;
+    }
+
+    public virtual void Crash() {
+        Client.DestroyUnit(this, false);
+    }
 
     /// <summary>
     /// Fully autonomous target search, includes:

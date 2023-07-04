@@ -1074,8 +1074,11 @@ namespace Frontiers.Content {
         public bool useAerodynamics = true, hasDragTrails = true;
 
         public float takeoffTime = 3f, takeoffHeight = 0.5f; // Takeoff height is measured in a percentage of ground height
+        public float maxLiftVelocity = 3f;
 
-        public bool hasTrails = true;
+        public bool hasWreck = false;
+        public float wreckHealth = 0f;
+
         public Vector2 trailOffset = Vector2.zero;
 
         public AircraftUnitType(string name, Type type) : base(name, type) {
