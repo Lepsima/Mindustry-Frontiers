@@ -46,8 +46,15 @@ public class AircraftUnit : Unit {
 
         } else {
             // Calculate lift force
-            float liftAccel = isWreck ? 0 : Type.force * GetEnginePower() / currentMass;
-            liftVelocity = Mathf.Clamp((liftAccel - 9.81f) * Time.fixedDeltaTime + liftVelocity, -5f, Type.maxLiftVelocity);
+            float engineAccel = Type.force * GetEnginePower() / currentMass;
+            float liftAccel = 0f;
+
+            if (!isWreck) {
+                // This calculates the force the unit should make to not go full on kamikaze to the ground
+                liftAccel = targetHeight - height < 0f ? 9.81f - engineAccel : engineAccel;
+            }
+
+            liftVelocity = Mathf.Clamp((liftAccel - 9.81f) * Time.fixedDeltaTime + liftVelocity, -Type.maxLiftVelocity, Type.maxLiftVelocity);
         }
 
         // Update the current height
@@ -115,13 +122,6 @@ public class AircraftUnit : Unit {
         return !Type.useAerodynamics;
     }
 
-    public override float CalculateEnginePower() {
-        // Get the percent of power the engine should produce
-        float enginePower = base.CalculateEnginePower();
-        if (height > targetHeight) enginePower *= 0.75f;
-        return enginePower * (height / Type.groundHeight);
-    }
-
     public override float GetRotationPower() {
         // Get the power at wich the unit should rotate
         float power = Mathf.Clamp01(2 / gForce);
@@ -136,6 +136,10 @@ public class AircraftUnit : Unit {
 
     public override bool IsFleeing() {
         return isFleeing;
+    }
+
+    public override bool IsWreck() {
+        return isWreck;
     }
 
     public override bool CanMove() {
