@@ -719,6 +719,8 @@ public abstract class Unit : Entity, IArmed {
 
     public abstract bool IsFleeing();
 
+    public virtual bool IsWreck() => false;
+
     public bool InRange(Vector2 target) => Vector2.Distance(target, GetPosition()) < (Type.range - 0.05f);
 
     public bool InSearchRange(Vector2 target) => Vector2.Distance(target, GetPosition()) < Type.searchRange;

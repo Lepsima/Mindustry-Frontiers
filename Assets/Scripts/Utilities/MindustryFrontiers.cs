@@ -1121,19 +1121,37 @@ namespace Frontiers.Content {
             unit.Accelerate(enginePower * force * direction.normalized);
         }
 
+        public virtual void WreckBehaviour(Unit unit) {
+            
+        }
+
         public override void UpdateBehaviour(Unit unit, Vector2 position) {
-            // Consume fuel based on fuelConsumption x enginePower
-            unit.ConsumeFuel(fuelConsumption * unit.GetEnginePower() * Time.fixedDeltaTime);
-            Move(unit, position);
-            Rotate(unit, position);     
+            if (unit.IsWreck()) {
+                WreckBehaviour(unit);
+            } else {
+                // Consume fuel based on fuelConsumption x enginePower
+                unit.ConsumeFuel(fuelConsumption * unit.GetEnginePower() * Time.fixedDeltaTime);
+                Move(unit, position);
+                Rotate(unit, position);
+            }
         }
     }
 
     public class CopterUnitType : AircraftUnitType {
         public UnitRotor[] rotors;
 
+        // Degrees / second
+        public float wreckSpinAccel = 50f;
+        public float wreckSpinMax = 270f;
+
         public CopterUnitType(string name, Type type) : base(name, type) {
             useAerodynamics = hasDragTrails = false; // Copters don't do that
+        }
+
+        public override void WreckBehaviour(Unit unit) {
+            CopterUnit copter = (CopterUnit)unit;
+            copter.wreckSpinVelocity = Mathf.Clamp(wreckSpinAccel * Time.deltaTime + copter.wreckSpinVelocity, 0, wreckSpinMax);
+            copter.transform.eulerAngles += new Vector3(0, 0, copter.wreckSpinVelocity * Time.deltaTime);
         }
     }
 
@@ -1287,6 +1305,9 @@ namespace Frontiers.Content {
 
                 priorityList = new Type[5] { typeof(MechUnit), typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
 
+                hasWreck = true,
+                wreckHealth = 10000f,
+
                 health = 395f,
                 size = 2.25f,
                 maxVelocity = 7f,
@@ -1326,7 +1347,7 @@ namespace Frontiers.Content {
                 priorityList = new Type[5] { typeof(MechUnit), typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
 
                 health = 750f,
-                size = 3.5f,
+                size = 3.75f,
                 maxVelocity = 9f,
                 itemCapacity = 50,
                 drag = 3.5f,

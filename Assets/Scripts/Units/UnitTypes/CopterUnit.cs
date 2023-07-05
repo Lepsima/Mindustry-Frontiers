@@ -8,6 +8,7 @@ public class CopterUnit : AircraftUnit {
     public new CopterUnitType Type { get => (CopterUnitType)base.Type; protected set => base.Type = value; }
     public Rotor[] rotors;
     public float maxRotorOutput;
+    public float wreckSpinVelocity = 0f;
 
     public class Rotor {
         public RotorBlade[] blades;
