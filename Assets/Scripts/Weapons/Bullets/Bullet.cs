@@ -27,6 +27,11 @@ public class Bullet {
         if (collider.transform.TryGetComponent(out Entity entity)) Client.BulletHit(entity, Type);
     }
 
+    public void OnDespawn() {
+        Effect.PlayEffect(Type.despawnFX, transform.position, 1f);
+        Client.Explosion(Type, GetPosition(), GetTeam());
+    }
+
     public void Return() {
         Type.pool.Return(transform.gameObject);
         weapon.ReturnBullet(this);

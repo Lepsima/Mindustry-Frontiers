@@ -206,10 +206,27 @@ public class Client : MonoBehaviourPunCallbacks {
         DamageHandler.Damage(new(damage), entity);
     }
 
+
+
+    public static void Explosion(BulletType bulletType, Vector2 position, byte team) {
+        if (!PhotonNetwork.IsMasterClient) return;
+        local.photonView.RPC(nameof(RPC_Damage), RpcTarget.All, bulletType.id, position, team);
+    }
+
+    [PunRPC]
+    public void RPC_Explosion(short bulletID, Vector2 position, byte team) {
+        if (isRecivingMap) return;
+        DamageHandler.BulletExplode((BulletType)ContentLoader.GetContentById(bulletID), position, team);
+    }
+
+
+
     public static void AddItem(Entity entity, Item item, int amount) {
         if (!PhotonNetwork.IsMasterClient) return;
         local.photonView.RPC(nameof(RPC_AddItem), RpcTarget.All, entity.SyncID, item.id, amount);
     }
+
+
 
     [PunRPC]
     public void RPC_AddItem(int syncID, short itemID, int amount) {

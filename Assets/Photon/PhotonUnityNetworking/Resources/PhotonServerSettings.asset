@@ -77,6 +77,7 @@ MonoBehaviour:
   - MasterRPC_DestroyBlock
   - MasterRPC_DestroyUnit
   - MasterRPC_BuildBlock
+  - RPC_Explosion
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

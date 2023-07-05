@@ -1816,7 +1816,7 @@ namespace Frontiers.Content {
             transform.GetComponent<TrailRenderer>().Clear();
 
             float lifeTime = Time.time + this.lifeTime;
-            while (!hasCollided || Time.time >= lifeTime) {
+            while (Time.time < lifeTime) {
                 if (!transform) break;
 
                 // Try to update target
@@ -1848,7 +1848,7 @@ namespace Frontiers.Content {
 
             // If has not collided, explode anyways
             if (!hasCollided && explodeOnDespawn) {
-                bullet.OnBulletCollision();
+                bullet.OnDespawn();
             }
 
             bullet.Return();
