@@ -1430,7 +1430,7 @@ namespace Frontiers.Content {
 
         public string shootFX = "MuzzleFX";
         public string casingFX = "";
-        public float shootFXSize = 1f, casingFXSize = 1f, casingFXOffset = 0.1f;
+        public float shootFXSize = 1f, casingFXSize = 1f, casingFXOffset = -0.5f;
 
         private string ammoItemName;
         private Wrapper<Animation> animationWrapper;
