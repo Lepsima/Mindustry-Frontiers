@@ -141,8 +141,11 @@ public class Weapon : MonoBehaviour {
         hasAnimations = SetAnimations(Type.animations);
 
         if (!hasMultiBarrel) {
-            shootFX = transform.CreateEffect(Type.shootFX, Vector2.zero, Quaternion.identity, 5f);
-            if (shootFX) shootFX.transform.position = transform.position + GetOffset();
+            shootFX = transform.CreateEffect(Type.shootFX, Vector2.zero, Quaternion.identity, Type.shootFXSize);
+            if (shootFX) { 
+                shootFX.transform.position = transform.position + GetOffset();
+                shootFX.transform.CreateEffect(Type.casingFX, new Vector2(0f, Type.casingFXOffset), Quaternion.identity, Type.casingFXSize);
+            }
         }
     }
 
@@ -269,7 +272,7 @@ public class Barrel {
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
 
-        shootFX = transform.CreateEffect(parent.Type.shootFX, Vector2.zero, Quaternion.identity, 5f);
+        shootFX = transform.CreateEffect(parent.Type.shootFX, Vector2.zero, Quaternion.identity);
         if (shootFX) shootFX.transform.position = transform.position + GetOffset();
 
         SpriteRenderer barrelRenderer = transform.GetComponent<SpriteRenderer>();

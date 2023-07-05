@@ -1169,7 +1169,7 @@ namespace Frontiers.Content {
                 fov = 100f,
                 groundHeight = 18f,
 
-                fuelCapacity = 12.0f,
+                fuelCapacity = 120f,
                 fuelConsumption = 1.25f,
                 fuelRefillRate = 8.25f,
 
@@ -1429,6 +1429,8 @@ namespace Frontiers.Content {
         public BulletType bulletType;
 
         public string shootFX = "MuzzleFX";
+        public string casingFX = "";
+        public float shootFXSize = 1f, casingFXSize = 1f, casingFXOffset = 0.1f;
 
         private string ammoItemName;
         private Wrapper<Animation> animationWrapper;
@@ -1492,7 +1494,9 @@ namespace Frontiers.Content {
                 recoil = 0f,
                 clipSize = 25,
                 shootTime = 0.15f,
-                reloadTime = 5f
+                reloadTime = 5f,
+
+                casingFX = "CasingFX"
             };
 
             flareWeapon = new WeaponType("flare-weapon") {
@@ -1503,7 +1507,9 @@ namespace Frontiers.Content {
                 returnSpeed = 3f,
                 clipSize = 25,
                 shootTime = 0.15f,
-                reloadTime = 5f
+                reloadTime = 5f,
+
+                casingFX = "CasingFX"
             };
 
             fotonWeapon = new WeaponType("foton-weapon") {
@@ -1525,6 +1531,8 @@ namespace Frontiers.Content {
                 clipSize = 3,
                 shootTime = 0.33f,
                 reloadTime = 1.5f,
+
+                casingFX = "CasingFX"
             };
 
             fortressWeapon = new WeaponType("fortress-weapon") {
@@ -1536,6 +1544,8 @@ namespace Frontiers.Content {
                 clipSize = 3,
                 shootTime = 0.33f,
                 reloadTime = 1.5f,
+
+                casingFX = "CasingFX"
             };
 
             horizonBombBay = new WeaponType("horizon-bomb-bay") {
@@ -1582,7 +1592,9 @@ namespace Frontiers.Content {
                 clipSize = 12,
                 shootTime = 0.075f,
                 reloadTime = 2f,
-                rotateSpeed = 90f
+                rotateSpeed = 90f,
+
+                casingFX = "CasingFX"
             };
 
             stingerWeapon = new WeaponType("stinger-weapon") {
@@ -1598,7 +1610,9 @@ namespace Frontiers.Content {
                 clipSize = 5,
                 shootTime = 0.3f,
                 reloadTime = 4f,
-                rotateSpeed = 60f
+                rotateSpeed = 60f,
+
+                casingFX = "CasingFX"
             };
 
             pathWeapon = new WeaponType("path-weapon") {
@@ -1615,7 +1629,9 @@ namespace Frontiers.Content {
                 clipSize = 50,
                 shootTime = 0.03f,
                 reloadTime = 6f,
-                rotateSpeed = 120f
+                rotateSpeed = 120f,
+
+                casingFX = "CasingFX"
             };
 
             spreadWeapon = new WeaponType("spread-weapon") {
@@ -1635,6 +1651,8 @@ namespace Frontiers.Content {
                 shootTime = 0.085f,
                 reloadTime = 6f,
                 rotateSpeed = 100f,
+
+                casingFX = "CasingFX"
             };
 
             missileRack = new WeaponType("missileRack", Items.missileX1) {

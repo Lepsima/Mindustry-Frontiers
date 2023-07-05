@@ -29,14 +29,16 @@ public static class Effect {
         particleSystem.Play();
     }
 
-    public static ParticleSystem CreateEffect(this Transform parent, string name, Vector2 position, Quaternion rotation, float size) {
+    public static ParticleSystem CreateEffect(this Transform parent, string name, Vector2 position, Quaternion rotation, float localSize = 1f) {
         if (name == "") return null;
         if (!prefabDictionary.ContainsKey(name)) prefabDictionary.Add(name, AssetLoader.GetPrefab(name));
 
         GameObject prefab = prefabDictionary[name];
-        GameObject instance = Object.Instantiate(prefab, position, rotation, parent);
+        GameObject instance = Object.Instantiate(prefab, Vector3.zero, Quaternion.identity, parent);
 
-        instance.transform.localScale = size * Vector3.one;
+        instance.transform.SetLocalPositionAndRotation(position, rotation);
+        instance.transform.localScale = localSize * Vector3.one;
+
         return instance.GetComponent<ParticleSystem>();
     }
 }
