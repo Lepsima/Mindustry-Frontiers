@@ -56,14 +56,16 @@ public class ConveyorBlock : ItemBlock {
     protected float itemSpace;
 
     protected int variant = 0;
+    protected bool mirroredSprite = false;
     protected float frameTime = 0f;
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
+        conveyorRenderer = GetComponent<SpriteRenderer>();
+
         base.Set(position, rotation, type, id, teamCode);
         endPosition = GetFacingEdgePosition() + GetPosition();
-        UpdateAdjacentBlocks();
 
-        conveyorRenderer = GetComponent<SpriteRenderer>();
+        UpdateVariant();
     }
 
     public override void SetInventory() {
@@ -79,8 +81,8 @@ public class ConveyorBlock : ItemBlock {
     }
 
     private void UpdateAnimation() {
-        if (isStuck || items.Count == 0) return;
-        int frame = Mathf.FloorToInt(Time.time * ConveyorBlockType.frames * Type.itemSpeed % ConveyorBlockType.frames);
+        //if (isStuck || items.Count == 0) return;
+        int frame = Mathf.FloorToInt((Time.time * ConveyorBlockType.frames * Type.itemSpeed * 2) % ConveyorBlockType.frames);
 
         Sprite sprite = Type.allConveyorSprites[variant, frame];
         conveyorRenderer.sprite = sprite;
@@ -121,6 +123,25 @@ public class ConveyorBlock : ItemBlock {
         next = GetFacingBlock() as ItemBlock;
         nextAsConveyor = next as ConveyorBlock;
         aligned = nextAsConveyor != null && nextAsConveyor.GetOrientation() == GetOrientation();
+
+        UpdateVariant();
+    }
+
+    private void UpdateVariant() {
+        bool left = HasSenderBlockAt(1);
+        bool back = HasSenderBlockAt(2);
+        bool right = HasSenderBlockAt(3);
+
+        variant = ConveyorBlockType.GetVariant(right, left, back, out mirroredSprite);
+        conveyorRenderer.flipY = mirroredSprite;
+    }
+
+    private bool HasSenderBlockAt(int orientation) {
+        ItemBlock itemBlock = GetFacingBlock(orientation) as ItemBlock;
+        if (!itemBlock) return false;
+
+        if (itemBlock is ConveyorBlock conveyor) return conveyor.nextAsConveyor == this;
+        else return true;   
     }
 
     public override bool CanReciveItem(Item item) {

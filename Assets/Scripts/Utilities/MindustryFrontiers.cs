@@ -691,6 +691,42 @@ namespace Frontiers.Content {
                 }
             }         
         }
+
+        public static int GetVariant(bool right, bool left, bool back, out bool mirrored) {
+            // Only Back
+            if (!(right || left) && back) {
+                mirrored = false;
+                return 0;
+            }
+
+            // One side
+            if ((right ^ left) && !back) {
+                mirrored = right;
+                return 1;
+            }
+
+            // One side and back
+            if ((right ^ left) && back) {
+                mirrored = left;
+                return 2;
+            }
+
+            // All
+            if (right && left && back) {
+                mirrored = false;
+                return 3;
+            }
+
+            // Only sides
+            if (right && left && !back) {
+                mirrored = false;
+                return 4;
+            }
+
+            // This could never happer, but who knows
+            mirrored = false;
+            return 0;
+        }
     }
 
     public class CrafterBlockType : ItemBlockType {

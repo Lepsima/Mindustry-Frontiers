@@ -129,8 +129,8 @@ public class Block : Entity {
         return allTiles;
     }
 
-    public Block GetFacingBlock() {
-        return MapManager.Map.GetBlockAt(GetGridPosition() + GetFacingPosition());
+    public Block GetFacingBlock(int offset = 0) {
+        return MapManager.Map.GetBlockAt(GetGridPosition() + GetFacingPosition(offset));
     }
 
     public Vector2Int GetGridPosition() => gridPosition;
@@ -169,13 +169,14 @@ public class Block : Entity {
         return Vector2.zero;
     }
 
-    public Vector2Int GetFacingPosition() {
+    public Vector2Int GetFacingPosition(int offset = 0) {
         int distance = Type.size;
+        int o = (orientation + offset) % 4;
 
-        if (orientation == 0) return new Vector2Int(distance, 0);
-        if (orientation == 1) return new Vector2Int(0, distance);
-        if (orientation == 2) return new Vector2Int(-distance, 0);
-        if (orientation == 3) return new Vector2Int(0, -distance);
+        if (o == 0) return new Vector2Int(distance, 0);
+        if (o == 1) return new Vector2Int(0, distance);
+        if (o == 2) return new Vector2Int(-distance, 0);
+        if (o == 3) return new Vector2Int(0, -distance);
 
         return Vector2Int.zero;
     }
