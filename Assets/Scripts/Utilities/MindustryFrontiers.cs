@@ -2022,6 +2022,9 @@ namespace Frontiers.Content {
         //Ore tiles
         public static TileType copperOre, leadOre, titaniumOre, coalOre, thoriumOre;
 
+        //Wall tiles
+        public static TileType daciteWall, dirtWall, duneWall, iceWall, saltWall, sandWall, shaleWall, grassWall, snowWall, stoneWall;
+
         public static void Load() {
             darksandWater = new TileType("darksand-water") {
                 isWater = true,
@@ -2072,6 +2075,26 @@ namespace Frontiers.Content {
             coalOre = new OreTileType("ore-coal", 3, Items.coal);
 
             thoriumOre = new OreTileType("ore-thorium", 3, Items.thorium);
+
+            daciteWall = new TileType("dacite-wall", 2);
+
+            dirtWall = new TileType("dirt-wall", 2);
+
+            duneWall = new TileType("dune-wall", 2);
+
+            iceWall = new TileType("ice-wall", 2);
+
+            saltWall = new TileType("salt-wall", 2);
+
+            sandWall = new TileType("sand-wall", 2);
+
+            shaleWall = new TileType("shale-wall", 2);
+
+            grassWall = new TileType("shrubs", 2);
+
+            snowWall = new TileType("snow-wall", 2);
+
+            stoneWall = new TileType("stone-wall", 2);
         }
     }
 
@@ -3565,8 +3588,9 @@ namespace Frontiers.Content.Maps {
         }
 
         public LandPadBlock GetBestAvilableLandPad(Unit forUnit) {
-            LandPadBlock smallestLandPad = null;
-            float smallestSize = 99999f;
+            LandPadBlock bestLandPad = null;
+            float smallestSize = 999999f;
+            float closestDistance = 999999f;
 
             foreach (Block block in blocks) {
                 if (block is LandPadBlock landPad) {
@@ -3578,14 +3602,25 @@ namespace Frontiers.Content.Maps {
                     float size = landPad.Type.unitSize;
 
                     //If size is lower than previous closest distance, set this as the closest block
+                    // If the landpad isn't smaller but is equally sized, check if it's closer
                     if (size < smallestSize) {
                         smallestSize = size;
-                        smallestLandPad = landPad;
+                        bestLandPad = landPad;
+
+                    } else if (size == smallestSize) {
+                        //Get distance to block
+                        float distance = Vector2.Distance(forUnit.GetPosition(), landPad.GetPosition());
+
+                        //If distance is lower than previous closest distance, set this as the closest block
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                            bestLandPad = landPad;
+                        }
                     }
                 }
             }
 
-            return smallestLandPad;
+            return bestLandPad;
         }
 
         public Block GetBlockAt(Vector2Int position) {

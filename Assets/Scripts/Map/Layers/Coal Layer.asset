@@ -21,7 +21,7 @@ MonoBehaviour:
   lacunarity: 3.28
   noiseLayer: 1
   overrideIfNull: 0
-  tile1Name: ore-copper
+  tile1Name: ore-coal
   tile2Name: 
   riverWidth: 0
   shoreWidth: 0

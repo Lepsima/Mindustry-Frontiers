@@ -168,17 +168,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4fb9d975d6f39441b800fe70c02e113, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  saveName: Default Map 02
+  loadName: Default Map 02
+  loadsMap: 1
+  saveName: Default Map 02.1
   regionSize: 32
   size: {x: 1024, y: 1024}
   layers:
-  - {fileID: 11400000, guid: 7d4f17b0458056c49918c82a2556f441, type: 2}
-  - {fileID: 11400000, guid: e9d145e2b4ed2c04785f51e96e2f7945, type: 2}
   - {fileID: 11400000, guid: e3a47aebb6f81cd4cbc6d0076c5c66e1, type: 2}
-  - {fileID: 11400000, guid: 05a90cfa257f1484d9b78cf920b33df6, type: 2}
-  - {fileID: 11400000, guid: 113fa1f281df5ba4f9e2fd07540594ae, type: 2}
-  - {fileID: 11400000, guid: cac70fb1e40528648a7ef715461328e5, type: 2}
-  - {fileID: 11400000, guid: aa863f275d30099409f3fbe19495008f, type: 2}
+  - {fileID: 11400000, guid: bbd6094decec5324a903d51e4d362efd, type: 2}
   scale: 3
   threshold: 0.5
   octaves: 1

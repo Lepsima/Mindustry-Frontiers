@@ -399,7 +399,7 @@ public abstract class Unit : Entity, IArmed {
         if (!Target) SetWeaponsActive(false);
 
         Type.UpdateBehaviour(this, _position);
-        if (!isLanded) HandleHeight();
+        HandleHeight();
     }
 
     protected void SetBehaviourPosition(Vector2 target) => _position = target;
@@ -452,7 +452,7 @@ public abstract class Unit : Entity, IArmed {
         bool isInvalid = !Target || !(Target is LandPadBlock) || !(Target as LandPadBlock).CanLand(this);
         if (landPadSearchTimer < Time.time && isInvalid) {
             // Search for a landpad
-            landPadSearchTimer = 3f + Time.time;
+            landPadSearchTimer = 1f + Time.time;
             LandPadBlock targetLandPad = MapManager.Map.GetBestAvilableLandPad(this);
 
             // Confirm target change
@@ -460,10 +460,17 @@ public abstract class Unit : Entity, IArmed {
         }
 
         // If couldnt't find any landpads, continue as patrol mode
-        if (Target is LandPadBlock) {
+        if (Target is LandPadBlock landPad) {
             //If close to landpad, land
             float distance = Vector2.Distance(Target.GetPosition(), GetPosition());
-            if (distance < ((Block)Target).Type.size / 2 + 0.5f && velocity.magnitude < 5f) Land();
+
+            // Check if it can land
+            bool isInDistance = distance < landPad.Type.size / 2 + 0.5f;
+            bool isMovingSlow = velocity.sqrMagnitude < 20f;
+            bool canLand = landPad.CanLand(this);
+
+            // Try to land
+            if (isInDistance && isMovingSlow && canLand) Land();
 
             //Move towards target
             SetBehaviourPosition(Target.GetPosition());

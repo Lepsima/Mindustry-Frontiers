@@ -39,6 +39,13 @@ public class AircraftUnit : Unit {
     }
 
     public override void HandleHeight() {
+        if (isLanded) {
+            height = 0f;
+            liftVelocity = 0f;
+            return;
+        }
+
+
         if (isTakingOff) {
             // Apply a custom force to simulate takeoff
             float takeoffAccel = (2f * Type.groundHeight * Type.takeoffHeight) / (Type.takeoffTime * Type.takeoffTime);
@@ -179,6 +186,7 @@ public class AircraftUnit : Unit {
         base.Dock(landpad);
 
         height = 0f;
+        liftVelocity = 0f;
         SetDragTrailLenght(0);
     }
 

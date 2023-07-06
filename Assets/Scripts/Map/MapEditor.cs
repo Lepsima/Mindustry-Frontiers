@@ -8,6 +8,9 @@ using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
 using Frontiers.Settings;
 
 public class MapEditor : MonoBehaviour {
+    [Header("Load base map")]
+    public string loadName;
+    public bool loadsMap;
 
     [Header("Main Settings")]
     public string saveName;
@@ -49,13 +52,25 @@ public class MapEditor : MonoBehaviour {
 
         Main.RegionSize = regionSize;
         MapDisplayer.SetupAtlas();
-        tilemap = new(size, Vector2Int.one * Main.RegionSize);
+
+        MapLoader.OnMapLoaded += OnMapLoaded;
+
+        if (loadsMap) { 
+            MapLoader.LoadMap(loadName);
+        } else {
+            tilemap = new(size, Vector2Int.one * Main.RegionSize);
+            map = new Map(saveName, size.x, size.y, tilemap);
+        }
 
         loadedTiles = ContentLoader.GetContentByType<TileType>();
-        map = new Map(saveName, size.x, size.y, tilemap);
+    }
+
+    private void OnMapLoaded(object sender, MapLoader.MapLoadedEventArgs e) {
+        map = e.loadedMap;
     }
 
     private void Update() {
+        if (map == null) return;
         Vector2Int mouseGridPos = Vector2Int.FloorToInt(Camera.main.ScreenToWorldPoint(Input.mousePosition));
 
         if (Input.GetKeyDown(KeyCode.X)) {
