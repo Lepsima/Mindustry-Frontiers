@@ -41,24 +41,29 @@ public class ConveyorBlock : ItemBlock {
         public void End() {
             conveyorItemPool.Return(itemGameObject);
         }
-
-        public bool HasEndedLerp() => time >= 1;
     }
 
-    public List<ConveyorItem> items = new List<ConveyorItem>();
+    public List<ConveyorItem> items = new();
     public float backSpace;
-    public bool aligned;
+    public bool aligned, isStuck;
 
     public ItemBlock next;
     public ConveyorBlock nextAsConveyor;
 
+    protected SpriteRenderer conveyorRenderer;
+
     protected Vector2 endPosition;
     protected float itemSpace;
+
+    protected int variant = 0;
+    protected float frameTime = 0f;
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
         endPosition = GetFacingEdgePosition() + GetPosition();
         UpdateAdjacentBlocks();
+
+        conveyorRenderer = GetComponent<SpriteRenderer>();
     }
 
     public override void SetInventory() {
@@ -69,7 +74,19 @@ public class ConveyorBlock : ItemBlock {
 
     protected override void Update() {
         base.Update();
+        UpdateItems();
+        UpdateAnimation();
+    }
 
+    private void UpdateAnimation() {
+        if (isStuck || items.Count == 0) return;
+        int frame = Mathf.FloorToInt(Time.time * ConveyorBlockType.frames * Type.itemSpeed % ConveyorBlockType.frames);
+
+        Sprite sprite = Type.allConveyorSprites[variant, frame];
+        conveyorRenderer.sprite = sprite;
+    }
+
+    private void UpdateItems() {
         int len = items.Count;
         if (len == 0) return;
 
@@ -82,6 +99,8 @@ public class ConveyorBlock : ItemBlock {
             float nextPos = (i == 0 ? 100f : items[i - 1].time) - itemSpace;
             float maxMove = Mathf.Clamp(nextPos - items[i].time, 0, moved);
 
+            if (i == 0) isStuck = items[i].time >= 1f;
+
             items[i].time += maxMove;
             items[i].Update(endPosition);
 
@@ -91,7 +110,7 @@ public class ConveyorBlock : ItemBlock {
                 items.RemoveAt(i);
                 len = Mathf.Min(i, len);
             } else if (items[i].time < backSpace) {
-                backSpace = items[i].time;
+                backSpace = items[i].time; 
             }
         }
     }

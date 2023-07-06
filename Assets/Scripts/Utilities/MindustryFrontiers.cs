@@ -671,11 +671,25 @@ namespace Frontiers.Content {
     }
 
     public class ConveyorBlockType : ItemBlockType {
+        [JsonIgnore] public Sprite[,] allConveyorSprites;
         public float itemSpeed = 1f;
+        public float frameTime = 0.25f;
+
+        public const int frames = 4;
+        public const int variants = 5;
 
         public ConveyorBlockType(string name, Type type) : base(name, type) {
             rotates = true;
             updates = true;
+
+            frameTime = 1 / (frames * itemSpeed);  
+            allConveyorSprites = new Sprite[variants, frames];
+
+            for (int v = 0; v < variants; v++) {
+                for (int f = 0; f < frames; f++) {
+                    allConveyorSprites[v, f] = AssetLoader.GetSprite($"{name}-{v}-{f}");
+                }
+            }         
         }
     }
 
