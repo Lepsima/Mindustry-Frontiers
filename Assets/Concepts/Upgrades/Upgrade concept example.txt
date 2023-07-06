@@ -1,0 +1,52 @@
+Upgrade system example
+
+
+Base content: Flare
+
+  stats:
+cost = 15 silicon
+health = 75
+drag = 0.1
+fuelConsumption = 1.25
+fuelMass = 3.5
+emptyMass = 10
+
+
+
+Applied upgrades:
+
+
+  - Fuel efficiency
+
+  stats:
+requiredUpgrades = enginePower & refinedFuel
+upgradeResearchCost = (Completely arbitrary) 100 silicon
+upgradeCost = (Also completely arbitrary) 7 silicon
+
+fuelConsumption = 1.25 => 1.00
+fuelMass = 3.5 => 3.00
+
+
+
+  - Heavy armor
+
+  stats:
+requiredUpgrades = advancedAlloys
+upgradeResearchCost = 220 silicon
+upgradeCost = 8 titanium
+
+health = 75 => 110
+drag = 0.1 => 0.15
+emptyMass = 10 => 13.5
+
+
+
+Final stats:
+
+health = 110
+drag = 0.15
+fuelConsumption = 1
+fuelMass = 3
+emptyMass = 13.5
+
+
