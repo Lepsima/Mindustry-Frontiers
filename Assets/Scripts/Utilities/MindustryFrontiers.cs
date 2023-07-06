@@ -3015,6 +3015,10 @@ namespace Frontiers.Content.Maps {
             return HasBlock() || HasTile(MapLayer.Solid);
         }
 
+        public bool IsWalkable() {
+            return !tiles[(int)MapLayer.Ground].isWater;
+        }
+
         public void LoadTile(string data) {
             // Loads all layers of the tile from a single string
             // Used to recive map data across the network 

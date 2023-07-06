@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using Frontiers.Content.Maps;
 using Frontiers.Content;
 using Frontiers.Assets;
 using Frontiers.Teams;
