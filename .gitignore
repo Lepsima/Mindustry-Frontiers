@@ -1,6 +1,3 @@
-﻿################################################################################
-# Este archivo .gitignore ha sido creado automáticamente por Microsoft(R) Visual Studio.
-################################################################################
-
 /*
 !/Assets
+/Assets/.vs
