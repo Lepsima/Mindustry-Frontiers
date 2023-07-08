@@ -5,6 +5,7 @@ using System;
 using Photon.Pun;
 using Photon.Realtime;
 using Photon.Pun.UtilityScripts;
+using Frontiers.Content.Upgrades;
 using Frontiers.Content;
 using Frontiers.Assets;
 using Frontiers.Teams;
@@ -23,6 +24,14 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
     protected byte teamCode;
     protected float health;
 
+    #region - Upgradable Stats -
+    public List<short> appliedUpgrades;
+
+    protected float maxHealth;
+    protected int itemCapacity;
+
+    #endregion
+
     public bool hasInventory = false;
     public float size;
 
@@ -40,6 +49,18 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
         health = values[1];
     }
 
+    public void ApplyUpgrade(UpgradeType upgrade) {
+        if (appliedUpgrades.Contains(upgrade.id)) return;
+        ApplyUpgrageMultiplier(upgrade);
+    }
+
+    protected virtual void ApplyUpgrageMultiplier(UpgradeType upgrade) {     
+        UpgradeMultipliers mult = upgrade.properties;
+
+        maxHealth *= mult.entity_health;
+        itemCapacity = Mathf.RoundToInt(itemCapacity * mult.entity_itemCapacity);
+    }
+    
     public virtual void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) where T : EntityType {
         this.id = id;
         this.teamCode = teamCode;
@@ -53,6 +74,9 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
         SetSprites();
 
         syncValues = 2;
+
+        health = maxHealth = Type.health;
+        itemCapacity = Type.itemCapacity;
     }
 
     protected Color CellColor() {
@@ -105,7 +129,7 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
     }
 
     public float GetHealthPercent() {
-        return health / Type.health;
+        return health / maxHealth;
     }
 
     public void Damage(float amount) {

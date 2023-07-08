@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Frontiers.Content;
 using Frontiers.Content.Maps;
+using Frontiers.Content.Upgrades;
 
 public class MechUnit : Unit {
     public new MechUnitType Type { get => (MechUnitType)base.Type; protected set => base.Type = value; }
@@ -12,8 +13,15 @@ public class MechUnit : Unit {
     protected float walkTime = 0f;
     protected Vector2 lastPosition;
 
+    #region - Upgradable Stats -
+
+    protected float baseRotationSpeed;
+
+    #endregion
+
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
+        baseRotationSpeed = Type.baseRotationSpeed;
     }
 
     protected override void Update() {
@@ -26,6 +34,13 @@ public class MechUnit : Unit {
 
         // Update the mech things
         HandleMech();
+    }
+
+    protected override void ApplyUpgrageMultiplier(UpgradeType upgrade) {
+        base.ApplyUpgrageMultiplier(upgrade);
+
+        UnitUpgradeMultipliers mult = upgrade.properties as UnitUpgradeMultipliers;
+        baseRotationSpeed *= baseRotationSpeed * mult.mech_baseRotationSpeed;
     }
 
     protected override void CreateTransforms() {
@@ -77,7 +92,7 @@ public class MechUnit : Unit {
         desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
 
         // Rotate the base transform
-        float speed = Type.baseRotationSpeed * Time.fixedDeltaTime;
+        float speed = baseRotationSpeed * Time.fixedDeltaTime;
         baseTransform.rotation = Quaternion.RotateTowards(baseTransform.rotation, desiredRotation, speed);
 
         // Get the y position of each leg

@@ -1,4 +1,5 @@
 using Frontiers.Content;
+using Frontiers.Content.Upgrades;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,6 +14,31 @@ public class CrafterBlock : ItemBlock {
 
     private float warmup;
     private float progress;
+
+    #region - Upgradable Stats -
+
+    protected float craftTime;
+    protected ItemStack craftReturn;
+    protected ItemStack[] craftCost;
+
+    #endregion
+
+    protected override void ApplyUpgrageMultiplier(UpgradeType upgrade) {
+        base.ApplyUpgrageMultiplier(upgrade);
+
+        BlockUpgradeMultipliers mult = upgrade.properties as BlockUpgradeMultipliers;
+
+        craftTime *= mult.crafter_craftTime;    
+        craftReturn = ItemStack.Multiply(craftReturn, mult.crafter_craftReturn);
+        craftCost = ItemStack.Multiply(craftCost, mult.crafter_craftCost);
+    }
+
+    public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
+        base.Set(position, rotation, type, id, teamCode);
+        craftTime = Type.craftPlan.craftTime;
+        craftReturn = Type.craftPlan.productStack.Copy();
+        Type.craftPlan.materialList.CopyTo(craftCost, 0);
+    }
 
     protected override void SetSprites() {
         base.SetSprites();
@@ -41,12 +67,12 @@ public class CrafterBlock : ItemBlock {
         OutputItems();
     }
 
-    public bool CanCraft() => inventory.Has(Type.craftPlan.materialList) && !inventory.Full(Type.craftPlan.productStack.item);
+    public bool CanCraft() => inventory.Has(craftCost) && !inventory.Full(craftReturn.item);
 
     public virtual void Craft() {
         nextCraftTime = -1f;
-        inventory.Substract(Type.craftPlan.materialList);
-        inventory.Add(Type.craftPlan.productStack);
+        inventory.Substract(craftCost);
+        inventory.Add(craftReturn);
     }
 
     public bool IsCrafting() => nextCraftTime != -1f;
@@ -55,16 +81,16 @@ public class CrafterBlock : ItemBlock {
         base.SetInventory();
 
         // Set allowed input items
-        Item[] allowedItems = new Item[Type.craftPlan.materialList.Length];
-        for (int i = 0; i < allowedItems.Length; i++) allowedItems[i] = Type.craftPlan.materialList[i].item;
+        Item[] allowedItems = new Item[craftCost.Length];
+        for (int i = 0; i < allowedItems.Length; i++) allowedItems[i] = craftCost[i].item;
 
         inventory.SetAllowedItems(allowedItems);
-        acceptedItems = ItemStack.ToItems(Type.craftPlan.materialList);
-        outputItems = new Item[1] { Type.craftPlan.productStack.item };
+        acceptedItems = ItemStack.ToItems(craftCost);
+        outputItems = new Item[1] { craftReturn.item };
     }
 
     public override void OnInventoryValueChange(object sender, System.EventArgs e) {
         if (!CanCraft()) nextCraftTime = -1f;
-        else if (!IsCrafting()) nextCraftTime = Type.craftPlan.craftTime + Time.time;
+        else if (!IsCrafting()) nextCraftTime = craftTime + Time.time;
     }
 }

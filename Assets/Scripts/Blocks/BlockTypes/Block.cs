@@ -21,7 +21,6 @@ public class Block : Entity {
     public float blinkInterval, blinkLenght, blinkOffset;
     private bool glows = false;
 
-
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         Type = type as BlockType;
 

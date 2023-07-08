@@ -7,6 +7,7 @@ using Photon.Pun;
 using System.Collections.Generic;
 using System;
 using UnityEngine;
+using Frontiers.Content.Upgrades;
 
 public abstract class Unit : Entity, IArmed {
     public new UnitType Type { protected set; get; }
@@ -85,6 +86,15 @@ public abstract class Unit : Entity, IArmed {
 
     // Conditions used ONLY on the next frame, then they are reseted
     protected bool _rotate, _move;
+
+    #endregion
+
+
+    #region - Upgradable Stats -
+
+    protected float 
+        maxVelocity, rotationSpeed, itemPickupDistance, buildSpeedMultiplier, range,
+        searchRange, fov, fuelCapacity, fuelConsumption, fuelRefillRate, emptyMass, fuelMass;
 
     #endregion
 
@@ -175,13 +185,13 @@ public abstract class Unit : Entity, IArmed {
             }
         }
 
-        if (currentLandPadBlock != null && fuel < Type.fuelCapacity) {
-            if (fuel < Type.fuelCapacity) {
-                fuel += Type.fuelRefillRate * Time.deltaTime;
+        if (currentLandPadBlock != null && fuel < fuelCapacity) {
+            if (fuel < fuelCapacity) {
+                fuel += fuelRefillRate * Time.deltaTime;
 
                 // When fuel is completely refilled, continue the previous mode
-                if (fuel > Type.fuelCapacity) {
-                    fuel = Type.fuelCapacity;
+                if (fuel > fuelCapacity) {
+                    fuel = fuelCapacity;
                     Client.UnitChangeMode(this, (int)lastUnitMode);
                 }
             }
@@ -193,6 +203,24 @@ public abstract class Unit : Entity, IArmed {
         enginePower = CalculateEnginePower();
         HandleBehaviour();
         HandlePhysics();
+    }
+
+    protected override void ApplyUpgrageMultiplier(UpgradeType upgrade) {
+        base.ApplyUpgrageMultiplier(upgrade);
+        UnitUpgradeMultipliers mult = upgrade.properties as UnitUpgradeMultipliers;
+
+        maxVelocity *= mult.unit_maxVelocity;
+        rotationSpeed *= mult.unit_rotationSpeed;
+        itemPickupDistance *= mult.unit_itemPickupDistance;
+        buildSpeedMultiplier *= mult.unit_buildSpeedMultiplier;
+        range *= mult.unit_range;
+        searchRange *= mult.unit_searchRange;
+        fov *= mult.unit_fov;
+        fuelCapacity *= mult.unit_fuelCapacity;
+        fuelConsumption *= mult.unit_fuelConsumption;
+        fuelRefillRate *= mult.unit_fuelRefillRate;
+        emptyMass *= mult.unit_emptyMass;
+        fuelMass *= mult.unit_fuelMass;
     }
 
     //Initialize the unit
@@ -214,9 +242,20 @@ public abstract class Unit : Entity, IArmed {
         size = Type.size;
         hasInventory = true;
 
-        fuel = Type.fuelCapacity;
+        maxVelocity = Type.maxVelocity;
+        rotationSpeed = Type.rotationSpeed;
+        itemPickupDistance = Type.itemPickupDistance;
+        buildSpeedMultiplier = Type.buildSpeedMultiplier;
+        range = Type.range;
+        searchRange = Type.searchRange;
+        fov = Type.fov;
+        fuel = fuelCapacity = Type.fuelCapacity;
+        fuelConsumption = Type.fuelConsumption;
+        fuelRefillRate = Type.fuelRefillRate;
+        emptyMass = Type.emptyMass;
+        fuelMass = Type.fuelMass;
+
         height = Type.groundHeight / 2;
-        health = Type.health;
 
         SetEffects();
         SetWeapons();
@@ -279,7 +318,7 @@ public abstract class Unit : Entity, IArmed {
     public void SetVelocity(Vector2 velocity) => this.velocity = velocity;
 
     public override void SetInventory() {
-        inventory = new Inventory(Type.itemCapacity, Type.itemMass);
+        inventory = new Inventory(itemCapacity, Type.itemMass);
         hasInventory = true;
 
         base.SetInventory();
@@ -360,7 +399,7 @@ public abstract class Unit : Entity, IArmed {
     #region - Behaviour -
     public virtual void HandlePhysics() {
         // Calculate velocity and position
-        velocity = Vector2.ClampMagnitude(acceleration * Time.fixedDeltaTime + velocity, Type.maxVelocity);
+        velocity = Vector2.ClampMagnitude(acceleration * Time.fixedDeltaTime + velocity, maxVelocity);
         transform.position += (Vector3)velocity * Time.fixedDeltaTime;
 
         // Calculate g-force and reset acceleration
@@ -440,7 +479,7 @@ public abstract class Unit : Entity, IArmed {
         
         if (Vector2.Distance(patrolPosition, GetPosition()) < 5f || patrolPosition == Vector2.zero) {
             // If no target or close to previous patrol point, create new one
-            Client.UnitChangePatrolPoint(this, UnityEngine.Random.insideUnitCircle * Type.searchRange + homePosition);
+            Client.UnitChangePatrolPoint(this, UnityEngine.Random.insideUnitCircle * searchRange + homePosition);
         } else {
             // Then move to the patrol point
             SetBehaviourPosition(patrolPosition);
@@ -507,7 +546,7 @@ public abstract class Unit : Entity, IArmed {
             if (inventory.Empty()) return;
             float distanceToCore = Vector2.Distance(Target.GetPosition(), GetPosition());
 
-            if (distanceToCore < Type.itemPickupDistance) {
+            if (distanceToCore < itemPickupDistance) {
                 _move = false;
 
                 // Drop items to core
@@ -526,7 +565,7 @@ public abstract class Unit : Entity, IArmed {
 
             float distanceToCore = Vector2.Distance(Target.GetPosition(), GetPosition());
 
-            if (distanceToCore < Type.itemPickupDistance) {
+            if (distanceToCore < itemPickupDistance) {
                 _move = false;
 
                 // Drop items to core
@@ -544,7 +583,7 @@ public abstract class Unit : Entity, IArmed {
         if (subStateMode == AssistSubState.Deposit) {
             float distanceToConstruction = Vector2.Distance(constructingBlock.GetPosition(), GetPosition());
 
-            if (distanceToConstruction < Type.itemPickupDistance) {
+            if (distanceToConstruction < itemPickupDistance) {
                 _move = false;
 
                 // Drops items on the constructing block
@@ -614,7 +653,7 @@ public abstract class Unit : Entity, IArmed {
     protected void HandleTargeting(bool useEnemyCoreAsDefault = false) {
         if (Target) {
             // Check if target is still valid
-            bool inRange = (Target as Unit) == null ? InSearchRange(Target.GetPosition()) : InShootRange(Target.GetPosition(), Type.fov);
+            bool inRange = (Target as Unit) == null ? InSearchRange(Target.GetPosition()) : InShootRange(Target.GetPosition(), fov);
             targetLostTimer = inRange ? 0 : targetLostTimer + Time.deltaTime;
         }
 
@@ -632,7 +671,7 @@ public abstract class Unit : Entity, IArmed {
 
     protected bool ValidTarget(Entity target) {
         if (!target) return false;
-        return Vector2.Distance(target.GetPosition(), GetPosition()) < Type.searchRange;
+        return Vector2.Distance(target.GetPosition(), GetPosition()) < searchRange;
     }
 
     protected Entity GetTarget(Type[] priorityList = null) {
@@ -643,7 +682,7 @@ public abstract class Unit : Entity, IArmed {
             //Search the next priority type
             Entity tempTarget;
 
-            if (type == typeof(Unit)) tempTarget = MapManager.Map.GetClosestEntityInView(GetPosition(), transform.up, Type.fov, typeof(Unit), TeamUtilities.GetEnemyTeam(teamCode));
+            if (type == typeof(Unit)) tempTarget = MapManager.Map.GetClosestEntityInView(GetPosition(), transform.up, fov, typeof(Unit), TeamUtilities.GetEnemyTeam(teamCode));
             else tempTarget = MapManager.Map.GetClosestEntity(GetPosition(), type, TeamUtilities.GetEnemyTeam(teamCode));
 
             //If target is valid, stop searching
@@ -703,11 +742,11 @@ public abstract class Unit : Entity, IArmed {
     public void ConsumeFuel(float amount) {
         // Consume fuel and update fuel mass
         fuel -= amount;
-        float fuelMass = FuelPercent() * Type.fuelMass;
-        currentMass = Type.emptyMass + cargoMass + fuelMass;
+        float fuelMass = FuelPercent() * this.fuelMass;
+        currentMass = emptyMass + cargoMass + fuelMass;
 
         // If only 10s of fuel left, enable return mode
-        if (fuel / Type.fuelConsumption < Type.fuelLeftToReturn) Client.UnitChangeMode(this, (int)UnitMode.Return, true);
+        if (fuel / fuelConsumption < Type.fuelLeftToReturn) Client.UnitChangeMode(this, (int)UnitMode.Return, true);
     }
 
     public virtual bool CanMove() {
@@ -728,9 +767,9 @@ public abstract class Unit : Entity, IArmed {
 
     public virtual bool IsWreck() => false;
 
-    public bool InRange(Vector2 target) => Vector2.Distance(target, GetPosition()) < (Type.range - 0.05f);
+    public bool InRange(Vector2 target) => Vector2.Distance(target, GetPosition()) < (range - 0.05f);
 
-    public bool InSearchRange(Vector2 target) => Vector2.Distance(target, GetPosition()) < Type.searchRange;
+    public bool InSearchRange(Vector2 target) => Vector2.Distance(target, GetPosition()) < searchRange;
 
     public virtual Vector2 GetDirection(Vector2 target) => (target - GetPosition()).normalized;
 
@@ -748,9 +787,7 @@ public abstract class Unit : Entity, IArmed {
 
     public Vector2 GetTargetPosition() => Target && !unarmed ? Target.GetPredictedPosition(transform.position, transform.up * weapons[0].Type.bulletType.velocity) : GetBehaviourPosition();
 
-    public float HealthPercent() => health / Type.health;
-
-    public float FuelPercent() => fuel / Type.fuelCapacity;
+    public float FuelPercent() => fuel / fuelCapacity;
 
     public float AmmoPercent() => 1;
 

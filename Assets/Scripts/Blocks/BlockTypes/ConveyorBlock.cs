@@ -5,6 +5,7 @@ using Frontiers.Content;
 using Frontiers.Assets;
 using Frontiers.Pooling;
 using System.Linq;
+using Frontiers.Content.Upgrades;
 
 public class ConveyorBlock : ItemBlock {
     public new ConveyorBlockType Type { get => (ConveyorBlockType)base.Type; protected set => base.Type = value; }
@@ -59,11 +60,25 @@ public class ConveyorBlock : ItemBlock {
     protected bool mirroredSprite = false;
     protected float frameTime = 0f;
 
+    #region - Upgradable Stats -
+
+    protected float itemSpeed;
+
+    #endregion
+
+    protected override void ApplyUpgrageMultiplier(UpgradeType upgrade) {
+        base.ApplyUpgrageMultiplier(upgrade);
+
+        BlockUpgradeMultipliers mult = upgrade.properties as BlockUpgradeMultipliers;
+        itemSpeed *= mult.conveyor_itemSpeed;
+    }
+
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         conveyorRenderer = GetComponent<SpriteRenderer>();
 
         base.Set(position, rotation, type, id, teamCode);
         endPosition = GetFacingEdgePosition() + GetPosition();
+        itemSpeed = Type.itemSpeed;
 
         UpdateVariant();
     }
@@ -82,7 +97,7 @@ public class ConveyorBlock : ItemBlock {
 
     private void UpdateAnimation() {
         //if (isStuck || items.Count == 0) return;
-        int frame = Mathf.FloorToInt((Time.time * ConveyorBlockType.frames * Type.itemSpeed * 2) % ConveyorBlockType.frames);
+        int frame = Mathf.FloorToInt((Time.time * ConveyorBlockType.frames * itemSpeed * 2) % ConveyorBlockType.frames);
 
         Sprite sprite = Type.allConveyorSprites[variant, frame];
         conveyorRenderer.sprite = sprite;
@@ -95,7 +110,7 @@ public class ConveyorBlock : ItemBlock {
         backSpace = 1f;
 
         float nextMax = 1f;
-        float moved = Time.deltaTime * Type.itemSpeed;
+        float moved = Time.deltaTime * itemSpeed;
 
         for (int i = 0; i < len; i++) {
             float nextPos = (i == 0 ? 100f : items[i - 1].time) - itemSpace;

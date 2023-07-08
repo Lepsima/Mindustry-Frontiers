@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Frontiers.Content;
 using Frontiers.Assets;
+using Frontiers.Content.Upgrades;
 
 public class AircraftUnit : Unit {
     public new AircraftUnitType Type { get => (AircraftUnitType)base.Type; protected set => base.Type = value; }
@@ -11,11 +12,42 @@ public class AircraftUnit : Unit {
     TrailRenderer lTrailRenderer;
     [SerializeField] ParticleSystem waterDeviationEffect;
 
-    protected float targetHeight, liftVelocity = 0f;
+    protected float targetHeight, liftVelocity, takeoffAccel;
     protected bool isFleeing, isWreck;
+
+    #region - Upgradable Stats -
+
+    protected float 
+        drag, force, takeoffTime, 
+        takeoffHeight, maxLiftVelocity;
+
+    #endregion
+
+    protected override void ApplyUpgrageMultiplier(UpgradeType upgrade) {
+        base.ApplyUpgrageMultiplier(upgrade);
+
+        UnitUpgradeMultipliers mult = upgrade.properties as UnitUpgradeMultipliers;
+
+        drag *= mult.flying_drag;
+        force *= mult.flying_force;
+        takeoffTime *= mult.flying_takeoffTime;
+        takeoffHeight *= mult.flying_takeoffHeight;
+        maxLiftVelocity *= mult.flying_maxLiftVelocity;
+
+        takeoffAccel = 2f * takeoffHeight / (takeoffTime * takeoffTime);
+    }
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
+
+        drag = Type.drag;
+        force = Type.force;
+        takeoffTime = Type.takeoffTime;
+        takeoffHeight = Type.takeoffHeight;
+        maxLiftVelocity = Type.maxLiftVelocity;
+
+        takeoffAccel = 2f * takeoffHeight / (takeoffTime * takeoffTime);
+
     }
 
     protected override void Update() {
@@ -30,10 +62,10 @@ public class AircraftUnit : Unit {
 
     public override void HandlePhysics() {
         // Drag force inversely proportional to velocity
-        acceleration -= (1 - Type.drag * 0.33f * Time.fixedDeltaTime) * (velocity * transform.up);
+        acceleration -= (1 - drag * 0.33f * Time.fixedDeltaTime) * (velocity * transform.up);
 
         // Drag force inversely proportional to direction
-        acceleration -= (1 - Type.drag * 0.67f * Time.fixedDeltaTime) * velocity;
+        acceleration -= (1 - drag * 0.67f * Time.fixedDeltaTime) * velocity;
 
         base.HandlePhysics();
     }
@@ -45,15 +77,13 @@ public class AircraftUnit : Unit {
             return;
         }
 
-
         if (isTakingOff) {
             // Apply a custom force to simulate takeoff
-            float takeoffAccel = (2f * Type.groundHeight * Type.takeoffHeight) / (Type.takeoffTime * Type.takeoffTime);
             liftVelocity += takeoffAccel * Time.fixedDeltaTime;
 
         } else {
             // Calculate lift force
-            float engineAccel = Type.force * GetEnginePower() / currentMass;
+            float engineAccel = force * GetEnginePower() / currentMass;
             float liftAccel = 0f;
 
             if (!isWreck) {
@@ -61,7 +91,7 @@ public class AircraftUnit : Unit {
                 liftAccel = targetHeight - height < 0f ? 9.81f - engineAccel : engineAccel;
             }
 
-            liftVelocity = Mathf.Clamp((liftAccel - 9.81f) * Time.fixedDeltaTime + liftVelocity, -Type.maxLiftVelocity, Type.maxLiftVelocity);
+            liftVelocity = Mathf.Clamp((liftAccel - 9.81f) * Time.fixedDeltaTime + liftVelocity, -maxLiftVelocity, maxLiftVelocity);
         }
 
         // Update the current height
@@ -168,7 +198,7 @@ public class AircraftUnit : Unit {
         velocity = Vector2.zero;
 
         //Allow free movement
-        Invoke(nameof(EndTakeOff), Type.takeoffTime);
+        Invoke(nameof(EndTakeOff), takeoffTime);
 
         //Play particle system
         Effect.PlayEffect("TakeoffFX", transform.position, size);
@@ -179,7 +209,7 @@ public class AircraftUnit : Unit {
 
         // Apply takeoff boost
         // TODO
-        velocity = Type.force / 3 * transform.up;
+        velocity = force / 3 * transform.up;
     }
 
     public override void Dock(LandPadBlock landpad) {

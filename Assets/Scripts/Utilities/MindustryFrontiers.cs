@@ -606,6 +606,8 @@ namespace Frontiers.Content {
         [JsonIgnore] public Type type;
         public string typeName;
 
+        public int tier = 1;
+
         public ItemStack[] buildCost;
 
         public float health = 100f, itemMass = -1f;
@@ -619,9 +621,10 @@ namespace Frontiers.Content {
 
         public string hitSmokeFX = "HitSmokeFX", destroyFX = "DestroyFX", explosionFX = "ExplosionFX";
 
-        public EntityType(string name, Type type) : base(name) {
+        public EntityType(string name, Type type, int tier = 1) : base(name) {
             typeName = TypeWrapper.GetString(type);
             this.type = type;
+            this.tier = tier;
         }
 
         public override void Wrap() {
@@ -642,7 +645,7 @@ namespace Frontiers.Content {
         public bool updates = false, breakable = true, solid = true;
         public int size = 1;
 
-        public BlockType(string name, Type type) : base(name, type) {
+        public BlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             teamSprite = AssetLoader.GetSprite(name + "-team", true);
             glowSprite = AssetLoader.GetSprite(name + "-glow", true);
             topSprite = AssetLoader.GetSprite(name + "-top", true);
@@ -655,7 +658,7 @@ namespace Frontiers.Content {
     }
 
     public class ItemBlockType : BlockType {
-        public ItemBlockType(string name, Type type) : base(name, type) {
+        public ItemBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
         }
     }
@@ -664,7 +667,7 @@ namespace Frontiers.Content {
         [JsonIgnore] public Sprite drillRotorSprite;
         public float drillHardness, drillRate;
 
-        public DrillBlockType(string name, Type type) : base(name, type) {
+        public DrillBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             drillRotorSprite = AssetLoader.GetSprite(name + "-rotator");
             updates = true;
         }
@@ -678,7 +681,7 @@ namespace Frontiers.Content {
         public const int frames = 4;
         public const int variants = 5;
 
-        public ConveyorBlockType(string name, Type type) : base(name, type) {
+        public ConveyorBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             rotates = true;
             updates = true;
 
@@ -732,13 +735,13 @@ namespace Frontiers.Content {
     public class CrafterBlockType : ItemBlockType {
         public CraftPlan craftPlan;
 
-        public CrafterBlockType(string name, Type type) : base(name, type) {
+        public CrafterBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             updates = true;
         }
     }
 
     public class StorageBlockType : ItemBlockType {
-        public StorageBlockType(string name, Type type) : base(name, type) {
+        public StorageBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
         }
     }
@@ -746,13 +749,13 @@ namespace Frontiers.Content {
     public class TurretBlockType : ItemBlockType {
         public WeaponMount weapon;
 
-        public TurretBlockType(string name, Type type) : base(name, type) {
+        public TurretBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
         }
     }
 
     public class CoreBlockType : StorageBlockType {
-        public CoreBlockType(string name, Type type) : base(name, type) {
+        public CoreBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             breakable = false;
         }
     }
@@ -760,7 +763,7 @@ namespace Frontiers.Content {
     public class UnitFactoryBlockType : ItemBlockType {
         public UnitPlan unitPlan;
 
-        public UnitFactoryBlockType(string name, Type type) : base(name, type) {
+        public UnitFactoryBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
         }
     }
@@ -772,7 +775,7 @@ namespace Frontiers.Content {
         public int unitCapacity = 0;
         public float unitSize = 1.5f;
 
-        public LandPadBlockType(string name, Type type) : base(name, type) {
+        public LandPadBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
         }
 
@@ -802,27 +805,27 @@ namespace Frontiers.Content {
             
             airFactory, 
             
-            crafter, graphitePress, siliconSmelter, kiln,
+            graphitePress, siliconSmelter, kiln,
             
             conveyor, 
             
             mechanicalDrill, pneumaticDrill;
 
         public static void Load() {
-            copperWall = new BlockType("copper-wall", typeof(Block)) {
+            copperWall = new BlockType("copper-wall", typeof(Block), 1) {
                 buildCost = ItemStack.With(Items.copper, 6),
 
                 health = 140
             };
 
-            copperWallLarge = new BlockType("copper-wall-large", typeof(Block)) {
+            copperWallLarge = new BlockType("copper-wall-large", typeof(Block), 1) {
                 buildCost = ItemStack.With(Items.copper, 24),
 
                 health = 600,
                 size = 2
             };
 
-            coreShard = new CoreBlockType("core-shard", typeof(CoreBlock)) {
+            coreShard = new CoreBlockType("core-shard", typeof(CoreBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 1000, Items.lead, 500, Items.titanium, 100),
 
                 hidden = true,
@@ -835,7 +838,7 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };
 
-            container = new StorageBlockType("container", typeof(StorageBlock)) {
+            container = new StorageBlockType("container", typeof(StorageBlock), 2) {
                 buildCost = ItemStack.With(Items.copper, 100, Items.titanium, 25),
 
                 health = 150,
@@ -845,7 +848,7 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };
 
-            landingPad = new LandPadBlockType("landingPad", typeof(LandPadBlock)) {
+            landingPad = new LandPadBlockType("landingPad", typeof(LandPadBlock), 2) {
                 buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 75),
 
                 health = 250,
@@ -863,7 +866,7 @@ namespace Frontiers.Content {
                 }
             };
 
-            landingPadLarge = new LandPadBlockType("landingPad-large", typeof(LandPadBlock)) {
+            landingPadLarge = new LandPadBlockType("landingPad-large", typeof(LandPadBlock), 3) {
                 buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 75),
 
                 health = 300,
@@ -877,7 +880,7 @@ namespace Frontiers.Content {
                 }
             };
 
-            tempest = new TurretBlockType("tempest", typeof(TurretBlock)) {
+            tempest = new TurretBlockType("tempest", typeof(TurretBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 75),
                 weapon = new WeaponMount(Weapons.tempestWeapon, Vector2.zero),
 
@@ -887,7 +890,7 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };
 
-            stinger = new TurretBlockType("stinger", typeof(TurretBlock)) {
+            stinger = new TurretBlockType("stinger", typeof(TurretBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 75),
                 weapon = new WeaponMount(Weapons.stingerWeapon, Vector2.zero),
 
@@ -897,7 +900,7 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };
 
-            path = new TurretBlockType("path", typeof(TurretBlock)) {
+            path = new TurretBlockType("path", typeof(TurretBlock), 3) {
                 buildCost = ItemStack.With(Items.copper, 125, Items.graphite, 55, Items.silicon, 35),
                 weapon = new WeaponMount(Weapons.pathWeapon, Vector2.zero),
 
@@ -907,7 +910,7 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };
 
-            spread = new TurretBlockType("spread", typeof(TurretBlock)) {
+            spread = new TurretBlockType("spread", typeof(TurretBlock), 3) {
                 buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 65, Items.silicon, 80),
                 weapon = new WeaponMount(Weapons.spreadWeapon, Vector2.zero),
 
@@ -917,7 +920,7 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };
 
-            airFactory = new UnitFactoryBlockType("air-factory", typeof(UnitFactoryBlock)) {
+            airFactory = new UnitFactoryBlockType("air-factory", typeof(UnitFactoryBlock), 2) {
                 buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 75),
 
                 unitPlan = new UnitPlan(Units.flare, 4f, new ItemStack[1] {
@@ -931,22 +934,7 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };
 
-            crafter = new CrafterBlockType("crafter", typeof(CrafterBlock)) {
-                buildCost = ItemStack.With(Items.copper, 275, Items.lead, 125),
-                craftPlan = new CraftPlan() {
-                    productStack = new ItemStack(Items.coal, 1),
-                    materialList = ItemStack.With(Items.copper, 2),
-                    craftTime = 2f
-                },
-
-                health = 300f,
-                size = 2,
-                itemCapacity = 30,
-
-                canGetOnFire = true,
-            };
-
-            siliconSmelter = new CrafterBlockType("silicon-smelter", typeof(CrafterBlock)) {
+            siliconSmelter = new CrafterBlockType("silicon-smelter", typeof(CrafterBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 50, Items.lead, 45),
 
                 craftPlan = new CraftPlan() {
@@ -962,7 +950,7 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };
 
-            graphitePress = new CrafterBlockType("graphite-press", typeof(CrafterBlock)) {
+            graphitePress = new CrafterBlockType("graphite-press", typeof(CrafterBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 75, Items.lead, 25),
 
                 craftPlan = new CraftPlan() {
@@ -978,7 +966,7 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };
 
-            kiln = new CrafterBlockType("kiln", typeof(CrafterBlock)) {
+            kiln = new CrafterBlockType("kiln", typeof(CrafterBlock), 2) {
                 buildCost = ItemStack.With(Items.copper, 100, Items.lead, 35, Items.graphite, 15),
 
                 craftPlan = new CraftPlan() {
@@ -994,7 +982,7 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };
 
-            conveyor = new ConveyorBlockType("conveyor", typeof(ConveyorBlock)) {
+            conveyor = new ConveyorBlockType("conveyor", typeof(ConveyorBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 2),
                 health = 75f,
                 size = 1,
@@ -1003,7 +991,7 @@ namespace Frontiers.Content {
                 rotates = true,
             };
 
-            mechanicalDrill = new DrillBlockType("mechanical-drill", typeof(DrillBlock)) {
+            mechanicalDrill = new DrillBlockType("mechanical-drill", typeof(DrillBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 16),
                 health = 100f,
                 size = 2,
@@ -1015,7 +1003,7 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };
 
-            pneumaticDrill = new DrillBlockType("pneumatic-drill", typeof(DrillBlock)) {
+            pneumaticDrill = new DrillBlockType("pneumatic-drill", typeof(DrillBlock), 2) {
                 buildCost = ItemStack.With(Items.copper, 24, Items.graphite, 10),
                 health = 175f,
                 size = 2,
@@ -1051,7 +1039,7 @@ namespace Frontiers.Content {
 
         public WeaponMount[] weapons = new WeaponMount[0];
 
-        public UnitType(string name, Type type) : base(name, type) {
+        public UnitType(string name, Type type, int tier = 1) : base(name, type, tier) {
             cellSprite = AssetLoader.GetSprite(name + "-cell");
             outlineSprite = AssetLoader.GetSprite(name + "-outline");
             typeName = TypeWrapper.GetString(type);
@@ -1078,7 +1066,7 @@ namespace Frontiers.Content {
     public class MechUnitType : UnitType {
         [JsonIgnore] public Sprite legSprite, baseSprite;
         public float baseRotationSpeed = 90f, legStepDistance = 0.2f, sideSway = 0.075f, frontSway = 0.01f;
-        public MechUnitType(string name, Type type) : base(name, type) {
+        public MechUnitType(string name, Type type, int tier = 1) : base(name, type, tier) {
             legSprite = AssetLoader.GetSprite(name + "-leg");
             baseSprite = AssetLoader.GetSprite(name + "-base");
         }
@@ -1131,7 +1119,7 @@ namespace Frontiers.Content {
 
         public Vector2 trailOffset = Vector2.zero;
 
-        public AircraftUnitType(string name, Type type) : base(name, type) {
+        public AircraftUnitType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
         }
 
@@ -1194,7 +1182,7 @@ namespace Frontiers.Content {
         public float wreckSpinAccel = 50f;
         public float wreckSpinMax = 270f;
 
-        public CopterUnitType(string name, Type type) : base(name, type) {
+        public CopterUnitType(string name, Type type, int tier = 1) : base(name, type, tier) {
             useAerodynamics = hasDragTrails = false; // Copters don't do that
         }
 
@@ -1214,7 +1202,7 @@ namespace Frontiers.Content {
             dagger, fortress;        // Assault - ground
 
         public static void Load() {
-            flare = new AircraftUnitType("flare", typeof(AircraftUnit)) {
+            flare = new AircraftUnitType("flare", typeof(AircraftUnit), 1) {
                 weapons = new WeaponMount[1] {
                     new WeaponMount(Weapons.flareWeapon, new(-0.25f, 0.3f), true),
                 },
@@ -1247,7 +1235,7 @@ namespace Frontiers.Content {
                 fuelMass = 3.5f,
             };
 
-            horizon = new AircraftUnitType("horizon", typeof(AircraftUnit)) {
+            horizon = new AircraftUnitType("horizon", typeof(AircraftUnit), 2) {
                 weapons = new WeaponMount[1] {
                     new WeaponMount(Weapons.horizonBombBay, Vector2.zero, false),
                 },
@@ -1279,7 +1267,7 @@ namespace Frontiers.Content {
                 fuelMass = 5f,
             };
 
-            zenith = new AircraftUnitType("zenith", typeof(AircraftUnit)) {
+            zenith = new AircraftUnitType("zenith", typeof(AircraftUnit), 3) {
                 weapons = new WeaponMount[1] {
                     new WeaponMount(Weapons.zenithMissiles, new(0.25f, 0f), true, true),
                 },
@@ -1313,7 +1301,7 @@ namespace Frontiers.Content {
                 maximumFires = 3,
             };
 
-            poly = new AircraftUnitType("poly", typeof(AircraftUnit)) {
+            poly = new AircraftUnitType("poly", typeof(AircraftUnit), 2) {
                 priorityList = new Type[0],
                 useAerodynamics = false,
 
@@ -1344,7 +1332,7 @@ namespace Frontiers.Content {
                 itemPickupDistance = 6f,
             };
 
-            sonar = new CopterUnitType("sonar", typeof(CopterUnit)) {
+            sonar = new CopterUnitType("sonar", typeof(CopterUnit), 2) {
                 rotors = new UnitRotor[1] {
                     new UnitRotor("sonar-rotor", new(0f, 0.14f), 3f, 1f, 0.667f, 1f),
                 },
@@ -1382,7 +1370,7 @@ namespace Frontiers.Content {
                 fuelMass = 7.25f,
             };
 
-            foton = new CopterUnitType("foton", typeof(CopterUnit)) {
+            foton = new CopterUnitType("foton", typeof(CopterUnit), 3) {
                 rotors = new UnitRotor[] {
                     new UnitRotor("foton-rotor", new(0f, 0.15f), 6f, 1.5f, 1.5f, 2.25f, new UnitRotorBlade[2] {
                         new UnitRotorBlade(0f, false),
@@ -1420,7 +1408,7 @@ namespace Frontiers.Content {
                 fuelMass = 10f,
             };
 
-            dagger = new MechUnitType("dagger", typeof(MechUnit)) {
+            dagger = new MechUnitType("dagger", typeof(MechUnit), 1) {
                 weapons = new WeaponMount[1] {
                     new WeaponMount(Weapons.daggerWeapon, new Vector2(0.29187f, 0.1562f), true, true),
                 },
@@ -1452,7 +1440,7 @@ namespace Frontiers.Content {
                 fuelMass = 12.25f,
             };
 
-            fortress = new MechUnitType("fortress", typeof(MechUnit)) {
+            fortress = new MechUnitType("fortress", typeof(MechUnit), 3) {
                 weapons = new WeaponMount[1] {
                     new WeaponMount(Weapons.fortressWeapon, new Vector2(0.32f, 0.04f), true, true),
                 },
@@ -2307,6 +2295,10 @@ namespace Frontiers.Content {
             Item[] items = new Item[stacks.Length];
             for(int i = 0; i < stacks.Length; i++) items[i] = stacks[i].item;
             return items;
+        }
+
+        public static ItemStack Multiply(ItemStack stack, float amount) {
+            return new ItemStack(stack.item, Mathf.RoundToInt(stack.amount * amount));
         }
 
         public static ItemStack[] Multiply(ItemStack[] stacks, float amount) {

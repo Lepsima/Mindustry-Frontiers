@@ -5,6 +5,7 @@ using Frontiers.Content;
 using UnityEngine.Tilemaps;
 using Frontiers.Assets;
 using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
+using Frontiers.Content.Upgrades;
 
 public class DrillBlock : ItemBlock {
     public new DrillBlockType Type { get => (DrillBlockType)base.Type; protected set => base.Type = value; }
@@ -19,9 +20,33 @@ public class DrillBlock : ItemBlock {
     public Item drillItem;
     public Transform rotorTransfrom;
 
+    #region - Upgradable Stats - 
+
+    protected float hardness, rate;
+
+    #endregion
+
+    protected override void ApplyUpgrageMultiplier(UpgradeType upgrade) {
+        base.ApplyUpgrageMultiplier(upgrade);
+
+        BlockUpgradeMultipliers mult = upgrade.properties as BlockUpgradeMultipliers;
+
+        hardness *= mult.drill_hardness;
+        rate *= mult.drill_rate;
+
+        UpdateDrillValues();
+    }
+
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
 
+        hardness = Type.drillHardness;
+        rate = Type.drillRate;
+
+        UpdateDrillValues();
+    }
+
+    protected virtual void UpdateDrillValues() {
         drillItem = GetItemFromTiles(out float yieldPercent);
         drillTime = GetDrillTime(yieldPercent);
 
@@ -96,7 +121,7 @@ public class DrillBlock : ItemBlock {
 
                 if (item == null) continue;
 
-                if ((priorityItem == null || priorityItem.hardness < item.hardness) && item.hardness <= Type.drillHardness) {
+                if ((priorityItem == null || priorityItem.hardness < item.hardness) && item.hardness <= hardness) {
                     priorityItem = item;
                     itemCount = 1;
                 } else if (priorityItem == item) {
@@ -111,6 +136,6 @@ public class DrillBlock : ItemBlock {
 
     public float GetDrillTime(float yieldPercent) {
         if (drillItem == null) return -1f;
-        return (drillTime + 0.833f * drillItem.hardness) / yieldPercent / Type.drillRate;
+        return (drillTime + 0.833f * drillItem.hardness) / yieldPercent / rate;
     }
 }
