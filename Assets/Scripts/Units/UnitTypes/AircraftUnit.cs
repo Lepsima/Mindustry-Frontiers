@@ -12,7 +12,7 @@ public class AircraftUnit : Unit {
     TrailRenderer lTrailRenderer;
     [SerializeField] ParticleSystem waterDeviationEffect;
 
-    protected float targetHeight, liftVelocity, takeoffAccel;
+    protected float targetHeight, targetVelocity, liftVelocity, takeoffAccel, lowestEnginePower;
     protected bool isFleeing, isWreck;
 
     #region - Upgradable Stats -
@@ -62,11 +62,7 @@ public class AircraftUnit : Unit {
 
     public override void HandlePhysics() {
         // Drag force inversely proportional to velocity
-        acceleration -= (1 - drag * 0.33f * Time.fixedDeltaTime) * (velocity * transform.up);
-
-        // Drag force inversely proportional to direction
-        acceleration -= (1 - drag * 0.67f * Time.fixedDeltaTime) * velocity;
-
+        acceleration -= (1 - drag * Time.fixedDeltaTime) * velocity;
         base.HandlePhysics();
     }
 
@@ -102,6 +98,11 @@ public class AircraftUnit : Unit {
             Crash();
             liftVelocity = 0f;
         }
+    }
+
+    public override void UpdateCurrentMass() {
+        base.UpdateCurrentMass();
+        lowestEnginePower = 9.81f * currentMass / force;
     }
 
     protected void SetDragTrailLenght(float time) {
@@ -147,7 +148,9 @@ public class AircraftUnit : Unit {
 
     #region - Math & Getters -
 
-    public override Vector2 GetDirection(Vector2 target) => Type.useAerodynamics ? transform.up : (target - GetPosition()).normalized;
+    public override Vector2 GetDirection(Vector2 target) => Type.useAerodynamics ? transform.up : base.GetDirection(target);
+
+    public override float GetTargetVelocity() => targetVelocity;
 
     public override void Tilt(float targetAngle) {
         // Lerps the roll rotation of the unit transform towards the target angle
@@ -241,7 +244,8 @@ public class AircraftUnit : Unit {
 
     protected override void AttackBehaviour() {
         targetHeight = Type.groundHeight;
-        targetSpeed = 1f;
+        targetVelocity = maxVelocity;
+        targetPower = 1f;
 
         //If is landed, takeoff, else do normal behaviour
         if (isLanded) TakeOff();
@@ -266,7 +270,8 @@ public class AircraftUnit : Unit {
         base.PatrolBehaviour();
 
         targetHeight = Type.groundHeight;
-        targetSpeed = 0.9f;
+        targetVelocity = maxVelocity * 0.75f;
+        targetPower = 0.9f;
 
         //If is landed, takeoff, else do normal behaviour
         if (isLanded) TakeOff();
@@ -277,21 +282,35 @@ public class AircraftUnit : Unit {
         if (isLanded) return;
 
         targetHeight = Type.groundHeight * 0.5f;
-        targetSpeed = 0.55f;
+        targetVelocity = maxVelocity * 0.5f;
+        targetPower = 0.5f;
+
+        if (Target) {
+            float distance = Vector2.Distance(Target.GetPosition(), GetPosition());
+            bool isCloseToLandpad = distance < Target.size / 2 + 7.5f;
+
+            if (isCloseToLandpad) {
+                targetHeight = 2.5f;
+                targetVelocity = 3f; 
+                targetPower = Mathf.Clamp01(lowestEnginePower + 0.1f);
+            }
+        }
 
         base.ReturnBehaviour();
     }
 
     protected override void AssistBehaviour() {
         targetHeight = Type.groundHeight;
-        targetSpeed = 1f;
+        targetVelocity = maxVelocity;
+        targetPower = 1f;
 
         base.AssistBehaviour();
     }
 
     protected override void IdlingBehaviour() {
         targetHeight = Type.groundHeight * 0.5f;
-        targetSpeed = 0.5f;
+        targetVelocity = maxVelocity * 0.5f;
+        targetPower = Mathf.Clamp01(lowestEnginePower + 0.1f);
 
         base.IdlingBehaviour();
     }

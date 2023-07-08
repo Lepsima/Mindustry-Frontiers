@@ -1145,16 +1145,20 @@ namespace Frontiers.Content {
             if (!unit.CanMove()) return;
 
             // A value from 0 to 1 that indicates the power output percent of the engines
-            float enginePower = unit.GetEnginePower();
+            float targetPower = Mathf.Clamp01(unit.GetTargetVelocity() - unit.GetVelocity().magnitude);
+            float enginePower = Mathf.Min(unit.GetEnginePower(), targetPower);
 
             // Get the direction
             Vector2 direction = unit.GetDirection(position);
-            Vector2 targetDirection = (position - unit.GetPosition()).normalized;
 
-            // Get acceleration and drag values based on direction
-            float similarity = unit.GetSimilarity(unit.transform.up, targetDirection);
-            enginePower *= unit.IsFleeing() ? 1 : (similarity > 0.5f ? similarity : 0.1f);
+            if (unit.Mode == Unit.UnitMode.Attack && !unit.IsFleeing()) {
+                Vector2 targetDirection = (position - unit.GetPosition()).normalized;
 
+                // Get acceleration and drag values based on direction
+                float similarity = unit.GetSimilarity(unit.transform.up, targetDirection);
+                enginePower *= Mathf.Clamp01(similarity * 2f);
+            }
+            
             // Accelerate
             unit.Accelerate(enginePower * force * direction.normalized);
         }

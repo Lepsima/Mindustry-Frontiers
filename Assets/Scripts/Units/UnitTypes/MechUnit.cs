@@ -151,27 +151,27 @@ public class MechUnit : Unit {
     #region - Behaviour -
 
     protected override void AttackBehaviour() {
-        targetSpeed = 1f;
+        targetPower = 1f;
         base.AttackBehaviour();
     }
 
     protected override void PatrolBehaviour() {
-        targetSpeed = 0.8f;
+        targetPower = 0.8f;
         base.PatrolBehaviour();
     }
 
     protected override void ReturnBehaviour() {
-        targetSpeed = 0.65f;
+        targetPower = 0.65f;
         base.ReturnBehaviour();
     }
 
     protected override void AssistBehaviour() {
-        targetSpeed = 0.8f;
+        targetPower = 0.8f;
         base.AssistBehaviour();
     }
 
     protected override void IdlingBehaviour() {
-        targetSpeed = 0f;
+        targetPower = 0f;
         base.IdlingBehaviour();
     }
 

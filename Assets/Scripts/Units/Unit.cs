@@ -65,7 +65,7 @@ public abstract class Unit : Entity, IArmed {
     protected Vector2 homePosition;
     public Vector2 patrolPosition = Vector2.zero;
 
-    protected float targetSpeed, currentMass;
+    protected float targetPower, currentMass;
 
     protected float fuel, height, cargoMass, enginePower;
     protected bool isCoreUnit, isLanded, isTakingOff, areWeaponsActive;
@@ -505,11 +505,12 @@ public abstract class Unit : Entity, IArmed {
 
             // Check if it can land
             bool isInDistance = distance < landPad.Type.size / 2 + 0.5f;
-            bool isMovingSlow = velocity.sqrMagnitude < 20f;
+            bool isMovingSlow = velocity.sqrMagnitude < 10f;
+            bool isFlyingLow = height < 3f;
             bool canLand = landPad.CanLand(this);
 
             // Try to land
-            if (isInDistance && isMovingSlow && canLand) Land();
+            if (isInDistance && isFlyingLow && isMovingSlow && canLand) Land();
 
             //Move towards target
             SetBehaviourPosition(Target.GetPosition());
@@ -698,6 +699,10 @@ public abstract class Unit : Entity, IArmed {
     #region - Math & Getters- 
     public float GetHeight() => height;
 
+    public virtual float GetTargetVelocity() {
+        return maxVelocity;
+    }
+
     public virtual TileType GetGroundTile() {
         // Get the map tile below the shadow (for 3d perspecive realism)
         Vector2 position = shadow.transform.position;
@@ -732,7 +737,7 @@ public abstract class Unit : Entity, IArmed {
 
     public virtual float CalculateEnginePower() {
         // Get the percent of power the engine should produce
-        return fuel <= 0 || isLanded ? 0f : targetSpeed;
+        return fuel <= 0 || isLanded ? 0f : targetPower;
     }
 
     public virtual float GetRotationPower() {
@@ -742,11 +747,15 @@ public abstract class Unit : Entity, IArmed {
     public void ConsumeFuel(float amount) {
         // Consume fuel and update fuel mass
         fuel -= amount;
-        float fuelMass = FuelPercent() * this.fuelMass;
-        currentMass = emptyMass + cargoMass + fuelMass;
+        UpdateCurrentMass();
 
         // If only 10s of fuel left, enable return mode
         if (fuel / fuelConsumption < Type.fuelLeftToReturn) Client.UnitChangeMode(this, (int)UnitMode.Return, true);
+    }
+
+    public virtual void UpdateCurrentMass() {
+        float fuelMass = FuelPercent() * this.fuelMass;
+        currentMass = emptyMass + cargoMass + fuelMass;
     }
 
     public virtual bool CanMove() {
