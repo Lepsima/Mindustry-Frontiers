@@ -1145,8 +1145,7 @@ namespace Frontiers.Content {
             if (!unit.CanMove()) return;
 
             // A value from 0 to 1 that indicates the power output percent of the engines
-            float targetPower = Mathf.Clamp01(unit.GetTargetVelocity() - unit.GetVelocity().magnitude);
-            float enginePower = Mathf.Min(unit.GetEnginePower(), targetPower);
+            float enginePower = unit.GetEnginePower();
 
             // Get the direction
             Vector2 direction = unit.GetDirection(position);

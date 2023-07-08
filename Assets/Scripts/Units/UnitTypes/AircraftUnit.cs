@@ -189,6 +189,10 @@ public class AircraftUnit : Unit {
     public override bool CanRotate() {
         return base.CanRotate() && !isTakingOff;
     }
+
+    public override float CalculateEnginePower() {
+        return Mathf.Min(base.CalculateEnginePower(), Mathf.Clamp01(targetVelocity - velocity.magnitude));
+    }
     #endregion
 
     #region - Landing / Takeoff - 
