@@ -31,8 +31,8 @@ public class DrillBlock : ItemBlock {
 
         BlockUpgradeMultipliers mult = upgrade.properties as BlockUpgradeMultipliers;
 
-        hardness *= mult.drill_hardness;
-        rate *= mult.drill_rate;
+        hardness += hardness * mult.drill_hardness;
+        rate += rate * mult.drill_rate;
 
         UpdateDrillValues();
     }

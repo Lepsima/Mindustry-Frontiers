@@ -40,7 +40,7 @@ public class MechUnit : Unit {
         base.ApplyUpgrageMultiplier(upgrade);
 
         UnitUpgradeMultipliers mult = upgrade.properties as UnitUpgradeMultipliers;
-        baseRotationSpeed *= baseRotationSpeed * mult.mech_baseRotationSpeed;
+        baseRotationSpeed += baseRotationSpeed * mult.mech_baseRotationSpeed;
     }
 
     protected override void CreateTransforms() {

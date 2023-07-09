@@ -28,9 +28,9 @@ public class CrafterBlock : ItemBlock {
 
         BlockUpgradeMultipliers mult = upgrade.properties as BlockUpgradeMultipliers;
 
-        craftTime *= mult.crafter_craftTime;    
-        craftReturn = ItemStack.Multiply(craftReturn, mult.crafter_craftReturn);
-        craftCost = ItemStack.Multiply(craftCost, mult.crafter_craftCost);
+        craftTime += craftTime * mult.crafter_craftTime;    
+        craftReturn = ItemStack.Multiply(craftReturn, 1f + mult.crafter_craftReturn);
+        craftCost = ItemStack.Multiply(craftCost, 1f + mult.crafter_craftCost);
     }
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {

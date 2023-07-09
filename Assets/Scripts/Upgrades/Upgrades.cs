@@ -24,10 +24,7 @@ namespace Frontiers.Content.Upgrades {
 
 
     public static class UpgradeHandler {
-
         public static Dictionary<short, UpgradeType> loadedUpgrades = new();
-
- 
 
         public static void HandleUpgrade(UpgradeType upgradeType) {
             if (GetUpgradeByName(upgradeType.name) != null) throw new ArgumentException("Two upgrades cannot have the same name! (issue: '" + upgradeType.name + "')");
@@ -40,12 +37,26 @@ namespace Frontiers.Content.Upgrades {
         }
     }
 
-    public abstract class UpgradeType {
+    public static class Upgrades {
+        public static UpgradeType a, b, c;
+
+        public static void Load() {
+            a = new UpgradeType("Heavy fighter armor - Tier I") {
+                minTier = 1,
+                maxTier = 1,
+            };
+        }
+    }
+
+    public class UpgradeType {
         public string name;
         public short id;
 
+        public int tier = 1;
         public bool isUnlocked;
+
         public int minTier = 1, maxTier = 1;
+        public string[] compatibleFlags;
 
         public ItemStack[] installCost;
         public ItemStack[] researchCost;
@@ -68,27 +79,74 @@ namespace Frontiers.Content.Upgrades {
         }
 
         public virtual bool CompatibleWith(EntityType entityType) {
-            bool tierPass = entityType.tier >= minTier && entityType.tier <= maxTier;
-            return tierPass;
-        }
-
-        public virtual void ApplyUpgrade(Entity entity) {
-
+            bool tierPass = (minTier == -1 || entityType.tier >= minTier) && (maxTier == -1 || entityType.tier <= maxTier);
+            bool hasFlags = entityType.HasFlags(compatibleFlags);
+            return tierPass && hasFlags;
         }
     }
 
-    public class UpgradeMultipliers {
-        public float mainMultiplier = 1f;
+    public abstract class UpgradeMultipliers {
+        public abstract void ApplyMult(float mult);
+
+        public abstract void CopyTo(UpgradeMultipliers upgradeMultipliers);
+    }
+
+    public class WeaponUpgradeMultipliers : UpgradeMultipliers {
+        public override void ApplyMult(float mult) {
+
+        }
+
+        public override void CopyTo(UpgradeMultipliers upgradeMultipliers) {
+            WeaponUpgradeMultipliers mult = upgradeMultipliers as WeaponUpgradeMultipliers;
+        }
+    }
+
+    public class EntityUpgradeMultipliers : UpgradeMultipliers {
         public float entity_health, entity_itemCapacity;
+
+        public override void ApplyMult(float mult) {
+            entity_health *= mult;
+            entity_itemCapacity *= mult;
+        }
+
+        public override void CopyTo(UpgradeMultipliers upgradeMultipliers) {
+            EntityUpgradeMultipliers mult = upgradeMultipliers as EntityUpgradeMultipliers;
+
+            mult.entity_health = entity_health;
+            mult.entity_itemCapacity = entity_itemCapacity;
+        }
     }
 
-    public class BlockUpgradeMultipliers : UpgradeMultipliers {
+    public class BlockUpgradeMultipliers : EntityUpgradeMultipliers {
         public float drill_hardness, drill_rate;
         public float crafter_craftTime, crafter_craftCost, crafter_craftReturn;
         public float conveyor_itemSpeed;
+
+        public override void ApplyMult(float mult) {
+            base.ApplyMult(mult);
+
+            drill_hardness *= mult;
+            drill_rate *= mult;
+            crafter_craftTime *= mult;
+            crafter_craftCost *= mult;
+            crafter_craftReturn *= mult;
+            conveyor_itemSpeed *= mult;
+        }
+
+        public override void CopyTo(UpgradeMultipliers upgradeMultipliers) {
+            BlockUpgradeMultipliers mult = upgradeMultipliers as BlockUpgradeMultipliers;
+            base.CopyTo(mult);
+
+            mult.drill_hardness = drill_hardness;
+            mult.drill_rate = drill_rate;
+            mult.crafter_craftTime = crafter_craftTime;
+            mult.crafter_craftReturn = crafter_craftReturn;
+            mult.crafter_craftCost = crafter_craftCost;
+            mult.conveyor_itemSpeed = conveyor_itemSpeed;
+        }
     }
 
-    public class UnitUpgradeMultipliers : UpgradeMultipliers {
+    public class UnitUpgradeMultipliers : EntityUpgradeMultipliers {
         public float unit_maxVelocity, unit_rotationSpeed;
         public float unit_itemPickupDistance, unit_buildSpeedMultiplier;
         public float unit_range, unit_searchRange, unit_fov;
@@ -100,5 +158,57 @@ namespace Frontiers.Content.Upgrades {
         public float flying_drag, flying_force;
         public float flying_takeoffTime, flying_takeoffHeight;
         public float flying_maxLiftVelocity;
+
+        public override void ApplyMult(float mult) {
+            base.ApplyMult(mult);
+
+            unit_maxVelocity *= mult;
+            unit_rotationSpeed *= mult;
+            unit_itemPickupDistance *= mult;
+            unit_buildSpeedMultiplier *= mult;
+            unit_range *= mult;
+            unit_searchRange *= mult;
+            unit_fov *= mult;
+            unit_fuelCapacity *= mult;
+            unit_fuelConsumption *= mult;
+            unit_fuelRefillRate *= mult;
+            unit_emptyMass *= mult;
+            unit_fuelMass *= mult;
+
+            mech_baseRotationSpeed *= mult;
+
+            flying_drag *= mult;
+            flying_force *= mult;
+            flying_takeoffTime *= mult;
+            flying_takeoffHeight *= mult;
+            flying_maxLiftVelocity *= mult;
+        }
+
+        public override void CopyTo(UpgradeMultipliers upgradeMultipliers) {
+            UnitUpgradeMultipliers mult = upgradeMultipliers as UnitUpgradeMultipliers;
+            base.CopyTo(mult);
+
+            mult.unit_maxVelocity = unit_maxVelocity;
+            mult.unit_rotationSpeed = unit_rotationSpeed;
+            mult.unit_itemPickupDistance = unit_itemPickupDistance;
+            mult.unit_buildSpeedMultiplier = unit_buildSpeedMultiplier;
+            mult.unit_range = unit_range;
+            mult.unit_searchRange = unit_searchRange;
+            mult.unit_fov = unit_fov;
+            mult.unit_fuelCapacity = unit_fuelCapacity;
+            mult.unit_fuelConsumption = unit_fuelConsumption;
+            mult.unit_fuelRefillRate = unit_fuelRefillRate;
+            mult.unit_emptyMass = unit_emptyMass;
+            mult.unit_fuelMass = unit_fuelMass;
+
+            mult.mech_baseRotationSpeed = mech_baseRotationSpeed;
+
+            mult.flying_drag = flying_drag;
+            mult.flying_force = flying_force;
+            mult.flying_takeoffTime = flying_takeoffTime;
+            mult.flying_takeoffHeight = flying_takeoffHeight;
+            mult.flying_maxLiftVelocity = flying_maxLiftVelocity;
+        }
     }
+
 }

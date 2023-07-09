@@ -577,6 +577,19 @@ namespace Frontiers.Content {
     public abstract class Content {
         public string name;
         public bool hidden = false;
+
+        // Used to classificate this content, not shown to the player
+        public string[] flags;
+
+        // The main function of this content
+        public string function;
+
+        // The description of this content
+        public string description;
+
+        // Some details about this content
+        public string details;
+
         [JsonIgnore] public short id;
         [JsonIgnore] public Sprite sprite;
         [JsonIgnore] public Sprite spriteFull;
@@ -589,8 +602,18 @@ namespace Frontiers.Content {
             sprite = AssetLoader.GetSprite(name);
             spriteFull = AssetLoader.GetSprite(name + "-full", name);
 
-
             ContentLoader.HandleContent(this);
+        }
+
+        public bool HasFlags(string[] flags) {
+            for(int i = 0; i < flags.Length; i++) if (!HasFlag(flags[i])) return false;
+            return true;
+        }
+
+        public bool HasFlag(string flag) {
+            if (flags.Length == 0) return false;
+            for (int i = 0; i < flags.Length; i++) if (flags[i] == flag) return true;
+            return false;
         }
 
         public virtual void Wrap() { }
@@ -815,11 +838,19 @@ namespace Frontiers.Content {
             copperWall = new BlockType("copper-wall", typeof(Block), 1) {
                 buildCost = ItemStack.With(Items.copper, 6),
 
-                health = 140
+                flags = new string[] {
+                    "wall",
+                },
+
+                health = 140,
             };
 
             copperWallLarge = new BlockType("copper-wall-large", typeof(Block), 1) {
                 buildCost = ItemStack.With(Items.copper, 24),
+
+                flags = new string[] {
+                    "wall",
+                },
 
                 health = 600,
                 size = 2
@@ -1210,6 +1241,12 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.flareWeapon, new(-0.25f, 0.3f), true),
                 },
 
+                flags = new string[] {
+                    "light",
+                    "fast",
+                    "fighter",
+                },
+
                 priorityList = new Type[5] { typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(ItemBlock), typeof(Block) },
                 useAerodynamics = true,
 
@@ -1243,6 +1280,12 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.horizonBombBay, Vector2.zero, false),
                 },
 
+                flags = new string[] {
+                    "slow",
+                    "",
+                    "bomber",
+                },
+
                 priorityList = new Type[4] { typeof(TurretBlock), typeof(ItemBlock), typeof(CoreBlock), typeof(Block) },
                 useAerodynamics = true,
 
@@ -1273,6 +1316,12 @@ namespace Frontiers.Content {
             zenith = new AircraftUnitType("zenith", typeof(AircraftUnit), 3) {
                 weapons = new WeaponMount[1] {
                     new WeaponMount(Weapons.zenithMissiles, new(0.25f, 0f), true, true),
+                },
+
+                flags = new string[] {
+                    "",
+                    "",
+                    "",
                 },
 
                 priorityList = new Type[5] { typeof(TurretBlock), typeof(Unit), typeof(ItemBlock), typeof(Block), typeof(CoreBlock) },

@@ -54,11 +54,11 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
         ApplyUpgrageMultiplier(upgrade);
     }
 
-    protected virtual void ApplyUpgrageMultiplier(UpgradeType upgrade) {     
-        UpgradeMultipliers mult = upgrade.properties;
+    protected virtual void ApplyUpgrageMultiplier(UpgradeType upgrade) {
+        EntityUpgradeMultipliers mult = upgrade.properties as EntityUpgradeMultipliers;
 
-        maxHealth *= mult.entity_health;
-        itemCapacity = Mathf.RoundToInt(itemCapacity * mult.entity_itemCapacity);
+        maxHealth += maxHealth * mult.entity_health;
+        itemCapacity += Mathf.RoundToInt(itemCapacity * mult.entity_itemCapacity);
     }
     
     public virtual void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) where T : EntityType {

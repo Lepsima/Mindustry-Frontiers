@@ -70,7 +70,7 @@ public class ConveyorBlock : ItemBlock {
         base.ApplyUpgrageMultiplier(upgrade);
 
         BlockUpgradeMultipliers mult = upgrade.properties as BlockUpgradeMultipliers;
-        itemSpeed *= mult.conveyor_itemSpeed;
+        itemSpeed += itemSpeed * mult.conveyor_itemSpeed;
     }
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {

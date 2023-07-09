@@ -28,11 +28,11 @@ public class AircraftUnit : Unit {
 
         UnitUpgradeMultipliers mult = upgrade.properties as UnitUpgradeMultipliers;
 
-        drag *= mult.flying_drag;
-        force *= mult.flying_force;
-        takeoffTime *= mult.flying_takeoffTime;
-        takeoffHeight *= mult.flying_takeoffHeight;
-        maxLiftVelocity *= mult.flying_maxLiftVelocity;
+        drag += drag * mult.flying_drag;
+        force += force * mult.flying_force;
+        takeoffTime += takeoffTime * mult.flying_takeoffTime;
+        takeoffHeight += takeoffHeight * mult.flying_takeoffHeight;
+        maxLiftVelocity += maxLiftVelocity * mult.flying_maxLiftVelocity;
 
         takeoffAccel = 2f * takeoffHeight / (takeoffTime * takeoffTime);
     }

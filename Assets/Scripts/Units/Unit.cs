@@ -209,18 +209,18 @@ public abstract class Unit : Entity, IArmed {
         base.ApplyUpgrageMultiplier(upgrade);
         UnitUpgradeMultipliers mult = upgrade.properties as UnitUpgradeMultipliers;
 
-        maxVelocity *= mult.unit_maxVelocity;
-        rotationSpeed *= mult.unit_rotationSpeed;
-        itemPickupDistance *= mult.unit_itemPickupDistance;
-        buildSpeedMultiplier *= mult.unit_buildSpeedMultiplier;
-        range *= mult.unit_range;
-        searchRange *= mult.unit_searchRange;
-        fov *= mult.unit_fov;
-        fuelCapacity *= mult.unit_fuelCapacity;
-        fuelConsumption *= mult.unit_fuelConsumption;
-        fuelRefillRate *= mult.unit_fuelRefillRate;
-        emptyMass *= mult.unit_emptyMass;
-        fuelMass *= mult.unit_fuelMass;
+        maxVelocity += maxVelocity * mult.unit_maxVelocity;
+        rotationSpeed += rotationSpeed * mult.unit_rotationSpeed;
+        itemPickupDistance += itemPickupDistance * mult.unit_itemPickupDistance;
+        buildSpeedMultiplier += buildSpeedMultiplier * mult.unit_buildSpeedMultiplier;
+        range += range * mult.unit_range;
+        searchRange += searchRange * mult.unit_searchRange;
+        fov += fov * mult.unit_fov;
+        fuelCapacity += fuelCapacity * mult.unit_fuelCapacity;
+        fuelConsumption += fuelConsumption * mult.unit_fuelConsumption;
+        fuelRefillRate += fuelRefillRate * mult.unit_fuelRefillRate;
+        emptyMass += emptyMass * mult.unit_emptyMass;
+        fuelMass += fuelMass * mult.unit_fuelMass;
     }
 
     //Initialize the unit
