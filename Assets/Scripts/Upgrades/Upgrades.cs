@@ -31,6 +31,12 @@ namespace Frontiers.Content.Upgrades {
             loadedUpgrades.Add(upgradeType.id, upgradeType);
         }
 
+        public static UpgradeType[] GetUpgradesByName(string[] names) {
+            UpgradeType[] upgrades = new UpgradeType[names.Length];
+            for (int i = 0; i < names.Length; i++) upgrades[i] = GetUpgradeByName(names[i]);
+            return upgrades;
+        }
+
         public static UpgradeType GetUpgradeByName(string name) {
             foreach (UpgradeType upgradeType in loadedUpgrades.Values) if (upgradeType.name == name) return upgradeType;
             return null;
@@ -38,31 +44,79 @@ namespace Frontiers.Content.Upgrades {
     }
 
     public static class Upgrades {
-        public static UpgradeType a, b, c;
+        public static UpgradeType[] heavyFighterArmor;
 
         public static void Load() {
-            a = new UpgradeType("Heavy fighter armor - Tier I") {
-                minTier = 1,
-                maxTier = 1,
+            heavyFighterArmor = new UpgradeType[3];
+
+            heavyFighterArmor[0] = new UpgradeType("heavyFighterArmor1") {
+                displayName = "Heavy fighter armor - Tier I",
+                tier = 1,
+                compatibleFlags = new string[] { "fighter" },
+
+                installCost = ItemStack.With(Items.silicon, 5),
+                researchCost = ItemStack.With(Items.silicon, 50),
+
+                previousUpgrades = null,
+
+                properties = new UnitUpgradeMultipliers() {
+                    entity_health = 0.1f,
+                    unit_emptyMass = 0.05f,
+                    unit_maxVelocity = -0.075f,
+                }
+            };
+
+            heavyFighterArmor[1] = new UpgradeType("heavyFighterArmor2") {
+                displayName = "Heavy fighter armor - Tier II",
+                tier = 2,
+                compatibleFlags = new string[] { "fighter" },
+
+                installCost = ItemStack.With(Items.copper, 10, Items.silicon, 5),
+                researchCost = ItemStack.With(Items.copper, 125, Items.silicon, 45),
+
+                previousUpgrades = new string[] { "heavyFighterArmor1" },
+
+                properties = new UnitUpgradeMultipliers() {
+                    entity_health = 0.15f,
+                    unit_emptyMass = 0.1f,
+                    unit_maxVelocity = -0.1f,
+                }
+            };
+
+            heavyFighterArmor[2] = new UpgradeType("heavyFighterArmor3") {
+                displayName = "Heavy fighter armor - Tier III",
+                tier = 3,
+                compatibleFlags = new string[] { "fighter" },
+
+                installCost = ItemStack.With(Items.silicon, 12, Items.titanium, 5),
+                researchCost = ItemStack.With(Items.silicon, 160, Items.titanium, 35),
+
+                previousUpgrades = new string[] { "heavyFighterArmor2" },
+
+                properties = new UnitUpgradeMultipliers() {
+                    entity_health = 0.225f,
+                    unit_emptyMass = 0.15f,
+                    unit_maxVelocity = -0.125f,
+                }
             };
         }
     }
 
     public class UpgradeType {
         public string name;
+        public string displayName;
         public short id;
 
         public int tier = 1;
         public bool isUnlocked;
 
-        public int minTier = 1, maxTier = 1;
+        public int minTier = -1, maxTier = -1;
         public string[] compatibleFlags;
 
         public ItemStack[] installCost;
         public ItemStack[] researchCost;
 
-        public UpgradeType[] previousUpgrades;
-        public UpgradeType[] nextUpgrades;
+        public string[] previousUpgrades;
 
         public UpgradeMultipliers properties;
 
@@ -74,7 +128,11 @@ namespace Frontiers.Content.Upgrades {
         }
 
         public virtual bool CanBeResearched() {
-            bool arePreviousResearched = UpgradeResearcher.IsResearched(previousUpgrades);
+            if (previousUpgrades.Length == 0) return true;
+
+            UpgradeType[] previous = UpgradeHandler.GetUpgradesByName(previousUpgrades);
+            bool arePreviousResearched = UpgradeResearcher.IsResearched(previous);
+
             return arePreviousResearched;
         }
 

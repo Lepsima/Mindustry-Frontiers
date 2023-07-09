@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Frontiers.Content.Maps;
+using Frontiers.Content.Upgrades;
 using Frontiers.Content;
 using Frontiers.Assets;
 using Frontiers.Teams;
@@ -114,7 +115,9 @@ public class PlayerManager : MonoBehaviour {
             }
 
             if (Input.GetMouseButtonDown(1)) {
-
+                if (selectedEntity) {
+                    selectedEntity.ApplyUpgrade(Upgrades.heavyFighterArmor[2]);
+                }
             }
 
 

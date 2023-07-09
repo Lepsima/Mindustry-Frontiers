@@ -1241,11 +1241,7 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.flareWeapon, new(-0.25f, 0.3f), true),
                 },
 
-                flags = new string[] {
-                    "light",
-                    "fast",
-                    "fighter",
-                },
+                flags = new string[] { "aircraft", "light", "fast", "fighter" },
 
                 priorityList = new Type[5] { typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(ItemBlock), typeof(Block) },
                 useAerodynamics = true,
@@ -1280,11 +1276,7 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.horizonBombBay, Vector2.zero, false),
                 },
 
-                flags = new string[] {
-                    "slow",
-                    "",
-                    "bomber",
-                },
+                flags = new string[] { "aircraft", "slow", "medium", "bomber" },
 
                 priorityList = new Type[4] { typeof(TurretBlock), typeof(ItemBlock), typeof(CoreBlock), typeof(Block) },
                 useAerodynamics = true,
@@ -1318,11 +1310,7 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.zenithMissiles, new(0.25f, 0f), true, true),
                 },
 
-                flags = new string[] {
-                    "",
-                    "",
-                    "",
-                },
+                flags = new string[] { "aircraft", "slow", "heavy", "heavy-armored" },
 
                 priorityList = new Type[5] { typeof(TurretBlock), typeof(Unit), typeof(ItemBlock), typeof(Block), typeof(CoreBlock) },
                 useAerodynamics = false,
@@ -1356,6 +1344,8 @@ namespace Frontiers.Content {
             poly = new AircraftUnitType("poly", typeof(AircraftUnit), 2) {
                 priorityList = new Type[0],
                 useAerodynamics = false,
+
+                flags = new string[] { "aircraft", "slow", "medium", "support" },
 
                 health = 255f,
                 size = 1.875f,
@@ -1392,6 +1382,8 @@ namespace Frontiers.Content {
                 weapons = new WeaponMount[1] {
                     new WeaponMount(Weapons.zenithMissiles, new Vector2(0.4f, 0.1562f), true),
                 },
+
+                flags = new string[] { "copter", "slow", "medium", "heavy-armored" },
 
                 priorityList = new Type[5] { typeof(MechUnit), typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
 
@@ -1434,6 +1426,8 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.fotonWeapon, new Vector2(0.26f, 0.145f), true),
                 },
 
+                flags = new string[] { "copter", "slow", "heavy", "heavy-armored" },
+
                 priorityList = new Type[5] { typeof(MechUnit), typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
 
                 health = 750f,
@@ -1464,6 +1458,8 @@ namespace Frontiers.Content {
                 weapons = new WeaponMount[1] {
                     new WeaponMount(Weapons.daggerWeapon, new Vector2(0.29187f, 0.1562f), true, true),
                 },
+
+                flags = new string[] { "mech", "slow", "light" },
 
                 priorityList = new Type[5] { typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(ItemBlock), typeof(Block) },
 
@@ -1496,6 +1492,8 @@ namespace Frontiers.Content {
                 weapons = new WeaponMount[1] {
                     new WeaponMount(Weapons.fortressWeapon, new Vector2(0.32f, 0.04f), true, true),
                 },
+
+                flags = new string[] { "mech", "slow", "heavy", "heavy-armored" },
 
                 priorityList = new Type[5] { typeof(MechUnit), typeof(TurretBlock), typeof(CoreBlock), typeof(ItemBlock), typeof(Block) },
 
