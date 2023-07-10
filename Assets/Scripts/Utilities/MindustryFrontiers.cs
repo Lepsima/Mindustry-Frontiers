@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Frontiers.Content;
+using Frontiers.Content.Upgrades;
 using Frontiers.Content.Maps;
 using Frontiers.Settings;
 using Frontiers.Squadrons;
@@ -30,7 +31,7 @@ using Region = Frontiers.Content.Maps.Tilemap.Region;
 
 namespace Frontiers.Animations {
     public class Animator {
-        readonly Dictionary<Animation.Case, Anim> animations = new Dictionary<Animation.Case, Anim>();
+        readonly Dictionary<Animation.Case, Anim> animations = new();
 
         public void AddAnimation(Anim anim) {
             if (animations.ContainsKey(anim.GetCase())) return;
@@ -66,7 +67,7 @@ namespace Frontiers.Animations {
             }
 
             // Create a new gameObject to hold the animation
-            GameObject animGameObject = new GameObject("animation" + animation.name, typeof(SpriteRenderer));
+            GameObject animGameObject = new("animation" + animation.name, typeof(SpriteRenderer));
 
             // Set the position && rotation to 0
             animGameObject.transform.parent = parent;
@@ -108,7 +109,7 @@ namespace Frontiers.Animations {
 
 namespace Frontiers.Pooling {
     public class PoolManager : MonoBehaviour {
-        public static Dictionary<string, GameObjectPool> allPools = new Dictionary<string, GameObjectPool>();
+        public static Dictionary<string, GameObjectPool> allPools = new();
 
         public static GameObjectPool GetOrCreatePool(GameObject prefab, int targetAmount, string name = null) {
             if (name == null) name = prefab.name;
@@ -428,6 +429,7 @@ namespace Frontiers.Content {
             Weapons.Load();
             Units.Load();
             Blocks.Load();
+            UpgradeTypes.Load();
 
             int baseContents = loadedContents.Count;
             Debug.Log(loadedContents.Count + " Base contents loaded");
@@ -606,6 +608,7 @@ namespace Frontiers.Content {
         }
 
         public bool HasFlags(string[] flags) {
+            if (flags == null) return true;
             for(int i = 0; i < flags.Length; i++) if (!HasFlag(flags[i])) return false;
             return true;
         }
@@ -1066,7 +1069,7 @@ namespace Frontiers.Content {
 
         public float fuelCapacity = 60f, fuelConsumption = 1.5f, fuelRefillRate = 7.5f, fuelLeftToReturn = 10f;
 
-        public float emptyMass = 10f, fuelMass = 3.5f;
+        public float emptyMass = 10f, fuelDensity = 0.0275f;
 
         public WeaponMount[] weapons = new WeaponMount[0];
 
@@ -1268,7 +1271,6 @@ namespace Frontiers.Content {
                 force = 500f,
                 emptyMass = 10f,
                 itemMass = 3f,
-                fuelMass = 3.5f,
             };
 
             horizon = new AircraftUnitType("horizon", typeof(AircraftUnit), 2) {
@@ -1302,7 +1304,6 @@ namespace Frontiers.Content {
                 force = 800f,
                 emptyMass = 15.5f,
                 itemMass = 10f,
-                fuelMass = 5f,
             };
 
             zenith = new AircraftUnitType("zenith", typeof(AircraftUnit), 3) {
@@ -1336,7 +1337,6 @@ namespace Frontiers.Content {
                 force = 1030f,
                 emptyMass = 25.25f,
                 itemMass = 6.5f,
-                fuelMass = 10f,
 
                 maximumFires = 3,
             };
@@ -1368,7 +1368,6 @@ namespace Frontiers.Content {
                 force = 865f,
                 emptyMass = 5.5f,
                 itemMass = 10.5f,
-                fuelMass = 17f,
 
                 buildSpeedMultiplier = 1f,
                 itemPickupDistance = 6f,
@@ -1411,7 +1410,7 @@ namespace Frontiers.Content {
                 force = 600f,
                 emptyMass = 13.5f,
                 itemMass = 12.25f,
-                fuelMass = 7.25f,
+                fuelDensity = 7.25f,
             };
 
             foton = new CopterUnitType("foton", typeof(CopterUnit), 3) {
@@ -1451,7 +1450,7 @@ namespace Frontiers.Content {
                 force = 985f,
                 emptyMass = 21.75f,
                 itemMass = 15.25f,
-                fuelMass = 10f,
+                fuelDensity = 10f,
             };
 
             dagger = new MechUnitType("dagger", typeof(MechUnit), 1) {
@@ -1485,7 +1484,7 @@ namespace Frontiers.Content {
 
                 emptyMass = 7.05f,
                 itemMass = 2.2f,
-                fuelMass = 12.25f,
+                fuelDensity = 12.25f,
             };
 
             fortress = new MechUnitType("fortress", typeof(MechUnit), 3) {
@@ -1519,7 +1518,7 @@ namespace Frontiers.Content {
 
                 emptyMass = 17.5f,
                 itemMass = 3f,
-                fuelMass = 23.5f,
+                fuelDensity = 23.5f,
             };
         }
     }

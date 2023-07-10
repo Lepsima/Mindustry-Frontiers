@@ -115,9 +115,7 @@ public class PlayerManager : MonoBehaviour {
             }
 
             if (Input.GetMouseButtonDown(1)) {
-                if (selectedEntity) {
-                    selectedEntity.ApplyUpgrade(Upgrades.heavyFighterArmor[2]);
-                }
+
             }
 
 

@@ -101,7 +101,7 @@ public abstract class Unit : Entity, IArmed {
 
     protected float 
         maxVelocity, rotationSpeed, itemPickupDistance, buildSpeedMultiplier, range,
-        searchRange, fov, fuelCapacity, fuelConsumption, fuelRefillRate, emptyMass, fuelMass;
+        searchRange, fov, fuelCapacity, fuelConsumption, fuelRefillRate, emptyMass, fuelDensity;
 
     #endregion
 
@@ -227,7 +227,7 @@ public abstract class Unit : Entity, IArmed {
         fuelConsumption += fuelConsumption * mult.unit_fuelConsumption;
         fuelRefillRate += fuelRefillRate * mult.unit_fuelRefillRate;
         emptyMass += emptyMass * mult.unit_emptyMass;
-        fuelMass += fuelMass * mult.unit_fuelMass;
+        fuelDensity += fuelDensity * mult.unit_fuelDensity;
     }
 
     //Initialize the unit
@@ -260,7 +260,7 @@ public abstract class Unit : Entity, IArmed {
         fuelConsumption = Type.fuelConsumption;
         fuelRefillRate = Type.fuelRefillRate;
         emptyMass = Type.emptyMass;
-        fuelMass = Type.fuelMass;
+        fuelDensity = Type.fuelDensity;
 
         height = Type.groundHeight / 2;
 
@@ -761,7 +761,7 @@ public abstract class Unit : Entity, IArmed {
     }
 
     public virtual void UpdateCurrentMass() {
-        float fuelMass = FuelPercent() * this.fuelMass;
+        float fuelMass = fuel * this.fuelDensity;
         currentMass = emptyMass + cargoMass + fuelMass;
     }
 

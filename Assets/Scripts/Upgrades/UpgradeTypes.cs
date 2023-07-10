@@ -43,12 +43,29 @@ namespace Frontiers.Content.Upgrades {
         }
     }
 
-    public static class Upgrades {
+    public static class UpgradeTypes {
         public static UpgradeType[] heavyFighterArmor;
+        public static UpgradeType[] fuelEfficiency;
 
+        /*
+            heavyFighterArmor[0] = new UpgradeType("upgradeTest2") {
+                displayName = "Upgrade Test - Tier II",
+                tier = 2,
+                compatibleFlags = new string[] { "light" },
+
+                installCost = ItemStack.With(Items.silicon, 5),
+                researchCost = ItemStack.With(Items.silicon, 50),
+
+                previousUpgrades = new string[] { "heavyFighterArmor1" },
+
+                properties = new UnitUpgradeMultipliers() {
+                    entity_health = 0.1f,
+                    unit_emptyMass = 0.05f,
+                }
+            };   
+         */
         public static void Load() {
             heavyFighterArmor = new UpgradeType[3];
-
             heavyFighterArmor[0] = new UpgradeType("heavyFighterArmor1") {
                 displayName = "Heavy fighter armor - Tier I",
                 tier = 1,
@@ -65,7 +82,6 @@ namespace Frontiers.Content.Upgrades {
                     unit_maxVelocity = -0.075f,
                 }
             };
-
             heavyFighterArmor[1] = new UpgradeType("heavyFighterArmor2") {
                 displayName = "Heavy fighter armor - Tier II",
                 tier = 2,
@@ -82,7 +98,6 @@ namespace Frontiers.Content.Upgrades {
                     unit_maxVelocity = -0.1f,
                 }
             };
-
             heavyFighterArmor[2] = new UpgradeType("heavyFighterArmor3") {
                 displayName = "Heavy fighter armor - Tier III",
                 tier = 3,
@@ -97,6 +112,41 @@ namespace Frontiers.Content.Upgrades {
                     entity_health = 0.225f,
                     unit_emptyMass = 0.15f,
                     unit_maxVelocity = -0.125f,
+                }
+            };
+
+            fuelEfficiency = new UpgradeType[2];
+
+            fuelEfficiency[0] = new UpgradeType("fuelEfficiency1") {
+                displayName = "Fuel Efficiency - Tier I",
+                tier = 1,
+                compatibleFlags = new string[0],
+
+                installCost = ItemStack.With(Items.lead, 10),
+                researchCost = ItemStack.With(Items.copper, 90, Items.metaglass, 30),
+
+                previousUpgrades = null,
+
+                properties = new UnitUpgradeMultipliers() {
+                    unit_fuelConsumption = -0.075f,
+                    unit_fuelCapacity = -0.05f,
+                    unit_fuelDensity = 0.05f,
+                }
+            };
+            fuelEfficiency[1] = new UpgradeType("fuelEfficiency2") {
+                displayName = "Fuel Efficiency - Tier II",
+                tier = 2,
+                compatibleFlags = new string[0],
+
+                installCost = ItemStack.With(Items.lead, 15, Items.metaglass, 5),
+                researchCost = ItemStack.With(Items.silicon, 50, Items.metaglass, 50),
+
+                previousUpgrades = new string[] { "fuelEfficiency1" },
+
+                properties = new UnitUpgradeMultipliers() {
+                    unit_fuelConsumption = -0.15f,
+                    unit_fuelCapacity = -0.125f,
+                    unit_fuelDensity = 0.1f,
                 }
             };
         }
@@ -130,7 +180,7 @@ namespace Frontiers.Content.Upgrades {
         }
 
         public virtual bool CanBeResearched() {
-            if (previousUpgrades.Length == 0) return true;
+            if (previousUpgrades == null || previousUpgrades.Length == 0) return true;
 
             UpgradeType[] previous = UpgradeHandler.GetUpgradesByName(previousUpgrades);
             bool arePreviousResearched = UpgradeResearcher.IsResearched(previous);
@@ -211,7 +261,7 @@ namespace Frontiers.Content.Upgrades {
         public float unit_itemPickupDistance, unit_buildSpeedMultiplier;
         public float unit_range, unit_searchRange, unit_fov;
         public float unit_fuelCapacity, unit_fuelConsumption, unit_fuelRefillRate;
-        public float unit_emptyMass, unit_fuelMass;
+        public float unit_emptyMass, unit_fuelDensity;
 
         public float mech_baseRotationSpeed;
 
@@ -233,7 +283,7 @@ namespace Frontiers.Content.Upgrades {
             unit_fuelConsumption *= mult;
             unit_fuelRefillRate *= mult;
             unit_emptyMass *= mult;
-            unit_fuelMass *= mult;
+            unit_fuelDensity *= mult;
 
             mech_baseRotationSpeed *= mult;
 
@@ -259,7 +309,7 @@ namespace Frontiers.Content.Upgrades {
             mult.unit_fuelConsumption = unit_fuelConsumption;
             mult.unit_fuelRefillRate = unit_fuelRefillRate;
             mult.unit_emptyMass = unit_emptyMass;
-            mult.unit_fuelMass = unit_fuelMass;
+            mult.unit_fuelDensity = unit_fuelDensity;
 
             mult.mech_baseRotationSpeed = mech_baseRotationSpeed;
 
