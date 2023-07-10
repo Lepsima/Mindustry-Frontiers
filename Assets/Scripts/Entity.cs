@@ -25,7 +25,7 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
     protected float health;
 
     #region - Upgradable Stats -
-    public List<short> appliedUpgrades;
+    public List<short> appliedUpgrades = new();
 
     protected float maxHealth;
     protected int itemCapacity;
