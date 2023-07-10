@@ -148,4 +148,8 @@ public class CopterUnit : AircraftUnit {
     public override float CalculateEnginePower() {
         return Mathf.Min(maxRotorOutput, base.CalculateEnginePower());
     }
+
+    public override float CalculateLiftPower() {
+        return Mathf.Min(maxRotorOutput, base.CalculateLiftPower());
+    }
 }

@@ -8,6 +8,7 @@ using Photon.Realtime;
 using Photon.Pun.UtilityScripts;
 using Frontiers.Content;
 using Frontiers.Content.Maps;
+using Frontiers.Content.Upgrades;
 using Frontiers.Assets;
 using Frontiers.Teams;
 
@@ -37,6 +38,7 @@ public class Launcher : MonoBehaviourPunCallbacks {
     private void Start() {
         AssetLoader.LoadAssets();
         ContentLoader.LoadContent();
+        Upgrades.Load();
         MapDisplayer.SetupAtlas();
 
         Debug.Log("Connecting to Master");

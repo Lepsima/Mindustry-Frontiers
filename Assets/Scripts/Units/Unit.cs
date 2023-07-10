@@ -65,26 +65,33 @@ public abstract class Unit : Entity, IArmed {
     protected Vector2 homePosition;
     public Vector2 patrolPosition = Vector2.zero;
 
-    protected float targetPower, currentMass;
+    protected float 
+        targetPower, // The power percent that the engine should be at
+        currentMass, // The current mass of this unit
+        fuel, // The current fuel of this unit
+        height, // The current height/altitude of this unit
+        cargoMass, // The current mass of the cargo of this unit
+        enginePower; // The current power at wich the engine works, based on targetPower and regulated by fuel and/or behaviour parameters
 
-    protected float fuel, height, cargoMass, enginePower;
-    protected bool isCoreUnit, isLanded, isTakingOff, areWeaponsActive;
+    protected bool 
+        isCoreUnit, // Wether this is a core/support unit
+        isLanded, // Wether this unit is landed to a landpad/somewhere else or not
+        isTakingOff, // Wether this unit is taking off from the previous land point
+        areWeaponsActive; // Wether the weapons of the unit are active or not
 
     protected ConstructionBlock constructingBlock;
 
     // Timers
     private float
-        targetSearchTimer, 
-        landPadSearchTimer, 
-        constructionSearchTimer,
-        targetLostTimer,
-        deactivateWeaponsTimer,
-        modeChangeRequestTimer;
+        targetSearchTimer, // The next time the unit can search for a target
+        landPadSearchTimer, // The next time the unit can search for a landing pad
+        constructionSearchTimer, // The next time the unit can search for an unfinished building
+        targetLostTimer, // The time without visual contact of a target at wich is considered a lost target 
+        deactivateWeaponsTimer, // The time at wich the weapons will deactivate, used for more imprecise fighter/bomber building runs
+        modeChangeRequestTimer; // A small cooldown to avoid multiple requests 
 
-    // The target position used in behaviours for the next frame
+    // Parameters used by this unit's behaviour for the next physics update
     Vector2 _position;
-
-    // Conditions used ONLY on the next frame, then they are reseted
     protected bool _rotate, _move;
 
     #endregion

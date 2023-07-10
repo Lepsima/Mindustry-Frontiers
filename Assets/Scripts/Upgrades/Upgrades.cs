@@ -121,6 +121,8 @@ namespace Frontiers.Content.Upgrades {
         public UpgradeMultipliers properties;
 
         public UpgradeType(string name) {
+            this.name = name;
+
             id = (short)UpgradeHandler.loadedUpgrades.Count;
             if (name == null) this.name = "upgrade " + id;
 

@@ -79,7 +79,7 @@ public class AircraftUnit : Unit {
 
         } else {
             // Calculate lift force
-            float engineAccel = force * GetEnginePower() / currentMass;
+            float engineAccel = force * CalculateLiftPower() / currentMass;
             float liftAccel = 0f;
 
             if (!isWreck) {
@@ -193,6 +193,11 @@ public class AircraftUnit : Unit {
     public override float CalculateEnginePower() {
         return Mathf.Min(base.CalculateEnginePower(), Mathf.Clamp01(targetVelocity - velocity.magnitude));
     }
+
+    public virtual float CalculateLiftPower() {
+        return base.CalculateEnginePower();
+    }
+
     #endregion
 
     #region - Landing / Takeoff - 
