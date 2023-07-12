@@ -1068,7 +1068,6 @@ namespace Frontiers.Content {
         public float groundHeight = 18f;
 
         public float fuelCapacity = 60f, fuelConsumption = 1.5f, fuelRefillRate = 7.5f, fuelLeftToReturn = 10f;
-
         public float emptyMass = 10f, fuelDensity = 0.0275f;
 
         public WeaponMount[] weapons = new WeaponMount[0];
@@ -1218,6 +1217,8 @@ namespace Frontiers.Content {
         // Degrees / second
         public float wreckSpinAccel = 50f;
         public float wreckSpinMax = 270f;
+
+        public string bladeSound = "copter-blade-loop";
 
         public CopterUnitType(string name, Type type, int tier = 1) : base(name, type, tier) {
             useAerodynamics = hasDragTrails = false; // Copters don't do that

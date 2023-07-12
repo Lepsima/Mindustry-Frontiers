@@ -112,6 +112,9 @@ public class CopterUnit : AircraftUnit {
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
+        audioSource.clip = AssetLoader.GetAsset<AudioClip>(Type.bladeSound);
+        audioSource.loop = true;
+        audioSource.Play();
     }
 
     protected override void CreateTransforms() {
@@ -143,6 +146,7 @@ public class CopterUnit : AircraftUnit {
 
         output /= rotors.Length;
         maxRotorOutput = output;
+        audioSource.pitch = maxRotorOutput;
     }
 
     public override float CalculateEnginePower() {

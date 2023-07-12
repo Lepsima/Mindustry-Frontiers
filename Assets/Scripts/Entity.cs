@@ -19,6 +19,7 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
     protected Color teamColor;
     protected EntityType Type;
     protected Inventory inventory;
+    protected AudioSource audioSource;
 
     protected int id;
     protected byte teamCode;
@@ -68,6 +69,7 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
 
         fires = new GameObject[Type.maximumFires];
         teamColor = TeamUtilities.GetTeamColor(teamCode);
+        audioSource = GetComponent<AudioSource>();
 
         SetLayerAllChildren(transform, GetTeamLayer());
         SetInventory();
