@@ -22,12 +22,13 @@ namespace Frontiers.Content.Upgrades {
         }
     }
 
-
+    
+    // All upgrades are still listed in the main contentLoader, but also here for faster searching mid-game, since there will be a lot of upgrade searchs to check if "x" upgrade can be researched  
+    // Maybe is completely unecessary
     public static class UpgradeHandler {
         public static Dictionary<string, UpgradeType> loadedUpgrades = new();
 
-        public static void HandleUpgrade(UpgradeType upgradeType) {
-            if (GetUpgradeByName(upgradeType.name) != null) throw new ArgumentException("Two upgrades cannot have the same name! (issue: '" + upgradeType.name + "')");
+        public static void Handle(UpgradeType upgradeType) {
             loadedUpgrades.Add(upgradeType.name, upgradeType);
         }
 
@@ -46,6 +47,7 @@ namespace Frontiers.Content.Upgrades {
         public static UpgradeType[] heavyFighterArmor;
         public static UpgradeType[] fuelEfficiency;
 
+        // Upgrade example:
         /*
             heavyFighterArmor[0] = new UpgradeType("upgradeTest2") {
                 displayName = "Upgrade Test - Tier II",
@@ -63,12 +65,14 @@ namespace Frontiers.Content.Upgrades {
                 }
             };   
          */
+
         public static void Load() {
             heavyFighterArmor = new UpgradeType[3];
             heavyFighterArmor[0] = new UpgradeType("heavyFighterArmor1") {
                 displayName = "Heavy fighter armor - Tier I",
                 tier = 1,
-                compatibleFlags = new string[] { "fighter" },
+                flags = new string[] { "fighter" },
+                incopmatibleFlags = new string[] {},
 
                 installCost = ItemStack.With(Items.silicon, 5),
                 researchCost = ItemStack.With(Items.silicon, 50),
@@ -84,7 +88,7 @@ namespace Frontiers.Content.Upgrades {
             heavyFighterArmor[1] = new UpgradeType("heavyFighterArmor2") {
                 displayName = "Heavy fighter armor - Tier II",
                 tier = 2,
-                compatibleFlags = new string[] { "fighter" },
+                flags = new string[] { "fighter" },
 
                 installCost = ItemStack.With(Items.copper, 10, Items.silicon, 5),
                 researchCost = ItemStack.With(Items.copper, 125, Items.silicon, 45),
@@ -100,7 +104,7 @@ namespace Frontiers.Content.Upgrades {
             heavyFighterArmor[2] = new UpgradeType("heavyFighterArmor3") {
                 displayName = "Heavy fighter armor - Tier III",
                 tier = 3,
-                compatibleFlags = new string[] { "fighter" },
+                flags = new string[] { "fighter" },
 
                 installCost = ItemStack.With(Items.silicon, 12, Items.titanium, 5),
                 researchCost = ItemStack.With(Items.silicon, 160, Items.titanium, 35),
@@ -115,11 +119,10 @@ namespace Frontiers.Content.Upgrades {
             };
 
             fuelEfficiency = new UpgradeType[2];
-
             fuelEfficiency[0] = new UpgradeType("fuelEfficiency1") {
                 displayName = "Fuel Efficiency - Tier I",
                 tier = 1,
-                compatibleFlags = new string[0],
+                flags = new string[0],
 
                 installCost = ItemStack.With(Items.lead, 10),
                 researchCost = ItemStack.With(Items.copper, 90, Items.metaglass, 30),
@@ -135,7 +138,7 @@ namespace Frontiers.Content.Upgrades {
             fuelEfficiency[1] = new UpgradeType("fuelEfficiency2") {
                 displayName = "Fuel Efficiency - Tier II",
                 tier = 2,
-                compatibleFlags = new string[0],
+                flags = new string[0],
 
                 installCost = ItemStack.With(Items.lead, 15, Items.metaglass, 5),
                 researchCost = ItemStack.With(Items.silicon, 50, Items.metaglass, 50),
@@ -151,16 +154,14 @@ namespace Frontiers.Content.Upgrades {
         }
     }
 
-    public class UpgradeType {
-        public string name;
+    public class UpgradeType : Content {
         public string displayName;
-        public short id;
 
         public int tier = 1;
         public bool isUnlocked;
 
         public int minTier = -1, maxTier = -1;
-        public string[] compatibleFlags;
+        public string[] incopmatibleFlags;
 
         public ItemStack[] installCost;
         public ItemStack[] researchCost;
@@ -169,13 +170,8 @@ namespace Frontiers.Content.Upgrades {
 
         public UpgradeMultipliers properties;
 
-        public UpgradeType(string name) {
-            this.name = name;
-
-            id = (short)UpgradeHandler.loadedUpgrades.Count;
-            if (name == null) this.name = "upgrade " + id;
-
-            UpgradeHandler.HandleUpgrade(this);
+        public UpgradeType(string name) : base(name) {
+            UpgradeHandler.Handle(this);  
         }
 
         public virtual bool CanBeResearched() {
@@ -189,8 +185,9 @@ namespace Frontiers.Content.Upgrades {
 
         public virtual bool CompatibleWith(EntityType entityType) {
             bool tierPass = (minTier == -1 || entityType.tier >= minTier) && (maxTier == -1 || entityType.tier <= maxTier);
-            bool hasFlags = entityType.HasFlags(compatibleFlags);
-            return tierPass && hasFlags;
+            bool hasFlags = entityType.HasFlags(flags);
+            bool hasIncompatibleFlags = entityType.HasFlags(incopmatibleFlags);
+            return tierPass && hasFlags && !hasIncompatibleFlags;
         }
     }
 

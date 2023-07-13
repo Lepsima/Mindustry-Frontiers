@@ -10,6 +10,7 @@ namespace Frontiers.Content.Sounds {
         public static Dictionary<string, Sound> loadedSounds = new();
         
         public static void Handle(Sound sound) {
+            sound.id =(short)loadedSounds.Count;
             loadedSounds.Add(sound.name, sound);
         }
     }
@@ -21,8 +22,8 @@ namespace Frontiers.Content.Sounds {
 
         public Sound(string name) {
             this.name = name;
-            id = (short)SoundHandler.loadedSounds.Count;
             clip = AssetLoader.GetAsset<AudioClip>(name);
+            SoundHandler.Handle(this);
         }
     }
 

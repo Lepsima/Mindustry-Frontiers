@@ -445,6 +445,9 @@ namespace Frontiers.Content {
         }
 
         public static void HandleContent(Content content) {
+            content.id = (short)loadedContents.Count;
+            if (content.name == null) content.name = "content num. " + content.id;
+
             if (GetContentByName(content.name) != null) throw new ArgumentException("Two content objects cannot have the same name! (issue: '" + content.name + "')");
             loadedContents.Add(content.name, content);
         }
@@ -595,14 +598,11 @@ namespace Frontiers.Content {
         [JsonIgnore] public Sprite spriteFull;
 
         public Content(string name) {
-            id = (short)ContentLoader.loadedContents.Count;
-            if (name == null) name = "content " + id;
             this.name = name;
+            ContentLoader.HandleContent(this);
 
             sprite = AssetLoader.GetSprite(name);
             spriteFull = AssetLoader.GetSprite(name + "-full", name);
-
-            ContentLoader.HandleContent(this);
         }
 
         public bool HasFlags(string[] flags) {
