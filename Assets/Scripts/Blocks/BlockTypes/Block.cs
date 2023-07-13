@@ -193,7 +193,7 @@ public class Block : Entity {
                 }
 
                 if (itemBlock.IsExplosive()) {
-                    explosionEffect = Type.explosionFX;
+                    explosionEffect = Type.deathFX;
                 }
             }
 

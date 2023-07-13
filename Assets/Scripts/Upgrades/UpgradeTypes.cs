@@ -24,11 +24,11 @@ namespace Frontiers.Content.Upgrades {
 
 
     public static class UpgradeHandler {
-        public static Dictionary<short, UpgradeType> loadedUpgrades = new();
+        public static Dictionary<string, UpgradeType> loadedUpgrades = new();
 
         public static void HandleUpgrade(UpgradeType upgradeType) {
             if (GetUpgradeByName(upgradeType.name) != null) throw new ArgumentException("Two upgrades cannot have the same name! (issue: '" + upgradeType.name + "')");
-            loadedUpgrades.Add(upgradeType.id, upgradeType);
+            loadedUpgrades.Add(upgradeType.name, upgradeType);
         }
 
         public static UpgradeType[] GetUpgradesByName(string[] names) {
@@ -38,8 +38,7 @@ namespace Frontiers.Content.Upgrades {
         }
 
         public static UpgradeType GetUpgradeByName(string name) {
-            foreach (UpgradeType upgradeType in loadedUpgrades.Values) if (upgradeType.name == name) return upgradeType;
-            return null;
+            return loadedUpgrades[name];
         }
     }
 

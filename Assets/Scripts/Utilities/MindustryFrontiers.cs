@@ -416,7 +416,7 @@ namespace Frontiers.Assets {
 namespace Frontiers.Content {
 
     public static class ContentLoader {
-        public static Dictionary<int, Content> loadedContents;
+        public static Dictionary<string, Content> loadedContents;
         public static List<Mod> modList;
 
         public static void LoadContent() {
@@ -446,8 +446,7 @@ namespace Frontiers.Content {
 
         public static void HandleContent(Content content) {
             if (GetContentByName(content.name) != null) throw new ArgumentException("Two content objects cannot have the same name! (issue: '" + content.name + "')");
-
-            loadedContents.Add(content.id, content);
+            loadedContents.Add(content.name, content);
         }
 
         /*
@@ -513,12 +512,11 @@ namespace Frontiers.Content {
         }
 
         public static Content GetContentById(short id) {
-            return loadedContents[id];
+            return loadedContents.ElementAt(id).Value;
         }
 
         public static Content GetContentByName(string name) {
-            foreach (Content content in loadedContents.Values) if (content.name == name) return content;
-            return null;
+            return loadedContents[name];
         }
 
         public static T[] GetContentByType<T>() where T : Content{
@@ -645,7 +643,8 @@ namespace Frontiers.Content {
 
         public float blinkInterval = 0.5f, blinkOffset = 0f, blinkLength = 1f;
 
-        public string hitSmokeFX = "HitSmokeFX", destroyFX = "DestroyFX", explosionFX = "ExplosionFX";
+        public string hitSmokeFX = "HitSmokeFX", deathFX = "ExplosionFX";
+        public string loopSound = "", deathSound = "Bang";
 
         public EntityType(string name, Type type, int tier = 1) : base(name) {
             typeName = TypeWrapper.GetString(type);
@@ -1388,7 +1387,7 @@ namespace Frontiers.Content {
                 priorityList = new Type[5] { typeof(MechUnit), typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
 
                 hasWreck = true,
-                wreckHealth = 10000f,
+                wreckHealth = 125f,
 
                 health = 395f,
                 size = 2.25f,
@@ -1429,6 +1428,9 @@ namespace Frontiers.Content {
                 flags = new string[] { "copter", "slow", "heavy", "heavy-armored" },
 
                 priorityList = new Type[5] { typeof(MechUnit), typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
+
+                hasWreck = true,
+                wreckHealth = 225f,
 
                 health = 750f,
                 size = 3.75f,

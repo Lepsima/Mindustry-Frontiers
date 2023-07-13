@@ -819,7 +819,7 @@ public abstract class Unit : Entity, IArmed {
     public override void OnDestroy() {
         if (!gameObject.scene.isLoaded) return;
 
-        Effect.PlayEffect(Type.explosionFX, transform.position, size);
+        Effect.PlayEffect(Type.deathFX, transform.position, size);
 
         GameObject explosionBlastGameObject = Instantiate(AssetLoader.GetPrefab("explosion-blast"), GetPosition(), Quaternion.Euler(0f, 0f, UnityEngine.Random.Range(0f, 360f)));
         Destroy(explosionBlastGameObject, 10f);
