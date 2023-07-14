@@ -12,7 +12,7 @@ public class PlayerUI : MonoBehaviour {
     }
 
     public void SetSelectedContent(Content content) {
-        if (content != null) selectedBlockImage.sprite = content.sprite;
+        if (content != null) selectedBlockImage.sprite = content.spriteFull;
         else selectedBlockImage.sprite = null;
     }
 }
