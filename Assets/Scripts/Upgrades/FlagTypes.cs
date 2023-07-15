@@ -97,7 +97,7 @@ namespace Frontiers.Content.Flags {
             fighter, bomber, support, 
             light, heavy,
             fast, slow, 
-            lightArmored, heavyArmored;
+            lightArmored, moderateArmored, heavyArmored;
 
         public static void Load() {
             wall = new("wall");
@@ -112,6 +112,7 @@ namespace Frontiers.Content.Flags {
             fast = new("fast");
             slow = new("slow");
             lightArmored = new("lightArmored");
+            moderateArmored = new("moderateArmored");
             heavyArmored = new("heavyArmored");
         }
     }

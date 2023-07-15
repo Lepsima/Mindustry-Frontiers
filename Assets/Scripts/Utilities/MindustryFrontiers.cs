@@ -1275,7 +1275,7 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.horizonBombBay, Vector2.zero, false),
                 },
 
-                flags = new Flag[] { FlagTypes.aircraft, FlagTypes.bomber, FlagTypes.slow },
+                flags = new Flag[] { FlagTypes.aircraft, FlagTypes.bomber, FlagTypes.slow, FlagTypes.moderateArmored },
                 priorityList = new Type[4] { typeof(TurretBlock), typeof(ItemBlock), typeof(CoreBlock), typeof(Block) },
                 useAerodynamics = true,
 
@@ -1454,7 +1454,7 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.daggerWeapon, new Vector2(0.29187f, 0.1562f), true, true),
                 },
 
-                flags = new Flag[] { FlagTypes.mech, FlagTypes.slow, FlagTypes.light },
+                flags = new Flag[] { FlagTypes.mech, FlagTypes.slow, FlagTypes.light, FlagTypes.moderateArmored },
                 priorityList = new Type[5] { typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(ItemBlock), typeof(Block) },
 
                 health = 140f,
