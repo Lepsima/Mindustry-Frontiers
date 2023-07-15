@@ -80,13 +80,40 @@ namespace Frontiers.Content.Flags {
         public string name; // The display name of this flag
         public short id; // The id used to compare this flag
 
+        public Flag(string name) {
+            this.name = name;
+            FlagHandler.Handle(this);
+        }
+
         public bool Equals(Flag other) {
             return id == other.id;
         }
     }
 
-    public static class Flags {
-        public static Flag figher, armored;
+    public static class FlagTypes {
+        public static Flag 
+            wall,
+            aircraft, copter, mech, 
+            fighter, bomber, support, 
+            light, heavy,
+            fast, slow, 
+            lightArmored, heavyArmored;
+
+        public static void Load() {
+            wall = new("wall");
+            aircraft = new("aircraft");
+            copter = new("copter");
+            mech = new("mech");
+            fighter = new("fighter");
+            bomber = new("bomber");
+            support = new("support");
+            light = new("light");
+            heavy = new("heavy");
+            fast = new("fast");
+            slow = new("slow");
+            lightArmored = new("lightArmored");
+            heavyArmored = new("heavyArmored");
+        }
     }
 
     public interface IFlaggable {

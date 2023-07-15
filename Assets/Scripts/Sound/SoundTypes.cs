@@ -27,7 +27,7 @@ namespace Frontiers.Content.Sounds {
         }
     }
 
-    public static class Sounds {
+    public static class SoundTypes {
         public static Sound
             artillery, bang, beam, bigShot, bioLoop, blaster, bolt, boom, @break, build, buttonClick, cannon, click, combustion,
             conveyor, copterBladeLoop, coreExplode, cutter, door, drill, drillCharge, drillImpact, dullExplosion, electricHum,

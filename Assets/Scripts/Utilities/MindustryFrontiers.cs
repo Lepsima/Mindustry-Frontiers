@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Frontiers.Content;
+using Frontiers.Content.Flags;
+using Frontiers.Content.Sounds;
 using Frontiers.Content.Upgrades;
 using Frontiers.Content.Maps;
 using Frontiers.Settings;
@@ -423,13 +425,23 @@ namespace Frontiers.Content {
             loadedContents = new();
             modList = new List<Mod>();
 
+            // These two dont inherit from the base content class
+            SoundTypes.Load();
+            FlagTypes.Load();
+
             Items.Load();
             Tiles.Load();
+
+            // These need flags to be loaded
+            UpgradeTypes.Load();
+
+            // These need items to be loaded
             Bullets.Load();
             Weapons.Load();
+            
+            // These need weapons to be loaded
             Units.Load();
             Blocks.Load();
-            UpgradeTypes.Load();
 
             int baseContents = loadedContents.Count;
             Debug.Log(loadedContents.Count + " Base contents loaded");
@@ -515,10 +527,12 @@ namespace Frontiers.Content {
         }
 
         public static Content GetContentById(short id) {
+            if (loadedContents.Count <= id) return null;
             return loadedContents.ElementAt(id).Value;
         }
 
         public static Content GetContentByName(string name) {
+            if (!loadedContents.ContainsKey(name)) return null;
             return loadedContents[name];
         }
 
@@ -582,7 +596,7 @@ namespace Frontiers.Content {
         public bool hidden = false;
 
         // Used to classificate this content, not shown to the player
-        public string[] flags;
+        public Flag[] flags;
 
         // The main function of this content
         public string function;
@@ -603,18 +617,6 @@ namespace Frontiers.Content {
 
             sprite = AssetLoader.GetSprite(name);
             spriteFull = AssetLoader.GetSprite(name + "-full", name);
-        }
-
-        public bool HasFlags(string[] flags) {
-            if (flags == null) return true;
-            for(int i = 0; i < flags.Length; i++) if (!HasFlag(flags[i])) return false;
-            return true;
-        }
-
-        public bool HasFlag(string flag) {
-            if (flags.Length == 0) return false;
-            for (int i = 0; i < flags.Length; i++) if (flags[i] == flag) return true;
-            return false;
         }
 
         public virtual void Wrap() { }
@@ -840,9 +842,7 @@ namespace Frontiers.Content {
             copperWall = new BlockType("copper-wall", typeof(Block), 1) {
                 buildCost = ItemStack.With(Items.copper, 6),
 
-                flags = new string[] {
-                    "wall",
-                },
+                flags = new Flag[] { FlagTypes.wall }, 
 
                 health = 140,
             };
@@ -850,9 +850,7 @@ namespace Frontiers.Content {
             copperWallLarge = new BlockType("copper-wall-large", typeof(Block), 1) {
                 buildCost = ItemStack.With(Items.copper, 24),
 
-                flags = new string[] {
-                    "wall",
-                },
+                flags = new Flag[] { FlagTypes.wall },
 
                 health = 600,
                 size = 2
@@ -1244,8 +1242,7 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.flareWeapon, new(-0.25f, 0.3f), true),
                 },
 
-                flags = new string[] { "aircraft", "light", "fast", "fighter" },
-
+                flags = new Flag[] { FlagTypes.aircraft, FlagTypes.fighter, FlagTypes.light, FlagTypes.fast, FlagTypes.lightArmored },
                 priorityList = new Type[5] { typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(ItemBlock), typeof(Block) },
                 useAerodynamics = true,
 
@@ -1278,8 +1275,7 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.horizonBombBay, Vector2.zero, false),
                 },
 
-                flags = new string[] { "aircraft", "slow", "medium", "bomber" },
-
+                flags = new Flag[] { FlagTypes.aircraft, FlagTypes.bomber, FlagTypes.slow },
                 priorityList = new Type[4] { typeof(TurretBlock), typeof(ItemBlock), typeof(CoreBlock), typeof(Block) },
                 useAerodynamics = true,
 
@@ -1311,8 +1307,7 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.zenithMissiles, new(0.25f, 0f), true, true),
                 },
 
-                flags = new string[] { "aircraft", "slow", "heavy", "heavy-armored" },
-
+                flags = new Flag[] { FlagTypes.aircraft, FlagTypes.slow, FlagTypes.heavy, FlagTypes.heavyArmored },
                 priorityList = new Type[5] { typeof(TurretBlock), typeof(Unit), typeof(ItemBlock), typeof(Block), typeof(CoreBlock) },
                 useAerodynamics = false,
 
@@ -1345,7 +1340,7 @@ namespace Frontiers.Content {
                 priorityList = new Type[0],
                 useAerodynamics = false,
 
-                flags = new string[] { "aircraft", "slow", "medium", "support" },
+                flags = new Flag[] { FlagTypes.aircraft, FlagTypes.support, FlagTypes.slow, FlagTypes.lightArmored },
 
                 health = 255f,
                 size = 1.875f,
@@ -1382,8 +1377,7 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.zenithMissiles, new Vector2(0.4f, 0.1562f), true),
                 },
 
-                flags = new string[] { "copter", "slow", "medium", "heavy-armored" },
-
+                flags = new Flag[] { FlagTypes.copter, FlagTypes.slow, FlagTypes.heavyArmored },
                 priorityList = new Type[5] { typeof(MechUnit), typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
 
                 hasWreck = true,
@@ -1425,8 +1419,7 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.fotonWeapon, new Vector2(0.26f, 0.145f), true),
                 },
 
-                flags = new string[] { "copter", "slow", "heavy", "heavy-armored" },
-
+                flags = new Flag[] { FlagTypes.copter, FlagTypes.slow, FlagTypes.heavy, FlagTypes.heavyArmored },
                 priorityList = new Type[5] { typeof(MechUnit), typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
 
                 hasWreck = true,
@@ -1461,8 +1454,7 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.daggerWeapon, new Vector2(0.29187f, 0.1562f), true, true),
                 },
 
-                flags = new string[] { "mech", "slow", "light" },
-
+                flags = new Flag[] { FlagTypes.mech, FlagTypes.slow, FlagTypes.light },
                 priorityList = new Type[5] { typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(ItemBlock), typeof(Block) },
 
                 health = 140f,
@@ -1495,8 +1487,7 @@ namespace Frontiers.Content {
                     new WeaponMount(Weapons.fortressWeapon, new Vector2(0.32f, 0.04f), true, true),
                 },
 
-                flags = new string[] { "mech", "slow", "heavy", "heavy-armored" },
-
+                flags = new Flag[] { FlagTypes.mech, FlagTypes.slow, FlagTypes.heavy, FlagTypes.heavyArmored },
                 priorityList = new Type[5] { typeof(MechUnit), typeof(TurretBlock), typeof(CoreBlock), typeof(ItemBlock), typeof(Block) },
 
                 health = 140f,

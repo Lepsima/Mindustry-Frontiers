@@ -1,7 +1,6 @@
 using Frontiers.Assets;
 using Frontiers.Content;
 using Frontiers.Content.Maps;
-using Frontiers.Settings;
 using Frontiers.Teams;
 using Photon.Pun;
 using System.Collections.Generic;
@@ -10,8 +9,8 @@ using UnityEngine;
 using Frontiers.Content.Upgrades;
 
 public abstract class Unit : Entity, IArmed {
-    public new UnitType Type { protected set; get; }
 
+    public new UnitType Type { protected set; get; }
 
     #region - References -
     protected Transform spriteHolder;
