@@ -72,7 +72,7 @@ namespace Frontiers.Content.Upgrades {
         public static void Load() {
             // Health upgrades for any unit
             heavyArmor = new UpgradeType[3];
-            heavyFighterArmor[0] = new UpgradeType("heavyArmor1") {
+            heavyArmor[0] = new UpgradeType("heavyArmor1") {
                 displayName = "Heavy Armor - Tier I",
                 tier = 1,
 
@@ -90,7 +90,7 @@ namespace Frontiers.Content.Upgrades {
                     unit_maxVelocity = -0.1f,
                 }
             };
-            heavyFighterArmor[1] = new UpgradeType("heavyArmor2") {
+            heavyArmor[1] = new UpgradeType("heavyArmor2") {
                 displayName = "Heavy Armor - Tier II",
                 tier = 2,
                 maxTier = 3,
@@ -109,7 +109,7 @@ namespace Frontiers.Content.Upgrades {
                     unit_maxVelocity = -0.175f,
                 }
             };
-            heavyFighterArmor[2] = new UpgradeType("heavyArmor3") {
+            heavyArmor[2] = new UpgradeType("heavyArmor3") {
                 displayName = "Heavy Armor - Tier III",
                 tier = 3,
                 maxTier = 2,
@@ -358,45 +358,6 @@ namespace Frontiers.Content.Upgrades {
                 }
             };
 
-            // Lower fuel consume, (secondary) less capacity 
-            fuelEfficiency = new UpgradeType[2];
-            fuelEfficiency[0] = new UpgradeType("fuelEfficiency1") {
-                displayName = "Fuel Efficiency - Tier I",
-                tier = 1,
-
-                flags = new Flag[0],
-                incopmatibleFlags = new Flag[0],
-
-                installCost = ItemStack.With(Items.lead, 10),
-                researchCost = ItemStack.With(Items.copper, 90, Items.metaglass, 30),
-
-                previousUpgrade = fuelCapacity[0],
-
-                properties = new UnitUpgradeMultipliers() {
-                    unit_fuelConsumption = -0.075f,
-                    unit_fuelCapacity = -0.05f,
-                    unit_fuelDensity = 0.05f,
-                }
-            };
-            fuelEfficiency[1] = new UpgradeType("fuelEfficiency2") {
-                displayName = "Fuel Efficiency - Tier II",
-                tier = 2,
-
-                flags = new Flag[0],
-                incopmatibleFlags = new Flag[0],
-
-                installCost = ItemStack.With(Items.lead, 15, Items.metaglass, 5),
-                researchCost = ItemStack.With(Items.silicon, 50, Items.metaglass, 50),
-
-                previousUpgrade = fuelEfficiency[0],
-
-                properties = new UnitUpgradeMultipliers() {
-                    unit_fuelConsumption = -0.15f,
-                    unit_fuelCapacity = -0.125f,
-                    unit_fuelDensity = 0.1f,
-                }
-            };
-
             // Higher fuel capacity, (secondary) less density
             fuelCapacity = new UpgradeType[3];
             fuelCapacity[0] = new UpgradeType("fuelCapacity1") {
@@ -447,6 +408,45 @@ namespace Frontiers.Content.Upgrades {
                 properties = new UnitUpgradeMultipliers() {
                     unit_fuelCapacity = 0.35f,
                     unit_fuelDensity = -0.075f,
+                }
+            };
+
+            // Lower fuel consume, (secondary) less capacity 
+            fuelEfficiency = new UpgradeType[2];
+            fuelEfficiency[0] = new UpgradeType("fuelEfficiency1") {
+                displayName = "Fuel Efficiency - Tier I",
+                tier = 1,
+
+                flags = new Flag[0],
+                incopmatibleFlags = new Flag[0],
+
+                installCost = ItemStack.With(Items.lead, 10),
+                researchCost = ItemStack.With(Items.copper, 90, Items.metaglass, 30),
+
+                previousUpgrade = fuelCapacity[0],
+
+                properties = new UnitUpgradeMultipliers() {
+                    unit_fuelConsumption = -0.075f,
+                    unit_fuelCapacity = -0.05f,
+                    unit_fuelDensity = 0.05f,
+                }
+            };
+            fuelEfficiency[1] = new UpgradeType("fuelEfficiency2") {
+                displayName = "Fuel Efficiency - Tier II",
+                tier = 2,
+
+                flags = new Flag[0],
+                incopmatibleFlags = new Flag[0],
+
+                installCost = ItemStack.With(Items.lead, 15, Items.metaglass, 5),
+                researchCost = ItemStack.With(Items.silicon, 50, Items.metaglass, 50),
+
+                previousUpgrade = fuelEfficiency[0],
+
+                properties = new UnitUpgradeMultipliers() {
+                    unit_fuelConsumption = -0.15f,
+                    unit_fuelCapacity = -0.125f,
+                    unit_fuelDensity = 0.1f,
                 }
             };
 

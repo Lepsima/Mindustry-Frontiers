@@ -421,7 +421,7 @@ namespace Frontiers.Content {
         public static Dictionary<string, Content> loadedContents;
         public static List<Mod> modList;
 
-        public static void LoadContent() {
+        public static void LoadContents() {
             loadedContents = new();
             modList = new List<Mod>();
 

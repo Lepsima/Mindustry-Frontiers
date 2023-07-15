@@ -29,7 +29,7 @@ public class MapSaver : MonoBehaviour {
 
     public void LoadMap() {
         AssetLoader.LoadAssets();
-        ContentLoader.LoadContent();
+        ContentLoader.LoadContents();
 
         Main.RegionSize = regionSize;
         MapDisplayer.SetupAtlas();

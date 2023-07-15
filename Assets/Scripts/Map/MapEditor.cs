@@ -48,7 +48,7 @@ public class MapEditor : MonoBehaviour {
 
     private void Start() {
         AssetLoader.LoadAssets();
-        ContentLoader.LoadContent();
+        ContentLoader.LoadContents();
 
         Main.RegionSize = regionSize;
         MapDisplayer.SetupAtlas();

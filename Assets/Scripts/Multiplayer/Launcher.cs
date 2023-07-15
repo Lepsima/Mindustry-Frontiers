@@ -37,7 +37,7 @@ public class Launcher : MonoBehaviourPunCallbacks {
 
     private void Start() {
         AssetLoader.LoadAssets();
-        ContentLoader.LoadContent();
+        ContentLoader.LoadContents();
         MapDisplayer.SetupAtlas();
 
         Debug.Log("Connecting to Master");
