@@ -13,7 +13,7 @@ public class UIUpgradeTreeNode : MonoBehaviour {
     LineRenderer lineRenderer;
     UpgradeTree.Node node;
 
-    float helpShowTime = 1.5f;
+    float helpShowTime = 0.75f;
     float mouseOverTimer;
 
     public void Set(string name, Transform parent, Vector2 position, UpgradeTree.Node node) {
@@ -38,13 +38,13 @@ public class UIUpgradeTreeNode : MonoBehaviour {
         // Try to revert research state
         if (IsResearched()) {
             if (CanBeReversed()) {
-                UpgradeResearcher.Revert(node.upgrade);
+                node.upgrade.Revert();
                 spriteRenderer.color = Color.red;
                 lineRenderer.colorGradient = lockedGradient;
             }
         } else {
             if (CanBeResearched()) {
-                UpgradeResearcher.Research(node.upgrade);
+                node.upgrade.Research();
                 spriteRenderer.color = Color.green;
                 lineRenderer.colorGradient = unlockedGradient;
             }
@@ -69,7 +69,7 @@ public class UIUpgradeTreeNode : MonoBehaviour {
     }
 
     public bool IsResearched() {
-        return UpgradeResearcher.IsResearched(node.upgrade);
+        return node.upgrade.IsResearched();
     }
 
     public bool CanBeResearched() {
@@ -80,7 +80,7 @@ public class UIUpgradeTreeNode : MonoBehaviour {
         // If any upgrade that depends on this one is unlocked it can't be reversed
         for (int i = 0; i < node.nextNodes.Count; i++) {
             UpgradeType upgrade = node.nextNodes[i].upgrade;
-            if (UpgradeResearcher.IsResearched(upgrade)) return false;
+            if (upgrade.IsResearched()) return false;
         }
 
         // If none of them are unlocked, then it can be reversed

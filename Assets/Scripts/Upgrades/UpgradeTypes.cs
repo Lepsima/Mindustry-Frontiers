@@ -13,23 +13,28 @@ namespace Frontiers.Content.Upgrades {
     public static class UpgradeResearcher {
         public static List<UpgradeType> researchedUpgrades = new();
 
-        public static void Research(UpgradeType upgrade) {
-            if (researchedUpgrades.Contains(upgrade)) return;
+        public static void Research(this UpgradeType upgrade) {
+            if (upgrade.IsResearched()) return;
             researchedUpgrades.Add(upgrade);
         }
 
-        public static void Revert(UpgradeType upgrade) {
-            if (!researchedUpgrades.Contains(upgrade)) return;
+        public static void Revert(this UpgradeType upgrade) {
+            if (!upgrade.IsResearched()) return;
             researchedUpgrades.Remove(upgrade);
         }
 
-        public static bool IsResearched(UpgradeType upgradeType) {
+        public static bool IsResearched(this UpgradeType upgradeType) {
             return researchedUpgrades.Contains(upgradeType);
         }
 
-        public static bool IsResearched(UpgradeType[] upgradeTypes) {
-            foreach (UpgradeType upgradeType in upgradeTypes) if (!IsResearched(upgradeType)) return false;
+        public static bool AreAllResearched(this UpgradeType[] upgradeTypes) {
+            foreach (UpgradeType upgradeType in upgradeTypes) if (!upgradeType.IsResearched()) return false;
             return true;
+        }
+
+        public static bool IsAnyResearched(this UpgradeType[] upgradeTypes) {
+            foreach (UpgradeType upgradeType in upgradeTypes) if (upgradeType.IsResearched()) return true;
+            return false;
         }
     }
 
@@ -525,7 +530,7 @@ namespace Frontiers.Content.Upgrades {
 
         public virtual bool CanBeResearched() {
             if (previousUpgrade == null) return true;
-            return UpgradeResearcher.IsResearched(previousUpgrade);
+            return previousUpgrade.IsResearched();
         }
 
         public virtual bool CompatibleWith(EntityType entityType) {
