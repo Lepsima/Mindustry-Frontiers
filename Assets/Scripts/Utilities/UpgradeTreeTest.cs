@@ -18,23 +18,30 @@ public class UpgradeTreeTest : MonoBehaviour {
     private void Awake() {
         instance = this;
 
+        // Load assets and contents
         AssetLoader.LoadAssets();
         ContentLoader.LoadContents();
 
+        // Create a new upgrade tree
         upgradeTree = new();
         upgradeTree.Instantiate();
     }
 }
 
 public class UpgradeTree {
-    Node[] nodes;
-    Node masterNode;
+    public const float nodeUpSpacing = 2.25f;
+    public const float nodeSideSpacing = 2f;
+    public const float nodeSize = 1f;
+
+    public static GameObject UINodePrefab;
+    public Node masterNode;
 
     public UpgradeTree() {
-        Generate();
+        UINodePrefab = AssetLoader.GetPrefab("UIUpgradeNodePrefab");
+        GenerateNodesFromUpgrades();
     }
 
-    public void Generate() {
+    public void GenerateNodesFromUpgrades() {
         UpgradeType[] allUpgrades = UpgradeHandler.loadedUpgrades.Values.ToArray();
 
         Dictionary<short, Node> nodes = new();
@@ -50,8 +57,6 @@ public class UpgradeTree {
             nodes[upgrade.id] = currentNode;
             parentNode.Add(currentNode);
         }
-
-        this.nodes = nodes.Values.ToArray();
     }
 
     public void Instantiate() {
@@ -59,11 +64,9 @@ public class UpgradeTree {
     }
 
     public class Node {
-        public const float nodeUpSpacing = 2.25f;
-        public const float nodeSideSpacing = 2f;
-        public const float nodeSize = 1f;
-
         public UpgradeType upgrade;
+
+        public Transform transform;
 
         public List<Node> nextNodes = new();
         public Node parentNode;
@@ -83,6 +86,7 @@ public class UpgradeTree {
         }
 
         public void Add(Node nextNode) {
+            // Add the sent node to the next list and update it's spacing values
             nextNodes.Add(nextNode);
             nextNode.UpdateSpacing();
         }
@@ -94,38 +98,28 @@ public class UpgradeTree {
             for (int i = 0; i < nextNodes.Count; i++) totalNodeSize += nextNodes[i].width + nodeSideSpacing;
             width = Mathf.Max(nodeSize, totalNodeSize - nodeSideSpacing);
 
-            // If has parent, update it
-            if (parentNode != null) parentNode.UpdateSpacing();
+            // If isn't master, update parent node
+            if (!isMaster) parentNode.UpdateSpacing();
         }
 
         public void Instantiate(Transform parent, Vector2 position) {
-            string name = isMaster ? "master" : upgrade.name;
-            Transform nodeTransform = new GameObject(name, typeof(SpriteRenderer), typeof(LineRenderer)).transform;
+            // Create this node gameobject
+            transform = Object.Instantiate(UINodePrefab).transform;
+            transform.GetComponent<UIUpgradeTreeNode>().Set(isMaster ? "master" : upgrade.name, parent, position, this);
 
-            nodeTransform.parent = parent;
-            nodeTransform.localPosition = position;
-
-            SpriteRenderer spriteRenderer = nodeTransform.GetComponent<SpriteRenderer>();
-            spriteRenderer.sprite = UpgradeTreeTest.instance.nodeSprite;
-            spriteRenderer.sortingOrder = 1;
-
-            if (parent != null) {
-                LineRenderer lineRenderer = nodeTransform.GetComponent<LineRenderer>();
-                lineRenderer.SetPositions(new Vector3[2] { parent.transform.position, nodeTransform.position });
-                lineRenderer.material = UpgradeTreeTest.instance.nodeLineMaterial;
-            }
-
-            // Start with a side space
+            // Start from the left
             float widthProgress = width / -2f;
 
             for (int i = 0; i < nextNodes.Count; i++) {
+                // Get the next node
                 Node node = nextNodes[i];
-                Vector2 nextPosition = new((node.width / 2f) + widthProgress, nodeUpSpacing);
 
-                // Add node width and a space to the width progress;
+                // Calculate the next node's position
+                Vector2 nextPosition = new((node.width / 2f) + widthProgress, nodeUpSpacing);
                 widthProgress += node.width + nodeSideSpacing;
 
-                node.Instantiate(nodeTransform, nextPosition);
+                // Instantiate the next node
+                node.Instantiate(transform, nextPosition);
             }
         }
     }

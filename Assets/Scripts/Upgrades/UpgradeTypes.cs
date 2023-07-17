@@ -13,6 +13,16 @@ namespace Frontiers.Content.Upgrades {
     public static class UpgradeResearcher {
         public static List<UpgradeType> researchedUpgrades = new();
 
+        public static void Research(UpgradeType upgrade) {
+            if (researchedUpgrades.Contains(upgrade)) return;
+            researchedUpgrades.Add(upgrade);
+        }
+
+        public static void Revert(UpgradeType upgrade) {
+            if (!researchedUpgrades.Contains(upgrade)) return;
+            researchedUpgrades.Remove(upgrade);
+        }
+
         public static bool IsResearched(UpgradeType upgradeType) {
             return researchedUpgrades.Contains(upgradeType);
         }
