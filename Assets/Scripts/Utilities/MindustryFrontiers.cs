@@ -330,8 +330,8 @@ namespace Frontiers.Teams {
 
 namespace Frontiers.Assets {
     public static class Directories {
-        public static string mods = Path.Combine(Application.persistentDataPath, "Mods");
-        public static string maps = Path.Combine(Application.persistentDataPath, "Maps");
+        public static string mods = Path.Combine(Application.persistentDataPath, "QuickSave", "Mods");
+        public static string maps = Path.Combine(Application.persistentDataPath, "QuickSave", "Maps");
 
         public static void RegenerateFolders() {
             // If any directory is not found, create it
@@ -493,8 +493,7 @@ namespace Frontiers.Content {
         public static List<string> GetModNames() {
             List<string> modNames = new();
 
-            string pathName = Path.Combine(Application.persistentDataPath, "QuickSave", "Mods");
-            string[] modFolders = Directory.GetDirectories(pathName);
+            string[] modFolders = Directory.GetDirectories(Directories.mods);
             foreach (string modFolderPath in modFolders) modNames.Add(Path.GetFileName(modFolderPath));
 
             return modNames;
