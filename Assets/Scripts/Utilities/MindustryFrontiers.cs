@@ -30,6 +30,7 @@ using Random = UnityEngine.Random;
 using Animation = Frontiers.Animations.Animation;
 using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
 using Region = Frontiers.Content.Maps.Tilemap.Region;
+using UnityEditor;
 
 namespace Frontiers.Animations {
     public class Animator {
@@ -2806,10 +2807,16 @@ namespace Frontiers.Content {
 namespace Frontiers.Content.Maps {
     public class MapLoader {
         public const int TilesPerString = 1000;
+        public static string[] mapNames;
 
         public static event EventHandler<MapLoadedEventArgs> OnMapLoaded;
         public class MapLoadedEventArgs {
             public Map loadedMap;
+        }
+
+        public static void RefreshMapNames() {
+            string[] mapDirectories = Directory.GetDirectories(Directories.maps);
+            for (int i = 0; i < mapDirectories.Length; i++) mapNames[i] = Path.GetDirectoryName(mapDirectories[i]);
         }
 
         public static void ReciveMap(string name, Vector2 size, string[] tileData) {
