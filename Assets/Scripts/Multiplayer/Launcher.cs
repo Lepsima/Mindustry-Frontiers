@@ -13,9 +13,9 @@ using Frontiers.Assets;
 using Frontiers.Teams;
 
 public class Launcher : MonoBehaviourPunCallbacks {
-    const string VERSION = "v0.0.0.3";
+    const string VERSION = "v0.2d";
     public static Launcher Instance;
-    private static Dictionary<string, RoomInfo> cachedRoomList = new Dictionary<string, RoomInfo>();
+    private static Dictionary<string, RoomInfo> cachedRoomList = new();
 
     [SerializeField] TMP_InputField roomNameInputField;
     [SerializeField] TMP_Text errorText;
@@ -36,6 +36,8 @@ public class Launcher : MonoBehaviourPunCallbacks {
     }
 
     private void Start() {
+        Directories.RegenerateFolders();
+
         AssetLoader.LoadAssets();
         ContentLoader.LoadContents();
         MapDisplayer.SetupAtlas();

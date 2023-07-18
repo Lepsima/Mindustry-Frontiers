@@ -329,6 +329,16 @@ namespace Frontiers.Teams {
 }
 
 namespace Frontiers.Assets {
+    public static class Directories {
+        public static string mods = Path.Combine(Application.persistentDataPath, "Mods");
+        public static string maps = Path.Combine(Application.persistentDataPath, "Maps");
+
+        public static void RegenerateFolders() {
+            // If any directory is not found, create it
+            if (!Directory.Exists(mods)) Directory.CreateDirectory(mods);
+            if (!Directory.Exists(maps)) Directory.CreateDirectory(maps);
+        }
+    }
 
     public static class AssetLoader {
         private static Sprite[] sprites;
@@ -2851,6 +2861,8 @@ namespace Frontiers.Content.Maps {
             // Create atlas material
             atlasMaterial = AssetLoader.GetAsset<Material>("Atlas Material");
             atlasMaterial.mainTexture = atlas;
+
+            Debug.Log("Map atlas loaded!");
         }
     }
 
@@ -2880,9 +2892,7 @@ namespace Frontiers.Content.Maps {
         public static TileType[] allTiles;
 
         public static TileType RANDOMGEN() {
-            if (allTiles == null) {
-                allTiles = ContentLoader.GetContentByType<TileType>();
-            }
+            allTiles ??= ContentLoader.GetContentByType<TileType>();
 
             return allTiles[Random.Range(0, allTiles.Length)];
         }
