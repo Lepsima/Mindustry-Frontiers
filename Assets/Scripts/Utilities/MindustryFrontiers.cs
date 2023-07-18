@@ -782,8 +782,21 @@ namespace Frontiers.Content {
     }
 
     public class CoreBlockType : StorageBlockType {
+        [SerializeField] UpgradeType baseUpgrade;
+        private string baseUpgradeName;
+
         public CoreBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             breakable = false;
+        }
+
+        public override void UnWrap() {
+            base.UnWrap();
+            if (baseUpgradeName != null) baseUpgrade = UpgradeHandler.GetUpgradeByName(baseUpgradeName);
+        }
+
+        public override void Wrap() {
+            base.Wrap();
+            baseUpgradeName = baseUpgrade?.name; 
         }
     }
 

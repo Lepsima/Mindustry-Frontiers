@@ -33,6 +33,7 @@ public class UIUpgradeTreeNode : MonoBehaviour {
     }
 
     public void OnClick() {
+        Debug.Log(node.ToString());
         if (node.isMaster) return;
 
         // Try to revert research state

@@ -24,7 +24,7 @@ public class UpgradeTreeTest : MonoBehaviour {
 
         // Create a new upgrade tree
         upgradeTree = new();
-        upgradeTree.Instantiate();
+        upgradeTree.Instantiate();    
     }
 }
 
@@ -61,6 +61,10 @@ public class UpgradeTree {
 
     public void Instantiate() {
         masterNode.Instantiate(null, Vector2.zero);
+    }
+
+    public override string ToString() {
+        return masterNode.ToString();
     }
 
     public class Node {
@@ -121,6 +125,12 @@ public class UpgradeTree {
                 // Instantiate the next node
                 node.Instantiate(transform, nextPosition);
             }
+        }
+
+        public override string ToString() {
+            string value = upgrade.name;
+            foreach (Node node in nextNodes) if (node.upgrade.IsResearched()) value += "," + node.ToString();
+            return value;
         }
     }
 }
