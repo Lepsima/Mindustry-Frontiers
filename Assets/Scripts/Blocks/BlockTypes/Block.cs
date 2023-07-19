@@ -129,6 +129,7 @@ public class Block : Entity {
     }
 
     public Block GetFacingBlock(int offset = 0) {
+        if (!Type.hasOrientation) return null;
         return MapManager.Map.GetBlockAt(GetGridPosition() + GetFacingPosition(offset));
     }
 
@@ -174,8 +175,8 @@ public class Block : Entity {
 
         if (o == 0) return new Vector2Int(distance, 0);
         if (o == 1) return new Vector2Int(0, distance);
-        if (o == 2) return new Vector2Int(-distance, 0);
-        if (o == 3) return new Vector2Int(0, -distance);
+        if (o == 2) return new Vector2Int(-1, 0);
+        if (o == 3) return new Vector2Int(0, -1);
 
         return Vector2Int.zero;
     }

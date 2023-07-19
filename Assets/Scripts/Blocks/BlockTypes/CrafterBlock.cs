@@ -49,7 +49,7 @@ public class CrafterBlock : ItemBlock {
         warmup = Mathf.Clamp01((isCrafting ? 2f : -2f) * Time.deltaTime + warmup);
 
         if (hasTop) {
-            topTransform.localScale = (Mathf.Abs(Mathf.Sin(Time.time * 1.3f) * warmup) + 0.5f * warmup ) * Vector3.one;
+            topTransform.localScale = (Mathf.Abs(Mathf.Sin(Time.time * 1.3f) * warmup) + 0.5f * warmup) * Vector3.one;
         }
 
         if (isCrafting && Time.time >= nextCraftTime) {

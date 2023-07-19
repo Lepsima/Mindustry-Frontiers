@@ -648,7 +648,7 @@ namespace Frontiers.Content {
 
         public float health = 100f, itemMass = -1f;
         public int itemCapacity = 20;
-        public bool rotates = false;
+        public bool hasOrientation = false;
 
         public int maximumFires = 0;
         public bool canGetOnFire = false, canSpreadFire = false;
@@ -719,7 +719,7 @@ namespace Frontiers.Content {
         public const int variants = 5;
 
         public ConveyorBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
-            rotates = true;
+            hasOrientation = true;
             updates = true;
 
             frameTime = 1 / (frames * itemSpeed);  
@@ -1042,7 +1042,7 @@ namespace Frontiers.Content {
                 size = 1,
                 itemCapacity = 3,
                 itemSpeed = 4f,
-                rotates = true,
+                hasOrientation = true,
             };
 
             mechanicalDrill = new DrillBlockType("mechanical-drill", typeof(DrillBlock), 1) {
@@ -1097,7 +1097,7 @@ namespace Frontiers.Content {
             outlineSprite = AssetLoader.GetSprite(name + "-outline");
             typeName = TypeWrapper.GetString(type);
             this.type = type;
-            rotates = true;
+            hasOrientation = true;
 
             canGetOnFire = true;
             maximumFires = 2;

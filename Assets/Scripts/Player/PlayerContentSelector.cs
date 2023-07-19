@@ -38,7 +38,7 @@ public static class PlayerContentSelector {
             if (mode == 0) {
 
                 if (!MapManager.mouseGridAllowsPlace) return;
-                int orientation = blockType.rotates ? GetOrientation : 0;
+                int orientation = blockType.hasOrientation ? GetOrientation : 0;
                 Client.CreateBlock(MapManager.mouseGridPos, orientation, false, selectedContent, TeamUtilities.GetLocalTeam());
 
             } else if (mode == 1) {
@@ -63,7 +63,7 @@ public static class PlayerContentSelector {
         else selectedContent = content;
 
         if (previousContent != selectedContent) OnSelectedContentChanged?.Invoke(null, new ContentEventArgs(selectedContent));
-        canBeRotated = selectedContent != null && (TypeEquals(selectedContent.GetType(), typeof(UnitType)) || (TypeEquals(selectedContent.GetType(), typeof(BlockType)) && ((BlockType)selectedContent).rotates));
+        canBeRotated = selectedContent != null && (TypeEquals(selectedContent.GetType(), typeof(UnitType)) || (TypeEquals(selectedContent.GetType(), typeof(BlockType)) && ((BlockType)selectedContent).hasOrientation));
 
         PlayerUI.Instance.SetSelectedContent(selectedContent);
         CursorIndicator.Instance.SetContent(selectedContent);

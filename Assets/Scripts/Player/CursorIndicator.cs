@@ -32,7 +32,7 @@ public class CursorIndicator : MonoBehaviour {
 
     public void SetContent(Content content) {
         EntityType entityType = content as EntityType;
-        rotates = entityType != null && entityType.rotates;
+        rotates = entityType != null && entityType.hasOrientation;
 
         transform.eulerAngles = rotates ? new Vector3(0, 0, rotation) : Vector3.zero;
 

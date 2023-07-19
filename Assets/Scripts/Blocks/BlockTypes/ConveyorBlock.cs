@@ -164,8 +164,6 @@ public class ConveyorBlock : ItemBlock {
         return timeSpacing && items.Count < Type.itemCapacity;
     }
 
-    public bool IsFacingAt(ItemBlock block) => block == next;
-
     public override void ReciveItem(Block source, Item item) {
         if (items.Count >= Type.itemCapacity) return;
 
@@ -181,18 +179,16 @@ public class ConveyorBlock : ItemBlock {
 
     public bool Pass(ConveyorItem convItem) {
         Item item = convItem.item;
+        if (item == null || next == null || next.GetTeam() != GetTeam() || !next.CanReciveItem(item)) return false;
 
-        if (item != null && next != null && next.GetTeam() == GetTeam() && next.CanReciveItem(item)) {
-            if (nextAsConveyor != null) nextAsConveyor.ReciveItem(this, convItem);
-            else {
-                convItem.End();
-                next.ReciveItem(this, item); 
-            }     
-
-            return true;
+        if (nextAsConveyor != null) {
+            nextAsConveyor.ReciveItem(this, convItem);
+        } else {
+            convItem.End();
+            next.ReciveItem(this, item);
         }
 
-        return false;
+        return true;
     }
 
     public override bool IsFlammable() {
