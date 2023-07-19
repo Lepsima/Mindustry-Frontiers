@@ -21,7 +21,7 @@ public abstract class ItemBlock : Block {
     }
 
     public override void SetInventory() {
-        inventory = new Inventory(Type.itemCapacity, Type.itemMass);
+        inventory = new Inventory(Type.allowsSingleItem, Type.itemCapacity, Type.itemMass);
         hasInventory = true;
 
         base.SetInventory();
@@ -39,13 +39,13 @@ public abstract class ItemBlock : Block {
 
     public virtual void OutputItems() {
         int reciverBlockCount = reciverBlocks.Count;
-        if (reciverBlockCount == 0 || outputItems.Length == 0 || inventory.Empty(outputItems)) return;
+        if (reciverBlockCount == 0 || (outputItems != null && (outputItems.Length == 0 || inventory.Empty(outputItems)))) return;
 
-        Item currentItem = inventory.First(outputItems);
+        Item currentItem = outputItems == null ? inventory.First() : inventory.First(outputItems);
         if (currentItem == null || !inventory.Has(currentItem, 1)) return;
 
         for(int i = 0; i < reciverBlockCount; i++) {
-            Item item = inventory.Has(currentItem, 1) ? currentItem : inventory.First(outputItems);
+            Item item = inventory.Has(currentItem, 1) ? currentItem : (outputItems == null ? inventory.First() : inventory.First(outputItems));
             if (item == null) break;
 
             ItemBlock itemBlock = reciverBlocks.Dequeue();

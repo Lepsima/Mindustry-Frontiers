@@ -79,8 +79,9 @@ public class CrafterBlock : ItemBlock {
         craftCost = (ItemStack[])Type.craftPlan.materialList.Clone();
 
         // Set allowed input items
-        Item[] allowedItems = new Item[craftCost.Length];
-        for (int i = 0; i < allowedItems.Length; i++) allowedItems[i] = craftCost[i].item;
+        Item[] allowedItems = new Item[craftCost.Length + 1];
+        for (int i = 0; i < craftCost.Length; i++) allowedItems[i] = craftCost[i].item;
+        allowedItems[craftCost.Length] = craftReturn.item;
 
         inventory.SetAllowedItems(allowedItems);
         acceptedItems = ItemStack.ToItems(craftCost);

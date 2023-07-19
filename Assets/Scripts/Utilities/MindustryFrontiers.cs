@@ -648,7 +648,7 @@ namespace Frontiers.Content {
 
         public float health = 100f, itemMass = -1f;
         public int itemCapacity = 20;
-        public bool hasOrientation = false;
+        public bool hasOrientation = false, allowsSingleItem = false;
 
         public int maximumFires = 0;
         public bool canGetOnFire = false, canSpreadFire = false;
@@ -769,6 +769,17 @@ namespace Frontiers.Content {
         }
     }
 
+    public class RouterBlockType : ItemBlockType {
+        public RouterBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
+            allowsSingleItem = true;
+        }
+    }
+
+    public class JunctionBlockType : ItemBlockType {
+        public JunctionBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
+        }
+    }
+
     public class CrafterBlockType : ItemBlockType {
         public CraftPlan craftPlan;
 
@@ -857,7 +868,7 @@ namespace Frontiers.Content {
             
             graphitePress, siliconSmelter, kiln,
             
-            conveyor, 
+            conveyor, router, junction, 
             
             mechanicalDrill, pneumaticDrill;
 
@@ -1043,6 +1054,14 @@ namespace Frontiers.Content {
                 itemCapacity = 3,
                 itemSpeed = 4f,
                 hasOrientation = true,
+            };
+
+            router = new RouterBlockType("router", typeof(RouterBlock), 1) {
+                health = 100,
+                size = 1,
+                itemCapacity = 3,
+
+
             };
 
             mechanicalDrill = new DrillBlockType("mechanical-drill", typeof(DrillBlock), 1) {
@@ -2418,10 +2437,21 @@ namespace Frontiers.Content {
         public int amountCap;
         public float maxMass;
 
+        public bool singleItem;
+
         public Inventory(int amountCap = -1, float maxMass = -1f, Item[] allowedItems = null) {
             items = new Dictionary<Item, int>();
             this.amountCap = amountCap;
+            this.maxMass = maxMass;
             this.allowedItems = allowedItems;
+            singleItem = false;
+        }
+
+        public Inventory(bool singleItem, int amountCap = -1, float maxMass = -1f) {
+            items = new Dictionary<Item, int>();
+            this.amountCap = amountCap;
+            this.maxMass = maxMass;
+            this.singleItem = singleItem;
         }
 
         public void Clear() {
@@ -2501,7 +2531,11 @@ namespace Frontiers.Content {
         }
 
         public bool Allowed(Item item) {
-            return allowedItems == null || allowedItems.Contains(item);
+            return (allowedItems == null || allowedItems.Contains(item)) && AllowedSingleItem(item);
+        }
+
+        private bool AllowedSingleItem(Item item) {
+            return !singleItem || items.Count == 0 || items.ElementAt(0).Key == item;
         }
 
         public bool Allowed(Item[] items) {
@@ -2523,7 +2557,7 @@ namespace Frontiers.Content {
         }
 
         public int Add(Item item, int amount, bool update = true) {
-            if (Full(item) || amount == 0) return amount;
+            if (Full(item) || amount == 0 || !Allowed(item)) return amount;
             if (!Contains(item)) items.Add(item, 0);
 
             int amountToReturn = amountCap == -1 ? 0 : Mathf.Clamp(items[item] + amount - amountCap, 0, amount);
@@ -2559,7 +2593,7 @@ namespace Frontiers.Content {
         }
 
         public bool Fits(Item item, int amount) {
-            return amount <= Max(item);
+            return amount <= Max(item) && Allowed(item);
         }
 
         public bool Fits(ItemStack stack) {
@@ -2572,7 +2606,7 @@ namespace Frontiers.Content {
         }
 
         public int Substract(Item item, int amount, bool update = true) {
-            if (!Contains(item) || Empty(item) || amount == 0) return amount;
+            if (!Contains(item) || Empty(item) || amount == 0 || !Allowed(item)) return amount;
 
             int amountToReturn = Mathf.Clamp(amount - items[item], 0, amount);
             items[item] -= amount - amountToReturn;
