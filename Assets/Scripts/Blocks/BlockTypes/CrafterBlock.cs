@@ -33,13 +33,6 @@ public class CrafterBlock : ItemBlock {
         craftCost = ItemStack.Multiply(craftCost, 1f + mult.crafter_craftCost);
     }
 
-    public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
-        base.Set(position, rotation, type, id, teamCode);
-        craftTime = Type.craftPlan.craftTime;
-        craftReturn = Type.craftPlan.productStack.Copy();
-        Type.craftPlan.materialList.CopyTo(craftCost, 0);
-    }
-
     protected override void SetSprites() {
         base.SetSprites();
 
@@ -53,10 +46,10 @@ public class CrafterBlock : ItemBlock {
         base.Update();
 
         bool isCrafting = IsCrafting();
-        warmup = Mathf.Clamp01(warmup + (isCrafting ? 0.019f : -0.019f));
+        warmup = Mathf.Clamp01((isCrafting ? 2f : -2f) * Time.deltaTime + warmup);
 
         if (hasTop) {
-            topTransform.localScale = Vector3.one * (isCrafting ? Mathf.Sin(Time.time) + 1f : warmup);
+            topTransform.localScale = (Mathf.Abs(Mathf.Sin(Time.time * 1.3f) * warmup) + 0.5f * warmup ) * Vector3.one;
         }
 
         if (isCrafting && Time.time >= nextCraftTime) {
@@ -79,6 +72,11 @@ public class CrafterBlock : ItemBlock {
 
     public override void SetInventory() {
         base.SetInventory();
+
+        // Copy the craft plan to a local array
+        craftTime = Type.craftPlan.craftTime;
+        craftReturn = Type.craftPlan.productStack.Copy();
+        craftCost = (ItemStack[])Type.craftPlan.materialList.Clone();
 
         // Set allowed input items
         Item[] allowedItems = new Item[craftCost.Length];

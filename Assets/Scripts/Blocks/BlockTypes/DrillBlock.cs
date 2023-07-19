@@ -72,10 +72,6 @@ public class DrillBlock : ItemBlock {
         }
     }
 
-    public override void SetInventory() {
-        base.SetInventory();
-    }
-
     public override bool CanReciveItem(Item item) {
         return false;
     }

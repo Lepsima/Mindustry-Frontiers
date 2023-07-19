@@ -90,8 +90,9 @@ public class AircraftUnit : Unit {
             liftVelocity = Mathf.Clamp((liftAccel - 9.81f) * Time.fixedDeltaTime + liftVelocity, -maxLiftVelocity, maxLiftVelocity);
         }
 
-        // Update the current height
+        // Update the current height and size
         height = Mathf.Clamp(height + liftVelocity * Time.fixedDeltaTime, 0, Type.groundHeight);
+        transform.localScale = Mathf.Lerp(0.75f, 1f, height / Type.groundHeight) * Type.size * Vector3.one;
 
         // If is touching and moving towards the ground, crash
         if (height == 0f && liftVelocity < 0f) {
