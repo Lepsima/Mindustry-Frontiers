@@ -3784,22 +3784,23 @@ namespace Frontiers.Content.Maps {
 
         public List<ItemBlock> GetAdjacentBlocks(ItemBlock itemBlock) {
             List<ItemBlock> adjacentBlocks = new();
-            int scanSize = (int)itemBlock.size + 1;
+            int size = (int)itemBlock.size;
+            int scanSize = size + 1;
 
             Vector2Int position = itemBlock.GetGridPosition();
 
-            for (int x = -1; x < scanSize; x++) Valid(x, 0);
-            for (int x = -1; x < scanSize; x++) Valid(x, scanSize - 1);
-            for (int y = 0; y < scanSize - 1; y++) Valid(0, y);     
-            for (int y = 0; y < scanSize - 1; y++) Valid(scanSize - 1, y);   
+            for (int x = -1; x < scanSize; x++) Handle(x, -1);
+            for (int x = -1; x < scanSize; x++) Handle(x, size);
+            for (int y = 0; y < size; y++) Handle(-1, y);     
+            for (int y = 0; y < size; y++) Handle(size, y);
 
-            return adjacentBlocks;
-
-            bool Valid(int x, int y) {
+            void Handle(int x, int y) {
                 Vector2Int offset = new(x, y);
                 ItemBlock block = (ItemBlock)GetBlockAt(offset + position);
-                return block != null && itemBlock != block && !adjacentBlocks.Contains(block);
+                if (block != null && itemBlock != block && !adjacentBlocks.Contains(block)) adjacentBlocks.Add(block);
             }
+
+            return adjacentBlocks;
         }
 
         public void AddBlock(Block block) {
