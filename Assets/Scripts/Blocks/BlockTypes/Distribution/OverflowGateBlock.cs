@@ -1,4 +1,5 @@
 using Frontiers.Content;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -7,8 +8,9 @@ using UnityEngine;
 public class OverflowGateBlock : ItemBlock {
     public new OverflowGateBlockType Type { get => (OverflowGateBlockType)base.Type; protected set => base.Type = value; }
 
-    Queue<DelayedItem> queuedItems = new();
+    readonly Queue<DelayedItem> queuedItems = new();
     DelayedItem waiting;
+    float travelTime;
 
     ItemBlock frontReciver;
     ItemBlock leftReciver;
@@ -18,6 +20,12 @@ public class OverflowGateBlock : ItemBlock {
     protected override void Update() {
         base.Update();
         OutputItems();
+    }
+
+    public override void SetInventory() {
+        inventory = null;
+        travelTime = 1f / Type.itemSpeed;
+        hasInventory = true;
     }
 
     public override void GetAdjacentBlocks() {
@@ -61,6 +69,10 @@ public class OverflowGateBlock : ItemBlock {
 
     public override bool CanReciveItem(Item item) {
         return queuedItems.Count < Type.itemCapacity;
+    }
+
+    public override void ReciveItem(Block sender, Item item) {
+        queuedItems.Enqueue(new DelayedItem(item, Time.time + travelTime));
     }
 
     private bool Pass(ItemBlock reciver, DelayedItem delayedItem) {

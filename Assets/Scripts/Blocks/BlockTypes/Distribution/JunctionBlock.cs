@@ -9,19 +9,13 @@ public class JunctionBlock : ItemBlock {
     public new JunctionBlockType Type { get => (JunctionBlockType)base.Type; protected set => base.Type = value; }
     public float travelTime;
 
-    Queue<DelayedItem>[] queues;
-    DelayedItem[] waiting;
-    ItemBlock[] linkedBlocks;
+    readonly Queue<DelayedItem>[] queues = new Queue<DelayedItem>[4] { new(), new(), new(), new() };
+    readonly DelayedItem[] waiting = new DelayedItem[4];
+    readonly ItemBlock[] linkedBlocks = new ItemBlock[4];
 
     public override void SetInventory() {
         inventory = null;
-
         travelTime = 1f / Type.itemSpeed;
-
-        queues = new Queue<DelayedItem>[4] { new(), new(), new(), new() };
-        waiting = new DelayedItem[4];
-        linkedBlocks = new ItemBlock[4];
-
         hasInventory = true;
     }
 
