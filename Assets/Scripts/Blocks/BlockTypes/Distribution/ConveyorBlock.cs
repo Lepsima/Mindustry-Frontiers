@@ -177,7 +177,7 @@ public class ConveyorBlock : ItemBlock {
         conveyorItem.ChangeConveyor(GetSharedEdgePosition(source) + GetPosition());
     }
 
-    public bool Pass(ConveyorItem convItem) {
+    private bool Pass(ConveyorItem convItem) {
         Item item = convItem.item;
         if (item == null || next == null || next.GetTeam() != GetTeam() || !next.CanReciveItem(item)) return false;
 
@@ -193,6 +193,11 @@ public class ConveyorBlock : ItemBlock {
 
     public override bool IsFlammable() {
         foreach (ConveyorItem convItem in items) if (convItem.item.flammability > 0) return true;
+        return false;
+    }
+
+    public override bool IsExplosive() {
+        foreach (ConveyorItem convItem in items) if (convItem.item.explosiveness > 0) return true;
         return false;
     }
 

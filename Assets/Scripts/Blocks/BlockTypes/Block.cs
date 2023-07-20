@@ -87,6 +87,10 @@ public class Block : Entity {
 
     public override EntityType GetEntityType() => Type;
 
+    public virtual bool CanReciveItem(Block sender, Item item) {
+        return CanReciveItem(item);
+    }
+
     public bool ExistsIn(Vector2Int position) {
         if (Type.size == 1 && GetGridPosition() == position) return true;
 

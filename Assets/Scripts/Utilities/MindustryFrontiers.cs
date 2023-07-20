@@ -776,7 +776,9 @@ namespace Frontiers.Content {
     }
 
     public class JunctionBlockType : ItemBlockType {
+        public float itemSpeed = 1f;
         public JunctionBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
+        
         }
     }
 
@@ -3354,6 +3356,7 @@ namespace Frontiers.Content.Maps {
 
         public Tilemap tilemap;
 
+        public Dictionary<Vector2Int, Block> blockPositions = new();
         public List<Block> blocks = new();
         public List<Unit> units = new();
 
@@ -3776,38 +3779,52 @@ namespace Frontiers.Content.Maps {
         }
 
         public Block GetBlockAt(Vector2Int position) {
-            foreach (Block block in blocks) {
-                // Check if block is close enough to maybe be in the position
-                float distance = Vector2.Distance(block.GetPosition(), position);
-                if (distance > block.Type.size) continue;
-
-                // Do a full on check
-                if (block.GetGridPosition() == position) return block;
-                if (block.ExistsIn(Vector2Int.CeilToInt(position))) return block;
-            }
-
-            return null;
+            return blockPositions.TryGetValue(position, out Block block) ? block : null;
         }
 
         public List<ItemBlock> GetAdjacentBlocks(ItemBlock itemBlock) {
             List<ItemBlock> adjacentBlocks = new();
+            int scanSize = (int)itemBlock.size + 1;
 
-            foreach (Block other in blocks) {
-                if (TypeEquals(other.GetType(), typeof(ItemBlock)) && itemBlock != other && itemBlock.IsNear(other)) { 
-                    adjacentBlocks.Add(other as ItemBlock); 
-                }
-            }
+            Vector2Int position = itemBlock.GetGridPosition();
+
+            for (int x = -1; x < scanSize; x++) Valid(x, 0);
+            for (int x = -1; x < scanSize; x++) Valid(x, scanSize - 1);
+            for (int y = 0; y < scanSize - 1; y++) Valid(0, y);     
+            for (int y = 0; y < scanSize - 1; y++) Valid(scanSize - 1, y);   
 
             return adjacentBlocks;
+
+            bool Valid(int x, int y) {
+                Vector2Int offset = new(x, y);
+                ItemBlock block = (ItemBlock)GetBlockAt(offset + position);
+                return block != null && itemBlock != block && !adjacentBlocks.Contains(block);
+            }
         }
 
         public void AddBlock(Block block) {
+            Vector2Int position = block.GetGridPosition();
+
+            for (int x = 0; x < (int)block.size; x++) {
+                for (int y = 0; y < (int)block.size; y++) {
+                    blockPositions.Add(position + new Vector2Int(x, y), block);
+                }
+            }
+
             blocks.Add(block);
             loadedEntities.Add(block);
             PlaceBlock(block, block.GetGridPosition());
         }
 
         public void RemoveBlock(Block block) {
+            Vector2Int position = block.GetGridPosition();
+
+            for (int x = 0; x < (int)block.size; x++) {
+                for (int y = 0; y < (int)block.size; y++) {
+                    blockPositions.Remove(position + new Vector2Int(x, y));
+                }
+            }
+
             blocks.Remove(block);
             loadedEntities.Remove(block);
             RemoveBlock(block, block.GetGridPosition());
