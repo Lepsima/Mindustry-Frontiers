@@ -694,6 +694,20 @@ namespace Frontiers.Content {
         }
     }
 
+    public class DelayedItem {
+        public Item item;
+        public float exitTime;
+
+        public DelayedItem(Item item, float exitTime) {
+            this.item = item;
+            this.exitTime = exitTime;
+        }
+
+        public bool CanExit() {
+            return Time.time >= exitTime;
+        }
+    }
+
     public class ItemBlockType : BlockType {
         public ItemBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
@@ -778,6 +792,24 @@ namespace Frontiers.Content {
     public class JunctionBlockType : ItemBlockType {
         public float itemSpeed = 1f;
         public JunctionBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
+
+        }
+    }
+
+    public class SorterBlockType : ItemBlockType {
+        public float itemSpeed = 1f;
+        public bool inverted = false;
+
+        public SorterBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
+
+        }
+    }
+
+    public class OverflowGateBlockType : ItemBlockType {
+        public float itemSpeed = 1f;
+        public bool inverted = false;
+
+        public OverflowGateBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
         }
     }

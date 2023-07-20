@@ -1,10 +1,10 @@
+using Frontiers.Content;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Frontiers.Content;
 
-public class RouterBlock : ItemBlock {
-    public new RouterBlockType Type { get => (RouterBlockType)base.Type; protected set => base.Type = value; }
+public class SorterBlock : ItemBlock {
+    public new SorterBlockType Type { get => (SorterBlockType)base.Type; protected set => base.Type = value; }
 
     Queue<DelayedItem> queuedItems = new();
 

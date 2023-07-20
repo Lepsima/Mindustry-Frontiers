@@ -19,7 +19,7 @@ public class DrillBlock : ItemBlock {
 
     public Item drillItem;
     public Transform rotorTransfrom;
-
+    
     #region - Upgradable Stats - 
 
     protected float hardness, rate;
