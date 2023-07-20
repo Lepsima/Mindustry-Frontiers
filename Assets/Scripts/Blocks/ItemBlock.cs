@@ -54,7 +54,7 @@ public abstract class ItemBlock : Block {
 
             ItemBlock itemBlock = reciverBlocks.Dequeue();
 
-            if (itemBlock.CanReciveItem(item)) {
+            if (itemBlock.CanReciveItem(this, item)) {
                 itemBlock.ReciveItem(this, item);
                 inventory.Substract(item, 1);
             }
@@ -70,7 +70,7 @@ public abstract class ItemBlock : Block {
 
         foreach (ItemBlock itemBlock in adjacentBlockList) {
             // If the block is facing to this one, don't give any items back
-            if (itemBlock.GetFacingBlock() != this) reciverBlocks.Enqueue(itemBlock);
+            if (itemBlock.Type.hasOrientation && itemBlock.GetFacingBlock() != this) reciverBlocks.Enqueue(itemBlock);
             adjacentBlocks.Enqueue(itemBlock); 
         }
     }

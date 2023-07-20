@@ -11,16 +11,16 @@ public class JunctionBlock : ItemBlock {
 
     Queue<JunctionItem>[] queues;
     JunctionItem[] waiting;
-    ItemBlock[] recivers;
+    ItemBlock[] linkedBlocks;
 
     public override void SetInventory() {
         inventory = null;
 
         travelTime = 1f / Type.itemSpeed;
 
-        queues = new Queue<JunctionItem>[4];
+        queues = new Queue<JunctionItem>[4] { new(), new(), new(), new() };
         waiting = new JunctionItem[4];
-        recivers = new ItemBlock[4];
+        linkedBlocks = new ItemBlock[4];
 
         hasInventory = true;
     }
@@ -29,7 +29,7 @@ public class JunctionBlock : ItemBlock {
         base.Update();
 
         for (int i = 0; i < 4; i++) {
-            if (recivers[i] == null) return;
+            if (linkedBlocks[i] == null) continue;
 
             // If the waiting item is empty, try get another, if also not, continue
             if (waiting[i] == null) {
@@ -40,22 +40,22 @@ public class JunctionBlock : ItemBlock {
             JunctionItem junctionItem = waiting[i];
             if (!junctionItem.CanExit()) continue;
 
-            Pass(recivers[i], junctionItem);
+            if (Pass(linkedBlocks[i], junctionItem)) waiting[i] = null;
         }
     }
 
     public override void GetAdjacentBlocks() {
         base.GetAdjacentBlocks();
-        for (int i = 0; i < 4; i++) recivers[i] = GetFacingBlock(i) as ItemBlock;
+        for (int i = 0; i < 4; i++) linkedBlocks[i] = GetFacingBlock(i) as ItemBlock;
     }
 
     public override bool CanReciveItem(Block sender, Item item) {
         // If it's not a reciver, return false
-        if (!recivers.Contains(sender)) return false;
+        if (!linkedBlocks.Contains(sender)) return false;
 
         // Return if the queue can handle more items
-        int index = Array.IndexOf(recivers, sender);
-        return queues[index].Count < Type.itemCapacity;
+        int index = Array.IndexOf(linkedBlocks, sender);
+        return queues[(index + 2) % 4].Count < Type.itemCapacity;
     }
 
     public override bool CanReciveItem(Item item) {
@@ -63,14 +63,15 @@ public class JunctionBlock : ItemBlock {
     }
 
     public override void ReciveItem(Block sender, Item item) {
-        int index = Array.IndexOf(recivers, sender);
-        queues[index].Enqueue(new JunctionItem(item, Time.time + travelTime));
+        int index = Array.IndexOf(linkedBlocks, sender);
+        queues[(index + 2) % 4].Enqueue(new JunctionItem(item, Time.time + travelTime));
     }
 
-    private void Pass(ItemBlock reciver, JunctionItem junctionItem) {
+    private bool Pass(ItemBlock reciver, JunctionItem junctionItem) {
         Item item = junctionItem.item;
-        if (item == null || reciver == null || reciver.GetTeam() != GetTeam() || !reciver.CanReciveItem(item)) return;
+        if (item == null || reciver == null || reciver.GetTeam() != GetTeam() || !reciver.CanReciveItem(this, item)) return false;
         reciver.ReciveItem(this, item);
+        return true;
     }
 
     private class JunctionItem {

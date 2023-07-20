@@ -179,7 +179,7 @@ public class ConveyorBlock : ItemBlock {
 
     private bool Pass(ConveyorItem convItem) {
         Item item = convItem.item;
-        if (item == null || next == null || next.GetTeam() != GetTeam() || !next.CanReciveItem(item)) return false;
+        if (item == null || next == null || next.GetTeam() != GetTeam() || !next.CanReciveItem(this, item)) return false;
 
         if (nextAsConveyor != null) {
             nextAsConveyor.ReciveItem(this, convItem);

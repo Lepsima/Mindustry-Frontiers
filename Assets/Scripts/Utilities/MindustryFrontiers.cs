@@ -778,7 +778,7 @@ namespace Frontiers.Content {
     public class JunctionBlockType : ItemBlockType {
         public float itemSpeed = 1f;
         public JunctionBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
-        
+
         }
     }
 
@@ -1059,11 +1059,16 @@ namespace Frontiers.Content {
             };
 
             router = new RouterBlockType("router", typeof(RouterBlock), 1) {
-                health = 100,
+                health = 90f,
                 size = 1,
                 itemCapacity = 3,
+            };
 
-
+            junction = new JunctionBlockType("junction", typeof(JunctionBlock), 1) {
+                health = 80f,
+                size = 1,
+                itemCapacity = 4,
+                itemSpeed = 4f,
             };
 
             mechanicalDrill = new DrillBlockType("mechanical-drill", typeof(DrillBlock), 1) {
@@ -3785,12 +3790,11 @@ namespace Frontiers.Content.Maps {
         public List<ItemBlock> GetAdjacentBlocks(ItemBlock itemBlock) {
             List<ItemBlock> adjacentBlocks = new();
             int size = (int)itemBlock.size;
-            int scanSize = size + 1;
 
             Vector2Int position = itemBlock.GetGridPosition();
 
-            for (int x = -1; x < scanSize; x++) Handle(x, -1);
-            for (int x = -1; x < scanSize; x++) Handle(x, size);
+            for (int x = 0; x < size; x++) Handle(x, -1);
+            for (int x = 0; x < size; x++) Handle(x, size);
             for (int y = 0; y < size; y++) Handle(-1, y);     
             for (int y = 0; y < size; y++) Handle(size, y);
 
