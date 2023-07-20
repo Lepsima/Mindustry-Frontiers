@@ -9,12 +9,10 @@ public class SorterBlock : ItemBlock {
     public Item selectedItem;
 
     readonly Queue<DelayedItem> queuedItems = new();
+    readonly ItemBlock[] linkedBlocks = new ItemBlock[4];
+
     DelayedItem waiting;
     float travelTime;
-
-    ItemBlock frontReciver;
-    ItemBlock leftReciver;
-    ItemBlock rightReciver;
     bool nextSide;
 
     protected override void Update() {
@@ -30,10 +28,10 @@ public class SorterBlock : ItemBlock {
 
     public override void GetAdjacentBlocks() {
         base.GetAdjacentBlocks();
-
-        frontReciver = GetFacingBlock() as ItemBlock;
-        leftReciver = GetFacingBlock(-1) as ItemBlock;
-        rightReciver = GetFacingBlock(1) as ItemBlock;
+        for (int i = 0; i < 4; i++) {
+            linkedBlocks[i] = GetFacingBlock(i) as ItemBlock;
+            if (linkedBlocks[i].Type.hasOrientation && linkedBlocks[i].GetFacingBlock() == this) linkedBlocks[i] = null;
+        }
     }
 
     public override void OutputItems() {
@@ -44,14 +42,14 @@ public class SorterBlock : ItemBlock {
             waiting = queuedItems.Dequeue();
         }
 
-        if (waiting == null)
+        if (waiting == null || !waiting.CanExit())
             return;
 
         if (selectedItem == waiting.item == !Type.inverted)
-            Pass(frontReciver, waiting);
+            Pass(0, waiting);
         else if (nextSide 
-            ? Pass(leftReciver, waiting) || Pass(rightReciver, waiting) 
-            : Pass(rightReciver, waiting) || Pass(leftReciver, waiting))
+            ? Pass(3, waiting) || Pass(1, waiting) 
+            : Pass(1, waiting) || Pass(3, waiting))
             nextSide = !nextSide;
     }
 
@@ -63,8 +61,11 @@ public class SorterBlock : ItemBlock {
         queuedItems.Enqueue(new DelayedItem(item, Time.time + travelTime));
     }
 
-    private bool Pass(ItemBlock reciver, DelayedItem delayedItem) {
+    private bool Pass(int localOrientation, DelayedItem delayedItem) {
         Item item = delayedItem.item;
+        Debug.Log((localOrientation + delayedItem.enterOrientation) % 4);
+        ItemBlock reciver = linkedBlocks[(localOrientation + delayedItem.enterOrientation) % 4];
+
         if (item == null || reciver == null || reciver.GetTeam() != GetTeam() || !reciver.CanReciveItem(this, item))
             return false;
 

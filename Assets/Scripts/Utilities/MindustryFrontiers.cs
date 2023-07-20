@@ -697,10 +697,17 @@ namespace Frontiers.Content {
     public class DelayedItem {
         public Item item;
         public float exitTime;
+        public int enterOrientation;
 
         public DelayedItem(Item item, float exitTime) {
             this.item = item;
             this.exitTime = exitTime;
+        }
+
+        public DelayedItem(Item item, float exitTime, int enterOrientation) {
+            this.item = item;
+            this.exitTime = exitTime;
+            this.enterOrientation = enterOrientation;
         }
 
         public bool CanExit() {
@@ -902,7 +909,7 @@ namespace Frontiers.Content {
             
             graphitePress, siliconSmelter, kiln,
             
-            conveyor, router, junction, 
+            conveyor, router, junction, sorter, overflowGate, 
             
             mechanicalDrill, pneumaticDrill;
 
@@ -1101,6 +1108,22 @@ namespace Frontiers.Content {
                 size = 1,
                 itemCapacity = 4,
                 itemSpeed = 4f,
+            };
+
+            sorter = new SorterBlockType("sorter", typeof(SorterBlock), 1) {
+                health = 80f,
+                size = 1,
+                itemCapacity = 4,
+                itemSpeed = 4f,
+                inverted = false,
+            };
+
+            overflowGate = new OverflowGateBlockType("overflow-gate", typeof(OverflowGateBlock), 1) {
+                health = 80f,
+                size = 1,
+                itemCapacity = 4,
+                itemSpeed = 4f,
+                inverted = false,
             };
 
             mechanicalDrill = new DrillBlockType("mechanical-drill", typeof(DrillBlock), 1) {

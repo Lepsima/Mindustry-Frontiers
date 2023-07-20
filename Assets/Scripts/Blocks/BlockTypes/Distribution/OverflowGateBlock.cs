@@ -9,12 +9,10 @@ public class OverflowGateBlock : ItemBlock {
     public new OverflowGateBlockType Type { get => (OverflowGateBlockType)base.Type; protected set => base.Type = value; }
 
     readonly Queue<DelayedItem> queuedItems = new();
+    readonly ItemBlock[] linkedBlocks = new ItemBlock[4];
+
     DelayedItem waiting;
     float travelTime;
-
-    ItemBlock frontReciver;
-    ItemBlock leftReciver;
-    ItemBlock rightReciver;
     bool nextSide;
 
     protected override void Update() {
@@ -30,10 +28,10 @@ public class OverflowGateBlock : ItemBlock {
 
     public override void GetAdjacentBlocks() {
         base.GetAdjacentBlocks();
-
-        frontReciver = GetFacingBlock() as ItemBlock;
-        leftReciver = GetFacingBlock(-1) as ItemBlock;
-        rightReciver = GetFacingBlock(1) as ItemBlock;
+        for (int i = 0; i < 4; i++) { 
+            linkedBlocks[i] = GetFacingBlock(i) as ItemBlock;
+            if (linkedBlocks[i].Type.hasOrientation && linkedBlocks[i].GetFacingBlock() == this) linkedBlocks[i] = null;
+        }
     }
 
     public override void OutputItems() {
@@ -44,21 +42,21 @@ public class OverflowGateBlock : ItemBlock {
             waiting = queuedItems.Dequeue();
         }
 
-        if (waiting == null)
+        if (waiting == null || !waiting.CanExit())
             return;
 
         if (Type.inverted) {
             if (!PassSides())
-                Pass(frontReciver, waiting);
+                Pass(0, waiting);
         } else {
-            if (!Pass(frontReciver, waiting))
+            if (!Pass(0, waiting))
                 PassSides();
         }
 
         bool PassSides() {
             bool passed = nextSide
-                ? Pass(leftReciver, waiting) || Pass(rightReciver, waiting)
-                : Pass(rightReciver, waiting) || Pass(leftReciver, waiting);
+                ? Pass(3, waiting) || Pass(1, waiting)
+                : Pass(1, waiting) || Pass(3, waiting);
 
             if (passed)
                 nextSide = !nextSide;
@@ -72,11 +70,14 @@ public class OverflowGateBlock : ItemBlock {
     }
 
     public override void ReciveItem(Block sender, Item item) {
-        queuedItems.Enqueue(new DelayedItem(item, Time.time + travelTime));
+        queuedItems.Enqueue(new DelayedItem(item, Time.time + travelTime, sender.GetOrientation()));
     }
 
-    private bool Pass(ItemBlock reciver, DelayedItem delayedItem) {
+    private bool Pass(int localOrientation, DelayedItem delayedItem) {
         Item item = delayedItem.item;
+        Debug.Log((localOrientation + delayedItem.enterOrientation) % 4);
+        ItemBlock reciver = linkedBlocks[(localOrientation + delayedItem.enterOrientation) % 4];
+
         if (item == null || reciver == null || reciver.GetTeam() != GetTeam() || !reciver.CanReciveItem(this, item))
             return false;
 
