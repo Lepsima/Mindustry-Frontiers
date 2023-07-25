@@ -30,7 +30,7 @@ public class OverflowGateBlock : ItemBlock {
         base.GetAdjacentBlocks();
         for (int i = 0; i < 4; i++) { 
             linkedBlocks[i] = GetFacingBlock(i) as ItemBlock;
-            if (linkedBlocks[i].Type.hasOrientation && linkedBlocks[i].GetFacingBlock() == this) linkedBlocks[i] = null;
+            if (linkedBlocks[i] != null && linkedBlocks[i].Type.hasOrientation && linkedBlocks[i].GetFacingBlock() == this) linkedBlocks[i] = null;
         }
     }
 
