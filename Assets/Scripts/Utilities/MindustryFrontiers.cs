@@ -721,6 +721,15 @@ namespace Frontiers.Content {
         }
     }
 
+    public class DistributionBlockType : ItemBlockType {
+        public float itemSpeed = 1f;
+        public bool inverted = false;
+
+        public DistributionBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
+
+        }
+    }
+
     public class DrillBlockType : ItemBlockType {
         [JsonIgnore] public Sprite drillRotorSprite;
         public float drillHardness, drillRate;
@@ -733,8 +742,8 @@ namespace Frontiers.Content {
 
     public class ConveyorBlockType : ItemBlockType {
         [JsonIgnore] public Sprite[,] allConveyorSprites;
-        public float itemSpeed = 1f;
         public float frameTime = 0.25f;
+        public float itemSpeed = 1;
 
         public const int frames = 4;
         public const int variants = 5;
@@ -790,32 +799,25 @@ namespace Frontiers.Content {
         }
     }
 
-    public class RouterBlockType : ItemBlockType {
+    public class RouterBlockType : DistributionBlockType {
         public RouterBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             allowsSingleItem = true;
         }
     }
 
-    public class JunctionBlockType : ItemBlockType {
-        public float itemSpeed = 1f;
+    public class JunctionBlockType : DistributionBlockType {      
         public JunctionBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
         }
     }
 
-    public class SorterBlockType : ItemBlockType {
-        public float itemSpeed = 1f;
-        public bool inverted = false;
-
+    public class SorterBlockType : DistributionBlockType {
         public SorterBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
         }
     }
 
-    public class OverflowGateBlockType : ItemBlockType {
-        public float itemSpeed = 1f;
-        public bool inverted = false;
-
+    public class OverflowGateBlockType : DistributionBlockType {
         public OverflowGateBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
         }

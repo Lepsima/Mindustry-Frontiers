@@ -5,24 +5,12 @@ using UnityEngine;
 using System.Linq;
 using System;
 
-public class JunctionBlock : ItemBlock {
+public class JunctionBlock : DistributionBlock {
     public new JunctionBlockType Type { get => (JunctionBlockType)base.Type; protected set => base.Type = value; }
-    public float travelTime;
 
-    readonly Queue<DelayedItem>[] queues = new Queue<DelayedItem>[4] { new(), new(), new(), new() };
-    readonly DelayedItem[] waiting = new DelayedItem[4];
-    readonly ItemBlock[] linkedBlocks = new ItemBlock[4];
-
-    public override void SetInventory() {
-        inventory = null;
-        travelTime = 1f / Type.itemSpeed;
-        hasInventory = true;
-    }
-
-    protected override void Update() {
-        base.Update();
-        OutputItems();
-    }
+    // Allow multi-direction item delay
+    protected new readonly Queue<DelayedItem>[] queuedItems = new Queue<DelayedItem>[4] { new(), new(), new(), new() };
+    protected new readonly DelayedItem[] waitingItem = new DelayedItem[4];
 
     public override void OutputItems() {
         for (int i = 0; i < 4; i++) {
@@ -30,18 +18,18 @@ public class JunctionBlock : ItemBlock {
                 continue;
 
             // If the waiting item is empty, try get another, if also not, continue
-            if (waiting[i] == null) {
-                if (queues[i].Count == 0)
+            if (waitingItem[i] == null) {
+                if (queuedItems[i].Count == 0)
                     continue;
-                waiting[i] = queues[i].Dequeue();
+                waitingItem[i] = queuedItems[i].Dequeue();
             }
 
-            DelayedItem junctionItem = waiting[i];
+            DelayedItem junctionItem = waitingItem[i];
             if (!junctionItem.CanExit())
                 continue;
 
             if (Pass(linkedBlocks[i], junctionItem))
-                waiting[i] = null;
+                waitingItem[i] = null;
         }
     }
 
@@ -56,7 +44,7 @@ public class JunctionBlock : ItemBlock {
 
         // Return if the queue can handle more items
         int index = Array.IndexOf(linkedBlocks, sender);
-        return queues[(index + 2) % 4].Count < Type.itemCapacity;
+        return queuedItems[(index + 2) % 4].Count < Type.itemCapacity;
     }
 
     public override bool CanReciveItem(Item item) {
@@ -65,7 +53,7 @@ public class JunctionBlock : ItemBlock {
 
     public override void ReciveItem(Block sender, Item item) {
         int index = Array.IndexOf(linkedBlocks, sender);
-        queues[(index + 2) % 4].Enqueue(new DelayedItem(item, Time.time + travelTime));
+        queuedItems[(index + 2) % 4].Enqueue(new DelayedItem(item, Time.time + travelTime));
     }
 
     private bool Pass(ItemBlock reciver, DelayedItem delayedItem) {
