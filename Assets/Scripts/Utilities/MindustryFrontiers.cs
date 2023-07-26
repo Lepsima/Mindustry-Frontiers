@@ -335,6 +335,7 @@ namespace Frontiers.Assets {
         public static string maps = Path.Combine(Application.persistentDataPath, "QuickSave", "Maps");
 
         public static void RegenerateFolders() {
+            Launcher.SetState("Locating Content Folders...");
             // If any directory is not found, create it
             if (!Directory.Exists(mods)) Directory.CreateDirectory(mods);
             if (!Directory.Exists(maps)) Directory.CreateDirectory(maps);

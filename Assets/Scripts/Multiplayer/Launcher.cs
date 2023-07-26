@@ -18,6 +18,7 @@ public class Launcher : MonoBehaviourPunCallbacks {
     private static Dictionary<string, RoomInfo> cachedRoomList = new();
 
     [SerializeField] TMP_InputField roomNameInputField;
+    [SerializeField] TMP_Text stateText;
     [SerializeField] TMP_Text errorText;
     [SerializeField] TMP_Text roomNameText;
 
@@ -42,8 +43,16 @@ public class Launcher : MonoBehaviourPunCallbacks {
         ContentLoader.LoadContents();
         MapDisplayer.SetupAtlas();
 
-        Debug.Log("Connecting to Master");
+        SetState("Connecting To Master...");
         PhotonNetwork.ConnectUsingSettings();
+    }
+
+    public static void SetState(string value) {
+        Instance.SetStateText(value);
+    }
+
+    private void SetStateText(string value) {
+        stateText.text = value;
     }
 
     public void SetNickName(string name) {
@@ -52,24 +61,28 @@ public class Launcher : MonoBehaviourPunCallbacks {
     }
 
     public override void OnConnectedToMaster() {
-        Debug.Log("Connected to Master");
+        SetState("Connected To Master And Joining Lobby...");
         PhotonNetwork.JoinLobby();
         PhotonNetwork.NickName = "Player " + PhotonNetwork.CountOfPlayers.ToString("000");
         PhotonNetwork.AutomaticallySyncScene = true;
     }
 
     public override void OnJoinedLobby() {
-        Debug.Log("Joined Lobby");
+        SetState("Joined Lobby");
         MenuManager.Instance.OpenMenu("TitleMenu");
     }
 
     public void CreateRoom() {
         if (string.IsNullOrEmpty(roomNameInputField.text)) return;
+
+        SetState("Creating Room...");
         PhotonNetwork.CreateRoom(roomNameInputField.text);
         MenuManager.Instance.OpenMenu("LoadingMenu");
     }
 
     public override void OnJoinedRoom() {
+        SetState("Joined Room");
+
         roomNameText.text = PhotonNetwork.CurrentRoom.Name;
         MenuManager.Instance.OpenMenu("RoomMenu");
 
@@ -104,6 +117,7 @@ public class Launcher : MonoBehaviourPunCallbacks {
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message) {
+        SetState("Room Creation Has Failed");
         errorText.text = "Room Creation Failed: " + message;
         MenuManager.Instance.OpenMenu("ErrorMenu");
     }
@@ -113,16 +127,19 @@ public class Launcher : MonoBehaviourPunCallbacks {
     }
 
     public void LeaveRoom() {
+        SetState("Leaving room...");
         PhotonNetwork.LeaveRoom();
         MenuManager.Instance.OpenMenu("LoadingMenu");
     }
 
     public void JoinRoom(RoomInfo info) {
+        SetState("Joining Room...");
         PhotonNetwork.JoinRoom(info.Name);
         MenuManager.Instance.OpenMenu("LoadingMenu");
     }
 
     public override void OnLeftRoom() {
+        SetState("Left Room");
         MenuManager.Instance.OpenMenu("TitleMenu");
         cachedRoomList.Clear();
     }
