@@ -14,6 +14,6 @@ public class RouterBlock : DistributionBlock {
         base.Set(position, rotation, type, id, teamCode);
 
         // Allows to send items forward when looping through side outputs
-        linkedBlockLoopStart = 0;
+        forwardCanBeLooped = true;
     }
 }

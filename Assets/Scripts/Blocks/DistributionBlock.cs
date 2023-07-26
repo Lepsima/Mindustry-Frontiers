@@ -26,8 +26,8 @@ public class DistributionBlock : ItemBlock {
     // Used in sorters and overflow gates when 2 output blocks are avilable
     protected int nextSide;
 
-    // If 0, Allows blocks to include the forward output to the pass loop function
-    protected int linkedBlockLoopStart = 1;
+    // If true, Allows blocks to include the forward output to the pass loop function
+    protected bool forwardCanBeLooped = false;
 
     protected override void Update() {
         base.Update();
@@ -67,24 +67,27 @@ public class DistributionBlock : ItemBlock {
 
         // If the condition to pass forward is met, pass forward, else loop trough all alternative outputs
         if (ForwardCondition())
-            Pass(0);
+            TryPass(0);
         else
             PassLoop();
     }
 
     protected bool PassLoop() {
+        int offset = nextSide;
+
         // Loop trough the 4 sides with an offset "nextSide"
-        for (int i = linkedBlockLoopStart + nextSide; i < 4 + nextSide; i++) {
+        for (int i = offset; i < 4 + offset; i++) {
             // Clamp the index
             int index = i % 4;
 
-            // Don't go backwards
-            if (index == 2)
+            // Don't go backwards and don't skip forward if desired
+            if (!forwardCanBeLooped && index == 0 || index == 2) {
+                nextSide++;
                 continue;
+            }
 
             // If this side is avilable, pass the item
-            if (CanPass(index)) {
-                Pass(index);
+            if (TryPass(index)) {
                 nextSide = (nextSide + 1) % 4;
                 return true;
             }
@@ -110,6 +113,14 @@ public class DistributionBlock : ItemBlock {
         ItemBlock reciver = GetLinkedBlock(orientation + waitingItem.enterOrientation);
 
         return item != null && reciver != null && reciver.GetTeam() == GetTeam() && reciver.CanReciveItem(this, item);
+    }
+
+    protected bool TryPass(int orientation) {
+        if (!CanPass(orientation))
+            return false;
+
+        Pass(orientation);
+        return true;
     }
 
     protected void Pass(int orientation) {

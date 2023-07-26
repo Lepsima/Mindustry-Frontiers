@@ -1115,7 +1115,7 @@ namespace Frontiers.Content {
             sorter = new SorterBlockType("sorter", typeof(SorterBlock), 1) {
                 health = 80f,
                 size = 1,
-                itemCapacity = 4,
+                itemCapacity = 3,
                 itemSpeed = 4f,
                 inverted = false,
             };
@@ -1123,7 +1123,7 @@ namespace Frontiers.Content {
             overflowGate = new OverflowGateBlockType("overflow-gate", typeof(OverflowGateBlock), 1) {
                 health = 80f,
                 size = 1,
-                itemCapacity = 4,
+                itemCapacity = 3,
                 itemSpeed = 4f,
                 inverted = false,
             };

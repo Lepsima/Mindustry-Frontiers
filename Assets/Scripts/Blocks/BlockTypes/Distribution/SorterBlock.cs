@@ -8,6 +8,11 @@ public class SorterBlock : DistributionBlock {
 
     public Item filterItem;
 
+    public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
+        base.Set(position, rotation, type, id, teamCode);
+        filterItem = Items.sand;
+    }
+
     protected override bool ForwardCondition() {
         return (filterItem.id == waitingItem.item.id) != Type.inverted;
     }

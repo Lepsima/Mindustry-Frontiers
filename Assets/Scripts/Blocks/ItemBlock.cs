@@ -31,10 +31,6 @@ public abstract class ItemBlock : Block {
         return base.CanReciveItem(item) && IsAcceptedItem(item) && !inventory.Full(item); 
     }
 
-    public override bool CanReciveItem(Block sender, Item item) {
-        return base.CanReciveItem(sender, item);
-    }
-
     public virtual bool IsAcceptedItem(Item item) => acceptedItems == null || acceptedItems.Length == 0 || acceptedItems.Contains(item);
 
     public virtual void ReciveItem(Block sender, Item item) {
