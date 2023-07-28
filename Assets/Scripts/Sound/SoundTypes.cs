@@ -34,7 +34,7 @@ namespace Frontiers.Content.Sounds {
             explosion, explosionBig, extractLoop, fire, flame, flame2, flux, glow, grinding, hum, largeCannon, largeExplosion,
             laser, laserBeam, laserBig, laserBlast, laserCharge, laserCharge2, laserShoot, machine, malignShoot, mineBeam, mineDeploy,
             missile, missileLarge, missileLaunch, missileTrail, mud, noAmmo, pew, place, plantBreak, plasmaBoom, plasmaDrop, pulse,
-            pulseBlast, railgun, rain, release, respawn, respawning, rockBreack, sap, shield, shockBlast, shoot, shootAlt,
+            pulseBlast, railgun, rain, release, respawn, respawning, rockBreak, sap, shield, shockBlast, shoot, shootAlt,
             shootAltLong, shootBig, shootSmite, shootSnap, shotgun, smelter, spark, spellLoop, splash, spray, steam, swish, techLoop,
             thruster, titanExplosion, torch, tractorBeam, wave, wind, wind2, wind3, windHowl;
 
@@ -123,7 +123,7 @@ namespace Frontiers.Content.Sounds {
             release = new("release");
             respawn = new("respawn");
             respawning = new("respawning");
-            rockBreack = new("rockBreack");
+            rockBreak = new("rockBreak");
             sap = new("sap");
             shield = new("shield");
             shockBlast = new("shockBlast");
