@@ -3400,12 +3400,12 @@ namespace Frontiers.Content.Maps {
             regions[position.x / regionSize.x, position.y / regionSize.y].SetTile(tileType, position, layer);
         }
 
-        public void SetBlock(Block block, Vector2Int position) {
+        public void SetBlock(Vector2Int position, Block block) {
             // Set a block on a tile
             GetTile(position).Set(block);
         }
 
-        public void SetTile(string data, Vector2Int position) {
+        public void SetTile(Vector2Int position, string data) {
             // Load a tile from the given string data
             GetTile(position).LoadTile(data);
         }
@@ -3548,7 +3548,7 @@ namespace Frontiers.Content.Maps {
                     // Load each data string into a tile
                     for (int z = 0; z < subTileData.Length; z++) {
                         string data = subTileData[z];
-                        tilemap.SetTile(data, new Vector2Int(x, y));
+                        tilemap.SetTile(new Vector2Int(x, y), data);
                     }
 
                     i++;
@@ -3609,10 +3609,6 @@ namespace Frontiers.Content.Maps {
 
         public void PlaceTile(MapLayer layer, Vector2Int position, TileType tile, int size) {
             // Place a square of the given size of tiles (i think i wont use it until a long time)
-            if (size == 1) {
-                PlaceTile(layer, position, tile);
-                return;
-            }
 
             for (int x = 0; x < size; x++) {
                 for (int y = 0; y < size; y++) {
@@ -3631,15 +3627,13 @@ namespace Frontiers.Content.Maps {
             // Set the given block to all the tiles it occupies
             int size = block.Type.size;
 
-            if (size == 1) {
-                tilemap.SetBlock(block, position);
-                return;
-            }
-
             for (int x = 0; x < size; x++) {
                 for (int y = 0; y < size; y++) {
                     Vector2Int sizePosition = position + new Vector2Int(x, y);
-                    tilemap.SetBlock(block, sizePosition);
+
+                    // Link position and tile to the given block
+                    blockPositions.Add(sizePosition, block);
+                    tilemap.SetBlock(sizePosition, block);
                 }
             }
         }
@@ -3648,15 +3642,13 @@ namespace Frontiers.Content.Maps {
             // Set null the block to all the tiles it occupied
             int size = block.Type.size;
 
-            if (size == 1) {
-                tilemap.SetBlock(null, position);
-                return;
-            }
-
             for (int x = 0; x < size; x++) {
                 for (int y = 0; y < size; y++) {
                     Vector2Int sizePosition = position + new Vector2Int(x, y);
-                    tilemap.SetBlock(null, sizePosition);
+
+                    // Remove the position and tile link of the given block
+                    blockPositions.Remove(sizePosition);
+                    tilemap.SetBlock(sizePosition, null);
                 }
             }
         }
@@ -3670,6 +3662,7 @@ namespace Frontiers.Content.Maps {
         }
 
         public void SetBlocksFromStringArray(string[] blockData) {
+            // Da fuk
             for(int i = 0; i < blockData.Length; i++) {
                 string data = blockData[i];
                 if (data == "null") continue;
@@ -3846,16 +3839,20 @@ namespace Frontiers.Content.Maps {
         }
 
         public List<ItemBlock> GetAdjacentBlocks(ItemBlock itemBlock) {
+            // Create the adjacent block list
             List<ItemBlock> adjacentBlocks = new();
             int size = (int)itemBlock.size;
 
+            // Get the block's position
             Vector2Int position = itemBlock.GetGridPosition();
 
+            // Check for adjacent blocks in all 4 sides
             for (int x = 0; x < size; x++) Handle(x, -1);
             for (int x = 0; x < size; x++) Handle(x, size);
             for (int y = 0; y < size; y++) Handle(-1, y);     
             for (int y = 0; y < size; y++) Handle(size, y);
 
+            // Check if a block exists in (x, y)
             void Handle(int x, int y) {
                 Vector2Int offset = new(x, y);
                 ItemBlock block = (ItemBlock)GetBlockAt(offset + position);
@@ -3866,30 +3863,22 @@ namespace Frontiers.Content.Maps {
         }
 
         public void AddBlock(Block block) {
-            Vector2Int position = block.GetGridPosition();
-
-            for (int x = 0; x < (int)block.size; x++) {
-                for (int y = 0; y < (int)block.size; y++) {
-                    blockPositions.Add(position + new Vector2Int(x, y), block);
-                }
-            }
-
+            // Add block to all lists
             blocks.Add(block);
             loadedEntities.Add(block);
+            Client.syncObjects.Add(block.SyncID, block);
+
+            // Place the block
             PlaceBlock(block, block.GetGridPosition());
         }
 
         public void RemoveBlock(Block block) {
-            Vector2Int position = block.GetGridPosition();
-
-            for (int x = 0; x < (int)block.size; x++) {
-                for (int y = 0; y < (int)block.size; y++) {
-                    blockPositions.Remove(position + new Vector2Int(x, y));
-                }
-            }
-
+            // Remove block from all lists
             blocks.Remove(block);
             loadedEntities.Remove(block);
+            Client.syncObjects.Remove(block.SyncID);
+
+            // Remove the block
             RemoveBlock(block, block.GetGridPosition());
         }
 

@@ -47,7 +47,6 @@ public class AircraftUnit : Unit {
         maxLiftVelocity = Type.maxLiftVelocity;
 
         takeoffAccel = 2f * takeoffHeight / (takeoffTime * takeoffTime);
-
     }
 
     protected override void Update() {
@@ -67,6 +66,7 @@ public class AircraftUnit : Unit {
     }
 
     public override void HandleHeight() {
+        // If is landed, the unit shouldn't move
         if (isLanded) {
             height = 0f;
             liftVelocity = 0f;
@@ -83,10 +83,11 @@ public class AircraftUnit : Unit {
             float liftAccel = 0f;
 
             if (!isWreck) {
-                // This calculates the force the unit should make to not go full on kamikaze to the ground
+                // This gets the force the unit should make to not go full on kamikaze to the ground
                 liftAccel = targetHeight - height < 0f ? 9.81f - engineAccel : engineAccel;
             }
 
+            // Apply the calculated forces
             liftVelocity = Mathf.Clamp((liftAccel - 9.81f) * Time.fixedDeltaTime + liftVelocity, -maxLiftVelocity, maxLiftVelocity);
         }
 
@@ -103,11 +104,15 @@ public class AircraftUnit : Unit {
 
     public override void UpdateCurrentMass() {
         base.UpdateCurrentMass();
+
+        // Get the minimum engine power to elevate with this mass
         lowestEnginePower = 9.81f * currentMass / force;
     }
 
     protected void SetDragTrailLenght(float time) {
         if (!Type.hasDragTrails) return;
+
+        // Set drag trail time
         time = Mathf.Abs(time);
         rTrailRenderer.time = time;
         lTrailRenderer.time = time;
@@ -140,8 +145,7 @@ public class AircraftUnit : Unit {
         if (!isWreck && Type.hasWreck && destroyed) {
             health = Type.wreckHealth;
             isWreck = true;
-        }
-        else {
+        } else {
             base.Kill(destroyed);           
         }
     }
@@ -225,6 +229,7 @@ public class AircraftUnit : Unit {
         velocity = force / 3 * transform.up;
     }
 
+    // Dock into a landing pad
     public override void Dock(LandPadBlock landpad) {
         base.Dock(landpad);
 
@@ -293,12 +298,13 @@ public class AircraftUnit : Unit {
 
         targetHeight = Type.groundHeight * 0.5f;
         targetVelocity = maxVelocity * 0.5f;
-        targetPower = 0.5f;
+        targetPower = Mathf.Min(lowestEnginePower, 0.5f);
 
         if (Target) {
             float distance = Vector2.Distance(Target.GetPosition(), GetPosition());
             bool isCloseToLandpad = distance < Target.size / 2 + 7.5f;
 
+            // Lower even more the velocity if is near the landing pad
             if (isCloseToLandpad) {
                 targetHeight = 2.5f;
                 targetVelocity = 3f; 
