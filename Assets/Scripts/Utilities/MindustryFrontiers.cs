@@ -1111,6 +1111,7 @@ namespace Frontiers.Content {
             router = new RouterBlockType("router", typeof(RouterBlock), 1) {
                 health = 90f,
                 size = 1,
+                itemSpeed = 4f,
                 itemCapacity = 3,
             };
 
@@ -3848,28 +3849,34 @@ namespace Frontiers.Content.Maps {
             return blockPositions.TryGetValue(position, out Block block) ? block : null;
         }
 
-        public List<ItemBlock> GetAdjacentBlocks(ItemBlock itemBlock) {
+        public (List<ItemBlock>, List<int>) GetAdjacentBlocks(ItemBlock itemBlock) {
             // Create the adjacent block list
             List<ItemBlock> adjacentBlocks = new();
+            List<int> adjacentBlockOrientations = new();
+
             int size = (int)itemBlock.size;
 
             // Get the block's position
             Vector2Int position = itemBlock.GetGridPosition();
 
             // Check for adjacent blocks in all 4 sides
-            for (int x = 0; x < size; x++) Handle(x, -1);
-            for (int x = 0; x < size; x++) Handle(x, size);
-            for (int y = 0; y < size; y++) Handle(-1, y);     
-            for (int y = 0; y < size; y++) Handle(size, y);
-
+            for (int y = 0; y < size; y++) Handle(-1, y, 2);
+            for (int y = 0; y < size; y++) Handle(size, y, 0);
+            for (int x = 0; x < size; x++) Handle(x, -1, 3);
+            for (int x = 0; x < size; x++) Handle(x, size, 1);
+    
             // Check if a block exists in (x, y)
-            void Handle(int x, int y) {
+            void Handle(int x, int y, int o) {
                 Vector2Int offset = new(x, y);
                 ItemBlock block = (ItemBlock)GetBlockAt(offset + position);
-                if (block != null && itemBlock != block && !adjacentBlocks.Contains(block)) adjacentBlocks.Add(block);
+
+                if (block != null && itemBlock != block && !adjacentBlocks.Contains(block)) { 
+                    adjacentBlocks.Add(block);
+                    adjacentBlockOrientations.Add(o);
+                }
             }
 
-            return adjacentBlocks;
+            return (adjacentBlocks, adjacentBlockOrientations);
         }
 
         public void AddBlock(Block block) {

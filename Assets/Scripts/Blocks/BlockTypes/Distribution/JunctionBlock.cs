@@ -28,7 +28,7 @@ public class JunctionBlock : DistributionBlock {
             if (!junctionItem.CanExit())
                 continue;
 
-            if (Pass(linkedBlocks[i], junctionItem))
+            if (Pass(i, junctionItem))
                 waitingItem[i] = null;
         }
     }
@@ -38,28 +38,20 @@ public class JunctionBlock : DistributionBlock {
         for (int i = 0; i < 4; i++) linkedBlocks[i] = GetFacingBlock(i) as ItemBlock;
     }
 
-    public override bool CanReciveItem(Block sender, Item item) {
-        // If it's not a reciver, return false
-        if (!linkedBlocks.Contains(sender)) return false;
-
-        // Return if the queue can handle more items
-        int index = Array.IndexOf(linkedBlocks, sender);
-        return queuedItems[(index + 2) % 4].Count < Type.itemCapacity;
+    public override bool CanReciveItem(Item item, int orientation = 0) {
+        return queuedItems[(orientation + 2) % 4].Count < Type.itemCapacity;
     }
 
-    public override bool CanReciveItem(Item item) {
-        return false;
+    public override void ReciveItems(Item item, int amount = 1, int orientation = 0) {
+        queuedItems[(orientation + 2) % 4].Enqueue(new DelayedItem(item, Time.time + travelTime));
     }
 
-    public override void ReciveItem(Block sender, Item item) {
-        int index = Array.IndexOf(linkedBlocks, sender);
-        queuedItems[(index + 2) % 4].Enqueue(new DelayedItem(item, Time.time + travelTime));
-    }
-
-    private bool Pass(ItemBlock reciver, DelayedItem delayedItem) {
+    private bool Pass(int orientation, DelayedItem delayedItem) {
         Item item = delayedItem.item;
-        if (item == null || reciver == null || reciver.GetTeam() != GetTeam() || !reciver.CanReciveItem(this, item)) return false;
-        reciver.ReciveItem(this, item);
+        ItemBlock reciver = linkedBlocks[orientation];
+
+        if (item == null || reciver == null || reciver.GetTeam() != GetTeam() || !reciver.CanReciveItem(item, orientation)) return false;
+        reciver.ReciveItems(item, 1, orientation);
         return true;
     }
 }

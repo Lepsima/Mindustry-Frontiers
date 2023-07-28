@@ -127,11 +127,15 @@ public class PlayerManager : MonoBehaviour {
 
     public void AddItems(int amount) {
         Content selectedContent = PlayerContentSelector.SelectedContent;
+        if (selectedContent == null || selectedContent is not Item item) return;
 
-        if (selectedContent == null || !MapManager.TypeEquals(selectedContent.GetType(), typeof(Item))) return;
-        if (selectedEntity == null || !selectedEntity.hasInventory || selectedEntity.GetInventory() == null) return;
+        if (selectedEntity != null && selectedEntity is SorterBlock sorterBlock) {
+            sorterBlock.ChangeFilterItem(item);
+        }
 
-        selectedEntity.GetInventory().Add(selectedContent as Item, amount);
+        if (selectedEntity != null && selectedEntity.CanReciveItem(item)) {
+            selectedEntity.GetInventory().Add(item, amount);
+        }
     }
 
     public void OnSelectedContentChanged(object sender, PlayerContentSelector.ContentEventArgs e) {

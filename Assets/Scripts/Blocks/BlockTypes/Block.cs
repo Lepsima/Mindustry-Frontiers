@@ -97,11 +97,6 @@ public class Block : Entity {
 
     public override EntityType GetEntityType() => Type;
 
-    // Returns whether it can recive the specified item
-    public virtual bool CanReciveItem(Block sender, Item item) {
-        return CanReciveItem(item);
-    }
-
     // Unused
     /*
     public bool ExistsIn(Vector2Int position) {
@@ -180,15 +175,7 @@ public class Block : Entity {
     public Vector2 GetFacingEdgePosition() => 0.5f * Type.size * (Vector2)adjacentPositions[orientation % 4];
 
     // More magic shit for conveyors, name describes this better than i could
-    public Vector2 GetSharedEdgePosition(Block other) {
-        for (int i = 0; i < 4; i++) {
-            if (MapManager.Map.blockPositions.TryGetValue(GetGridPosition() + adjacentPositions[i], out Block block) && block == other) {
-                return 0.5f * Type.size * (Vector2)adjacentPositions[i];
-            }
-        }
-
-        return Vector2.zero;
-    }
+    public Vector2 GetSharedEdgePosition(int orientation) => 0.5f * Type.size * (Vector2)adjacentPositions[orientation % 4];
 
     // Gets the position of the block that should be in front
     // Only works properly with 1x1 blocks, bigger blocks shouldn't have orientation

@@ -10,4 +10,8 @@ public static class MoreExtensions {
 
         return Enumerable.Range(0, str.Length / n).Select(i => str.Substring(i * n, n));
     }
+
+    public static bool EqualsOrInherits(this Type type, Type other) {
+         return type == other || type.IsSubclassOf(other);
+    }
 }

@@ -36,13 +36,13 @@ public static class PlayerContentSelector {
 
         if (selectedContent is BlockType blockType) {
             if (mode == 0) {
-
+                // Try placing block
                 if (!MapManager.mouseGridAllowsPlace) return;
                 int orientation = blockType.hasOrientation ? GetOrientation : 0;
                 Client.CreateBlock(MapManager.mouseGridPos, orientation, false, selectedContent, TeamUtilities.GetLocalTeam());
 
             } else if (mode == 1) {
-
+                // Try removing block
                 Block block = MapManager.Map.GetBlockAt(MapManager.mouseGridPos);
                 if (block == null || !block.Type.breakable) return;
                 Client.DestroyBlock(block);
@@ -51,6 +51,7 @@ public static class PlayerContentSelector {
         }
 
         if (selectedContent is UnitType) {
+            // Left click = local team, right click = enemy team
             if (mode == 0) Client.CreateUnit(mousePos, rotation, selectedContent, TeamUtilities.GetLocalTeam());
             else if (mode == 1) Client.CreateUnit(mousePos, rotation, selectedContent, TeamUtilities.GetEnemyTeam(TeamUtilities.GetLocalTeam()));           
         }

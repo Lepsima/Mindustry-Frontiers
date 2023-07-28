@@ -126,8 +126,12 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
 
     public abstract void OnInventoryValueChange(object sender, EventArgs e);
 
-    public virtual bool CanReciveItem(Item item) {
+    public virtual bool CanReciveItem(Item item, int orientation = 0) {
         return hasInventory && inventory != null && inventory.Allowed(item);
+    }
+
+    public virtual void ReciveItems(Item item, int amount = 1, int orientation = 0) {
+        inventory?.Add(item, amount);
     }
 
     public float GetHealthPercent() {

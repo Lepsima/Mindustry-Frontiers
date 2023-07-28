@@ -91,8 +91,11 @@ public class ConveyorBlock : ItemBlock {
 
     protected override void Update() {
         base.Update();
-        UpdateItems();
         UpdateAnimation();
+    }
+
+    protected void FixedUpdate() {
+        UpdateItems();
     }
 
     private void UpdateAnimation() {
@@ -110,7 +113,7 @@ public class ConveyorBlock : ItemBlock {
         backSpace = 1f;
 
         float nextMax = 1f;
-        float moved = Time.deltaTime * itemSpeed;
+        float moved = Time.fixedDeltaTime * itemSpeed;
 
         for (int i = 0; i < len; i++) {
             float nextPos = (i == 0 ? 100f : items[i - 1].time) - itemSpace;
@@ -159,33 +162,33 @@ public class ConveyorBlock : ItemBlock {
         else return true;   
     }
 
-    public override bool CanReciveItem(Item item) {
+    public override bool CanReciveItem(Item item, int orientation = 0) {
         bool timeSpacing = items.Count == 0 || items.Last().time >= itemSpace;
         return timeSpacing && items.Count < Type.itemCapacity;
     }
 
-    public override void ReciveItem(Block source, Item item) {
+    public override void ReciveItems(Item item, int amount = 1, int orientation = 0) {
         if (items.Count >= Type.itemCapacity) return;
 
-        items.Add(new ConveyorItem(item, GetSharedEdgePosition(source) + GetPosition()));
+        items.Add(new ConveyorItem(item, GetSharedEdgePosition(orientation + 2) + GetPosition()));
     }
 
-    public void ReciveItem(Block source, ConveyorItem conveyorItem) {
+    public void ReciveItem(ConveyorItem conveyorItem, int orientation) {
         if (items.Count >= Type.itemCapacity) return;
 
         items.Add(conveyorItem);
-        conveyorItem.ChangeConveyor(GetSharedEdgePosition(source) + GetPosition());
+        conveyorItem.ChangeConveyor(GetSharedEdgePosition(orientation + 2) + GetPosition());
     }
 
     private bool Pass(ConveyorItem convItem) {
         Item item = convItem.item;
-        if (item == null || next == null || next.GetTeam() != GetTeam() || !next.CanReciveItem(this, item)) return false;
+        if (item == null || next == null || next.GetTeam() != GetTeam() || !next.CanReciveItem(item, GetOrientation())) return false;
 
         if (nextAsConveyor != null) {
-            nextAsConveyor.ReciveItem(this, convItem);
+            nextAsConveyor.ReciveItem(convItem, GetOrientation());
         } else {
             convItem.End();
-            next.ReciveItem(this, item);
+            next.ReciveItems(item, 0, GetOrientation());
         }
 
         return true;

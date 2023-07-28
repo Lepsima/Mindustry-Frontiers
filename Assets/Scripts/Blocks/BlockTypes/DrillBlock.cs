@@ -72,7 +72,7 @@ public class DrillBlock : ItemBlock {
         }
     }
 
-    public override bool CanReciveItem(Item item) {
+    public override bool CanReciveItem(Item item, int orientation = 0) {
         return false;
     }
 

@@ -7,8 +7,11 @@ using System.Linq;
 public abstract class ItemBlock : Block {
     public new ItemBlockType Type { get => (ItemBlockType)base.Type; protected set => base.Type = value; }
 
-    protected Queue<ItemBlock> adjacentBlocks;
-    protected Queue<ItemBlock> reciverBlocks;
+    protected ItemBlock[] adjacentBlocks;
+    protected ItemBlock[] reciverBlocks;
+    protected int[] reciverBlockOrientations;
+    public int reciverBlockIndex;
+
     protected Item[] acceptedItems;
     protected Item[] outputItems;
 
@@ -27,61 +30,78 @@ public abstract class ItemBlock : Block {
         base.SetInventory();
     }
 
-    public override bool CanReciveItem(Item item) { 
+    public override bool CanReciveItem(Item item, int orientation = 0) { 
         return base.CanReciveItem(item) && IsAcceptedItem(item) && !inventory.Full(item); 
     }
 
     public virtual bool IsAcceptedItem(Item item) => acceptedItems == null || acceptedItems.Length == 0 || acceptedItems.Contains(item);
 
-    public virtual void ReciveItem(Block sender, Item item) {
-        inventory.Add(item, 1);
-    }
 
     public virtual void OutputItems() {
-        int reciverBlockCount = reciverBlocks.Count;
+        int reciverBlockCount = reciverBlocks.Length;
         if (reciverBlockCount == 0 || (outputItems != null && (outputItems.Length == 0 || inventory.Empty(outputItems)))) return;
 
         Item currentItem = outputItems == null ? inventory.First() : inventory.First(outputItems);
         if (currentItem == null || !inventory.Has(currentItem, 1)) return;
 
-        for(int i = 0; i < reciverBlockCount; i++) {
+        int offset = reciverBlockIndex;
+
+        for(int io = offset; io < reciverBlockCount + offset; io++) {
+            int i = io % reciverBlockCount;
+
             Item item = inventory.Has(currentItem, 1) ? currentItem : (outputItems == null ? inventory.First() : inventory.First(outputItems));
             if (item == null) break;
 
-            ItemBlock itemBlock = reciverBlocks.Dequeue();
+            ItemBlock itemBlock = reciverBlocks[i];
+            int orientation = reciverBlockOrientations[i];
 
-            if (itemBlock.CanReciveItem(this, item)) {
-                itemBlock.ReciveItem(this, item);
+            if (itemBlock.CanReciveItem(item, orientation)) {
+                itemBlock.ReciveItems(item, 1, orientation);
                 inventory.Substract(item, 1);
             }
 
-            reciverBlocks.Enqueue(itemBlock);
+            reciverBlockIndex = (i + 1) % reciverBlockCount;
         }
     }
 
     public virtual void GetAdjacentBlocks() {
-        List<ItemBlock> adjacentBlockList = MapManager.Map.GetAdjacentBlocks(this);
-        adjacentBlocks = new Queue<ItemBlock>();
-        reciverBlocks = new Queue<ItemBlock>();
+        (List<ItemBlock> adjacentBlockList, List<int> adjacentBlockOrientations) = MapManager.Map.GetAdjacentBlocks(this);
 
-        foreach (ItemBlock itemBlock in adjacentBlockList) {
+        List<ItemBlock> recivers = new();
+        List<int> reciverOrientations = new();
+
+        adjacentBlocks = new ItemBlock[adjacentBlockList.Count];
+
+        for (int i = 0; i < adjacentBlockList.Count; i++) {
+            ItemBlock itemBlock = adjacentBlockList[i];
+
             // If the block is facing to this one, don't give any items back
-            if (itemBlock.Type.hasOrientation && itemBlock.GetFacingBlock() != this) reciverBlocks.Enqueue(itemBlock);
-            adjacentBlocks.Enqueue(itemBlock); 
+            if (itemBlock.Type.hasOrientation && itemBlock.GetFacingBlock() != this) {
+                recivers.Add(itemBlock);
+                reciverOrientations.Add(adjacentBlockOrientations[i]);
+            }
+
+            adjacentBlocks[i] = itemBlock;
         }
+
+        reciverBlocks = recivers.ToArray();
+        reciverBlockOrientations = reciverOrientations.ToArray();
     }
 
     public virtual void UpdateAdjacentBlocks() {
-        int count = adjacentBlocks.Count;
+        int count = this.adjacentBlocks.Length;
+        List<ItemBlock> adjacentBlocks = new();
 
         for (int i = 0; i < count; i++) {
-            ItemBlock adjacentBlock = adjacentBlocks.Dequeue();
+            ItemBlock adjacentBlock = this.adjacentBlocks[i];
 
             if (adjacentBlock == null) continue;
             adjacentBlock.GetAdjacentBlocks();
 
-            adjacentBlocks.Enqueue(adjacentBlock);
-        }   
+            adjacentBlocks.Add(adjacentBlock);
+        }
+
+        this.adjacentBlocks = adjacentBlocks.ToArray();
     }
 
     public virtual bool IsFlammable() {

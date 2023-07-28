@@ -2,6 +2,7 @@ using Frontiers.Content;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -96,12 +97,12 @@ public class DistributionBlock : ItemBlock {
         return false;
     }
 
-    public override bool CanReciveItem(Item item) {
+    public override bool CanReciveItem(Item item, int orientation = 0) {
         return queuedItems.Count < Type.itemCapacity;
     }
 
-    public override void ReciveItem(Block sender, Item item) {
-        queuedItems.Enqueue(new DelayedItem(item, Time.time + travelTime, sender.GetOrientation()));
+    public override void ReciveItems(Item item, int amount = 1, int orientation = 0) {
+        queuedItems.Enqueue(new DelayedItem(item, Time.time + travelTime, orientation));
     }
 
     protected ItemBlock GetLinkedBlock(int orientation) {
@@ -112,7 +113,7 @@ public class DistributionBlock : ItemBlock {
         Item item = waitingItem.item;
         ItemBlock reciver = GetLinkedBlock(orientation + waitingItem.enterOrientation);
 
-        return item != null && reciver != null && reciver.GetTeam() == GetTeam() && reciver.CanReciveItem(this, item);
+        return item != null && reciver != null && reciver.GetTeam() == GetTeam() && reciver.CanReciveItem(item, orientation);
     }
 
     protected bool TryPass(int orientation) {
@@ -127,7 +128,7 @@ public class DistributionBlock : ItemBlock {
         Item item = waitingItem.item;
         ItemBlock reciver = GetLinkedBlock(orientation + waitingItem.enterOrientation);
 
-        reciver.ReciveItem(this, item);
+        reciver.ReciveItems(item, 1, orientation + waitingItem.enterOrientation);
         waitingItem = null;
     }
 }
