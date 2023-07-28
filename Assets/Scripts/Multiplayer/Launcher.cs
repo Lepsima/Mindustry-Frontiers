@@ -48,7 +48,7 @@ public class Launcher : MonoBehaviourPunCallbacks {
     }
 
     public static void SetState(string value) {
-        Instance.SetStateText(value);
+        if (Instance) Instance.SetStateText(value);
     }
 
     private void SetStateText(string value) {

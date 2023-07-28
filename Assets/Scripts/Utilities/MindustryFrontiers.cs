@@ -349,11 +349,13 @@ namespace Frontiers.Assets {
         private static Object[] assets;
 
         public static void LoadAssets() {
+            Launcher.SetState("Loading Assets...");
+
             sprites = Resources.LoadAll<Sprite>("Sprites");
             prefabs = Resources.LoadAll<GameObject>("Prefabs");
             assets = Resources.LoadAll<Object>("");
 
-            Debug.Log("All Assets Loaded!");
+            Launcher.SetState("Assets Loaded");
         }
 
         public static Sprite GetSprite(string name, bool suppressWarnings = false) {
@@ -434,6 +436,8 @@ namespace Frontiers.Content {
         public static List<Mod> modList;
 
         public static void LoadContents() {
+            Launcher.SetState("Loading Base Contents...");
+
             loadedContents = new();
             modList = new List<Mod>();
 
@@ -455,11 +459,12 @@ namespace Frontiers.Content {
             Units.Load();
             Blocks.Load();
 
-            int baseContents = loadedContents.Count;
-            Debug.Log(loadedContents.Count + " Base contents loaded");
+            Launcher.SetState("Base Contents Loaded");
 
+            // Handle Mods
+            Launcher.SetState("Loading Mods...");
             LoadMods();
-            Debug.Log(loadedContents.Count - baseContents + " Mod contents loaded from " + modList.Count + " mods");
+            Launcher.SetState(modList.Count + " Mods Loaded");
 
             InitializeObjectPools();
         }
@@ -2959,6 +2964,8 @@ namespace Frontiers.Content.Maps {
         public static Texture2D atlas;
 
         public static void SetupAtlas() {
+            Launcher.SetState("Loading Map Atlas...");
+
             // Generate tile texture atlas
             Texture2D atlas = MapTextureGenerator.GenerateTileTextureAtlas();
             MapDisplayer.atlas = atlas;
@@ -2967,7 +2974,7 @@ namespace Frontiers.Content.Maps {
             atlasMaterial = AssetLoader.GetAsset<Material>("Atlas Material");
             atlasMaterial.mainTexture = atlas;
 
-            Debug.Log("Map atlas loaded!");
+            Launcher.SetState("Map Atlas Loaded");
         }
     }
 
