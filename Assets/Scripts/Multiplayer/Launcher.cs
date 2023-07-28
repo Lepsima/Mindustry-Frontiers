@@ -38,7 +38,6 @@ public class Launcher : MonoBehaviourPunCallbacks {
 
     private void Start() {
         Directories.RegenerateFolders();
-
         AssetLoader.LoadAssets();
         ContentLoader.LoadContents();
         MapDisplayer.SetupAtlas();

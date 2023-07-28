@@ -21,6 +21,8 @@ public class Block : Entity {
     public float blinkInterval, blinkLenght, blinkOffset;
     private bool glows = false;
 
+    static readonly Vector2Int[] adjacentPositions = new Vector2Int[4] { new Vector2Int(1, 0), new Vector2Int(0, 1), new Vector2Int(-1, 0), new Vector2Int(0, -1) };
+
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         Type = type as BlockType;
 
@@ -175,26 +177,15 @@ public class Block : Entity {
     public static Quaternion ToQuaternion(int orientation) => Quaternion.Euler(0, 0, orientation * 90f);
 
     // Conveyor things, name describes pretty well
-    public Vector2 GetFacingEdgePosition() {
-        float halfSize = Type.size / 2f;
-
-        if (orientation == 0) return new Vector2(halfSize, 0);
-        if (orientation == 1) return new Vector2(0, halfSize);
-        if (orientation == 2) return new Vector2(-halfSize, 0);
-        if (orientation == 3) return new Vector2(0, -halfSize);
-
-        return Vector2.zero;
-    }
+    public Vector2 GetFacingEdgePosition() => 0.5f * Type.size * (Vector2)adjacentPositions[orientation % 4];
 
     // More magic shit for conveyors, name describes this better than i could
     public Vector2 GetSharedEdgePosition(Block other) {
-        float halfSize = Type.size / 2f;
-
-        // Check for all 4 sides
-        if (MapManager.Map.blockPositions[GetGridPosition() + new Vector2Int(1, 0)] == other) return new Vector2(halfSize, 0);
-        if (MapManager.Map.blockPositions[GetGridPosition() + new Vector2Int(0, 1)] == other) return new Vector2(0, halfSize);
-        if (MapManager.Map.blockPositions[GetGridPosition() + new Vector2Int(-1, 0)] == other) return new Vector2(-halfSize, 0);
-        if (MapManager.Map.blockPositions[GetGridPosition() + new Vector2Int(0, -1)] == other) return new Vector2(0, -halfSize);
+        for (int i = 0; i < 4; i++) {
+            if (MapManager.Map.blockPositions.TryGetValue(GetGridPosition() + adjacentPositions[i], out Block block) && block == other) {
+                return 0.5f * Type.size * (Vector2)adjacentPositions[i];
+            }
+        }
 
         return Vector2.zero;
     }
@@ -202,15 +193,8 @@ public class Block : Entity {
     // Gets the position of the block that should be in front
     // Only works properly with 1x1 blocks, bigger blocks shouldn't have orientation
     public Vector2Int GetFacingPosition(int offset = 0) {
-        int distance = Type.size;
-        int offsetOrientation = (orientation + offset) % 4;
-
-        if (offsetOrientation == 0) return new Vector2Int(distance, 0);
-        if (offsetOrientation == 1) return new Vector2Int(0, distance);
-        if (offsetOrientation == 2) return new Vector2Int(-1, 0);
-        if (offsetOrientation == 3) return new Vector2Int(0, -1);
-
-        return Vector2Int.zero;
+        Vector2Int pos = adjacentPositions[(orientation + offset) % 4] * Type.size;
+        return new Vector2Int(Mathf.Max(pos.x, -1), Mathf.Max(pos.y, -1));
     }
 
     public override void OnDestroy() {

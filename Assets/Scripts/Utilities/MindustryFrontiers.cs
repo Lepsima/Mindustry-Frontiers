@@ -336,9 +336,12 @@ namespace Frontiers.Assets {
 
         public static void RegenerateFolders() {
             Launcher.SetState("Locating Content Folders...");
+
             // If any directory is not found, create it
             if (!Directory.Exists(mods)) Directory.CreateDirectory(mods);
             if (!Directory.Exists(maps)) Directory.CreateDirectory(maps);
+
+            Launcher.SetState("Content Folders Located");
         }
     }
 
@@ -441,7 +444,7 @@ namespace Frontiers.Content {
             loadedContents = new();
             modList = new List<Mod>();
 
-            // These two dont inherit from the base content class
+            // These two don't inherit from the base content class
             SoundTypes.Load();
             FlagTypes.Load();
 
