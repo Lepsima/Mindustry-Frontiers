@@ -77,6 +77,8 @@ public class Block : Entity {
         glowSpriteRenderers = new SpriteRenderer[Type.glowSprites.Length];
         glowSpriteOffset = 1.5f / Type.glowSprites.Length;
 
+        Material glowMaterial = AssetLoader.GetAsset<Material>("SpriteGlow");
+
         for (int i = 0; i < glowSpriteRenderers.Length; i++) {
             Transform glowTransform = new GameObject("Glow" + i, typeof(SpriteRenderer)).transform;
             glowTransform.parent = transform;
@@ -89,6 +91,7 @@ public class Block : Entity {
             spriteRenderer.color = teamColor;
             spriteRenderer.sortingLayerName = "Blocks";
             spriteRenderer.sortingOrder = 5;
+            spriteRenderer.material = glowMaterial;
 
             glows = true;
         }

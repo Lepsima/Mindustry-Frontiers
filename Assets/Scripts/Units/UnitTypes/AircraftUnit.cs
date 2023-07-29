@@ -300,7 +300,7 @@ public class AircraftUnit : Unit {
 
         targetHeight = Type.groundHeight * 0.5f;
         targetVelocity = maxVelocity * 0.5f;
-        targetPower = Mathf.Min(lowestEnginePower, 0.5f);
+        targetPower = Mathf.Max(lowestEnginePower, 0.5f);
 
         if (Target) {
             float distance = Vector2.Distance(Target.GetPosition(), GetPosition());
