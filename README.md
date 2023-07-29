@@ -17,3 +17,6 @@ weight comes from fuel, items and the unit itself, if the engine works, the unit
 
 ![demo01](https://github.com/Lepisma-0/Mindustry-Frontiers/assets/77903853/11e81d08-8a77-4686-b9fc-6e00ab0ac218)
 ![demo02](https://github.com/Lepisma-0/Mindustry-Frontiers/assets/77903853/395fb55d-b0f2-4f57-9b48-a5b32d79a2f5)
+
+Trello (usually not up to date)
+https://trello.com/b/wAozPH9x/mindustry-frontiers
