@@ -16,10 +16,11 @@ public class Block : Entity {
     private Vector2Int gridPosition;
     private int orientation;
 
-    private SpriteRenderer glowSpriteRenderer;
+    private SpriteRenderer[] glowSpriteRenderers;
 
     public float blinkInterval, blinkLenght, blinkOffset;
     private bool glows = false;
+    private float glowSpriteOffset;
 
     static readonly Vector2Int[] adjacentPositions = new Vector2Int[4] { new Vector2Int(1, 0), new Vector2Int(0, 1), new Vector2Int(-1, 0), new Vector2Int(0, -1) };
 
@@ -55,9 +56,8 @@ public class Block : Entity {
         // Main sprite
         GetComponent<SpriteRenderer>().sprite = Type.sprite;
 
-        // Team and glow sprites
+        // Team sprite
         SpriteRenderer teamSpriteRenderer = SetOptionalSprite(transform.Find("Team"), Type.teamSprite);
-        SpriteRenderer glowSpriteRenderer = SetOptionalSprite(transform.Find("Glow"), Type.glowSprite);
 
         // Top and bottom sprites
         SetOptionalSprite(transform.Find("Top"), Type.topSprite);
@@ -71,12 +71,28 @@ public class Block : Entity {
             teamSpriteRenderer.color = teamColor;
         }
 
-        // If has glow sprite, set "glows" to true
-        if (glowSpriteRenderer) {
-            glowSpriteRenderer.color = teamColor;
-            this.glowSpriteRenderer = glowSpriteRenderer;
+        // Glow sprites
+        if (Type.glowSprites == null) return;
+
+        glowSpriteRenderers = new SpriteRenderer[Type.glowSprites.Length];
+        glowSpriteOffset = 1.5f / Type.glowSprites.Length;
+
+        for (int i = 0; i < glowSpriteRenderers.Length; i++) {
+            Transform glowTransform = new GameObject("Glow" + i, typeof(SpriteRenderer)).transform;
+            glowTransform.parent = transform;
+            glowTransform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+
+            SpriteRenderer spriteRenderer = glowTransform.GetComponent<SpriteRenderer>();
+            glowSpriteRenderers[i] = spriteRenderer;
+
+            spriteRenderer.sprite = Type.glowSprites[i];
+            spriteRenderer.color = teamColor;
+            spriteRenderer.sortingLayerName = "Blocks";
+            spriteRenderer.sortingOrder = 5;
+
             glows = true;
         }
+
     }
 
     protected virtual void Update() {
@@ -84,9 +100,12 @@ public class Block : Entity {
 
         // Update the glow sprite
         if (glows) {
-            Color glowColor = teamColor;
-            glowColor.a = Mathf.Clamp01((Mathf.Sin(Time.time / Type.blinkInterval + Type.blinkOffset) + Type.blinkLength) * 0.5f);
-            glowSpriteRenderer.color = glowColor;
+            for (int i = 0; i < glowSpriteRenderers.Length; i++) {
+                Color glowColor = teamColor;
+                float offset = Type.blinkOffset + (i * glowSpriteOffset);
+                glowColor.a = Mathf.Clamp01((Mathf.Sin(Time.time / Type.blinkInterval + offset) + Type.blinkLength) * 0.5f);
+                glowSpriteRenderers[i].color = glowColor;
+            }
         }
     }
 

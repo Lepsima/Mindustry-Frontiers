@@ -119,6 +119,7 @@ public class MechUnit : Unit {
         // Apply sway to the unit body
         spriteHolder.transform.localPosition = new Vector3(sideSway, frontSway, 0);
     }
+
     private float GetLegPosition(float time) {
         float a = time % 1;
         float b = Mathf.Sign(time % 2 - 1);
@@ -130,10 +131,6 @@ public class MechUnit : Unit {
         Vector2 position = transform.position;
         if (!MapManager.Map.IsInBounds(position)) return null;
         return MapManager.Map.GetMapTileTypeAt(Map.MapLayer.Ground, position);
-    }
-
-    protected override void SetEffects() {
-        
     }
 
     public override void HandleHeight() {

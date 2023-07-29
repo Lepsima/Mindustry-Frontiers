@@ -119,8 +119,10 @@ public class AircraftUnit : Unit {
     }
 
     protected override void CreateTransforms() {
+        base.CreateTransforms();
+
         if (Type.useAerodynamics) {
-            waterDeviationEffect = transform.CreateEffect("WaterDeviationFX", Vector2.zero, Quaternion.identity, 0f);
+            waterDeviationEffect = shadow.transform.CreateEffect("WaterDeviationFX", Vector2.zero, Quaternion.identity);
         }
 
         if (Type.hasDragTrails) {

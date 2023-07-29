@@ -662,7 +662,7 @@ namespace Frontiers.Content {
         public int maximumFires = 0;
         public bool canGetOnFire = false, canSpreadFire = false;
 
-        public float blinkInterval = 0.5f, blinkOffset = 0f, blinkLength = 1f;
+        public float blinkInterval = 0.5f, blinkOffset = 0f, blinkLength = 1f, blinkSpritesOffset = 0f;
 
         public string hitSmokeFX = "HitSmokeFX", deathFX = "ExplosionFX";
         public string loopSound = "", deathSound = "Bang";
@@ -686,17 +686,35 @@ namespace Frontiers.Content {
     }
 
     public class BlockType : EntityType {
-        [JsonIgnore] public Sprite teamSprite, glowSprite, topSprite, bottomSprite;
+        [JsonIgnore] public Sprite teamSprite, topSprite, bottomSprite;
+        [JsonIgnore] public Sprite[] glowSprites;
 
         public bool updates = false, breakable = true, solid = true;
         public int size = 1;
 
         public BlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
-            teamSprite = AssetLoader.GetSprite(name + "-team", true);
-            glowSprite = AssetLoader.GetSprite(name + "-glow", true);
+            teamSprite = AssetLoader.GetSprite(name + "-team", true); 
             topSprite = AssetLoader.GetSprite(name + "-top", true);
             bottomSprite = AssetLoader.GetSprite(name + "-bottom", true);
             this.type = type;
+
+            Sprite glowSprite = AssetLoader.GetSprite(name + "-glow", true);
+            if (glowSprite == null) {
+
+                glowSprite = AssetLoader.GetSprite(name + "-glow-0", true); 
+                if (glowSprite != null) {
+                    List<Sprite> glowSpriteList = new();
+
+                    for (int i = 0; i < 8; i++) {
+                        glowSprite = AssetLoader.GetSprite(name + "-glow-" + i, true);
+                        if (glowSprite == null) break;
+
+                        glowSpriteList.Add(glowSprite);
+                    }
+
+                    glowSprites = glowSpriteList.ToArray();
+                }
+            }
 
             canGetOnFire = false;
             maximumFires = 3;
@@ -991,6 +1009,8 @@ namespace Frontiers.Content {
                 solid = false,
                 unitCapacity = 1,
                 unitSize = 5f,
+
+                blinkLength = 3f,
 
                 landPositions = new Vector2[] {
                     new Vector2(1.5f, 1.5f)

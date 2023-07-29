@@ -263,7 +263,6 @@ public abstract class Unit : Entity, IArmed {
 
         height = Type.groundHeight / 2;
 
-        SetEffects();
         SetWeapons();
 
         transform.SetPositionAndRotation(position, rotation);
@@ -315,12 +314,6 @@ public abstract class Unit : Entity, IArmed {
         weapons.Add(weapon);
     }
 
-    protected virtual void SetEffects() {
-        shadow = transform.GetComponentInChildren<Shadow>();
-        shadow.SetDistance(Type.groundHeight);
-        shadow.SetSprite(Type.spriteFull);
-    }
-
     public void SetVelocity(Vector2 velocity) => this.velocity = velocity;
 
     public override void SetInventory() {
@@ -331,7 +324,9 @@ public abstract class Unit : Entity, IArmed {
     }
 
     protected virtual void CreateTransforms() {
-
+        shadow = transform.GetComponentInChildren<Shadow>();
+        shadow.SetDistance(Type.groundHeight);
+        shadow.SetSprite(Type.spriteFull);
     }
 
     public override EntityType GetEntityType() => Type;
