@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4230874503733993817}
   - component: {fileID: 8467840244383276709}
   m_Layer: 0
-  m_Name: WaterDeviationFX
+  m_Name: waterDeviationFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

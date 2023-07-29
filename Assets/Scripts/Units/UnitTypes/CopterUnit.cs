@@ -21,6 +21,7 @@ public class CopterUnit : AircraftUnit {
 
         public Rotor(Transform parent, UnitRotor Type) {
             this.Type = Type;
+            velocity = Type.velocity;
 
             // Create rotor top
             transform = new GameObject("Rotor-Top", typeof(SpriteRenderer)).transform;

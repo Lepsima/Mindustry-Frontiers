@@ -33,16 +33,16 @@ namespace Frontiers.Content.VisualEffects {
         public static Effect build, bulletHit, casing, despawn, explosion, hitSmoke, muzzle, smallExplosion, takeoff, waterDeviation;
 
         public static void Load() {
-            build = new("build");
-            bulletHit = new("bulletHit");
-            casing = new("casing");
-            despawn = new("despawn");
-            explosion = new("explosion");
-            hitSmoke = new("hitSmoke");
-            muzzle = new("muzzle");
-            smallExplosion = new("smallExplosion");
-            takeoff = new("takeoff");
-            waterDeviation = new("waterDeviation");
+            build = new("buildFX");
+            bulletHit = new("bulletHitFX");
+            casing = new("casingFX");
+            despawn = new("despawnFX");
+            explosion = new("explosionFX");
+            hitSmoke = new("hitSmokeFX");
+            muzzle = new("muzzleFX");
+            smallExplosion = new("smallExplosionFX");
+            takeoff = new("takeoffFX");
+            waterDeviation = new("waterDeviationFX");
         }
     }
 }

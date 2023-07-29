@@ -4891,7 +4891,7 @@ GameObject:
   - component: {fileID: 8469528460730216312}
   - component: {fileID: 8354833153916434212}
   m_Layer: 0
-  m_Name: BuildFX
+  m_Name: buildFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

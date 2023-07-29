@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2985005625552341177}
   - component: {fileID: 4521277500243880282}
   m_Layer: 0
-  m_Name: HitSmokeFX
+  m_Name: hitSmokeFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

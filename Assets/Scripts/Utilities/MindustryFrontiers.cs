@@ -446,7 +446,8 @@ namespace Frontiers.Content {
             //modList = new List<Mod>();
 
             // These two don't inherit from the base content class
-            SoundEffects.Sounds.Load();
+            Sounds.Load();
+            Effects.Load();
             FlagTypes.Load();
 
             Items.Load();
@@ -1514,14 +1515,14 @@ namespace Frontiers.Content {
                 fov = 160f,
                 groundHeight = 8f,
 
-                fuelCapacity = 560f,
+                fuelCapacity = 260f,
                 fuelConsumption = 3.65f,
                 fuelRefillRate = 18.25f,
 
                 force = 600f,
                 emptyMass = 13.5f,
                 itemMass = 12.25f,
-                fuelDensity = 7.25f,
+                //fuelDensity = 0.0275f,
             };
 
             foton = new CopterUnitType("foton", typeof(CopterUnit), 3) {
@@ -1565,7 +1566,7 @@ namespace Frontiers.Content {
                 force = 985f,
                 emptyMass = 21.75f,
                 itemMass = 15.25f,
-                fuelDensity = 10f,
+                //fuelDensity = 0.0275f,
             };
 
             dagger = new MechUnitType("dagger", typeof(MechUnit), 1) {
@@ -1598,7 +1599,7 @@ namespace Frontiers.Content {
 
                 emptyMass = 7.05f,
                 itemMass = 2.2f,
-                fuelDensity = 12.25f,
+                //fuelDensity = 12.25f,
             };
 
             fortress = new MechUnitType("fortress", typeof(MechUnit), 3) {
@@ -1631,7 +1632,7 @@ namespace Frontiers.Content {
 
                 emptyMass = 17.5f,
                 itemMass = 3f,
-                fuelDensity = 23.5f,
+                //fuelDensity = 23.5f,
             };
         }
     }

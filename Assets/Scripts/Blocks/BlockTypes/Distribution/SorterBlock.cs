@@ -23,10 +23,13 @@ public class SorterBlock : DistributionBlock {
         base.SetSprites();
         Transform transform = new GameObject("filterItem", typeof(SpriteRenderer)).transform;
         filterItemSpriteRenderer = transform.GetComponent<SpriteRenderer>();
+        filterItemSpriteRenderer.sortingLayerName = "Blocks";
+        filterItemSpriteRenderer.sortingOrder = 5;
 
         transform.parent = this.transform;
         transform.localPosition = Vector3.zero;
         transform.rotation = Quaternion.identity; // Rotation isn't local to keep the item aligned to the player screen instead of the block
+        transform.localScale = Vector3.one * 0.5f;
     }
 
     public void ChangeFilterItem(Item item) {

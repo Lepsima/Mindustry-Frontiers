@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 957939674579432991}
   - component: {fileID: 4791710331152222691}
   m_Layer: 0
-  m_Name: TakeoffFX
+  m_Name: takeoffFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

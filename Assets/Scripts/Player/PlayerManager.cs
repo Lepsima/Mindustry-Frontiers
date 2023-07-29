@@ -134,7 +134,7 @@ public class PlayerManager : MonoBehaviour {
         }
 
         if (selectedEntity != null && selectedEntity.CanReciveItem(item)) {
-            selectedEntity.GetInventory().Add(item, amount);
+            selectedEntity.ReciveItems(item, amount);
         }
     }
 

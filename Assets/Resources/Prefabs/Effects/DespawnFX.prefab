@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2260244140111137232}
   - component: {fileID: 4096909611269554803}
   m_Layer: 0
-  m_Name: DespawnFX
+  m_Name: despawnFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
