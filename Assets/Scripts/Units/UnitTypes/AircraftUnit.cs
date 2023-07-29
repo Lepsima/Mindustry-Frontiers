@@ -4,6 +4,7 @@ using UnityEngine;
 using Frontiers.Content;
 using Frontiers.Assets;
 using Frontiers.Content.Upgrades;
+using Frontiers.Content.VisualEffects;
 
 public class AircraftUnit : Unit {
     public new AircraftUnitType Type { get => (AircraftUnitType)base.Type; protected set => base.Type = value; }
@@ -34,7 +35,7 @@ public class AircraftUnit : Unit {
         takeoffHeight += takeoffHeight * mult.flying_takeoffHeight;
         maxLiftVelocity += maxLiftVelocity * mult.flying_maxLiftVelocity;
 
-        takeoffAccel = 2f * takeoffHeight / (takeoffTime * takeoffTime);
+        takeoffAccel = takeoffHeight / takeoffTime;
     }
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
@@ -46,7 +47,7 @@ public class AircraftUnit : Unit {
         takeoffHeight = Type.takeoffHeight;
         maxLiftVelocity = Type.maxLiftVelocity;
 
-        takeoffAccel = 2f * takeoffHeight / (takeoffTime * takeoffTime);
+        takeoffAccel = takeoffHeight / takeoffTime;
     }
 
     protected override void Update() {
@@ -122,7 +123,7 @@ public class AircraftUnit : Unit {
         base.CreateTransforms();
 
         if (Type.useAerodynamics) {
-            waterDeviationEffect = shadow.transform.CreateEffect("WaterDeviationFX", Vector2.zero, Quaternion.identity);
+            waterDeviationEffect = shadow.transform.CreateEffect(Effects.waterDeviation, Vector2.zero, Quaternion.identity);
         }
 
         if (Type.hasDragTrails) {
@@ -220,7 +221,7 @@ public class AircraftUnit : Unit {
         Invoke(nameof(EndTakeOff), takeoffTime);
 
         //Play particle system
-        Effect.PlayEffect("TakeoffFX", transform.position, size);
+        EffectPlayer.PlayEffect(Effects.takeoff, transform.position, size);
     }
 
     protected override void EndTakeOff() {

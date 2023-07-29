@@ -5,7 +5,7 @@ using CI.QuickSave.Core;
 using Newtonsoft.Json;
 using Frontiers.Assets;
 
-namespace Frontiers.Content.Sounds {
+namespace Frontiers.Content.SoundEffects {
     public static class SoundHandler {
         public static Dictionary<string, Sound> loadedSounds = new();
         
@@ -27,7 +27,7 @@ namespace Frontiers.Content.Sounds {
         }
     }
 
-    public static class SoundTypes {
+    public static class Sounds {
         public static Sound
             artillery, bang, beam, bigShot, bioLoop, blaster, bolt, boom, @break, build, buttonClick, cannon, click, combustion,
             conveyor, copterBladeLoop, coreExplode, cutter, door, drill, drillCharge, drillImpact, dullExplosion, electricHum,

@@ -10,6 +10,7 @@ using Frontiers.Content.Maps;
 using Frontiers.Assets;
 using Frontiers.Teams;
 using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
+using Frontiers.Content.VisualEffects;
 
 public class Block : Entity {
     public new BlockType Type { protected set; get; }
@@ -46,7 +47,7 @@ public class Block : Entity {
         size = Type.size;
         syncTime = 10f;
 
-        if (!MapManager.TypeEquals(Type.type, typeof(ConstructionBlock))) Effect.PlayEffect("BuildFX", GetPosition(), size);
+        if (!MapManager.TypeEquals(Type.type, typeof(ConstructionBlock))) EffectPlayer.PlayEffect(Effects.build, GetPosition(), size);
 
         // Add this block to the map lists
         MapManager.Map.AddBlock(this);
@@ -212,7 +213,7 @@ public class Block : Entity {
         // If this block was destroyed by damage, create fx
         if (wasDestroyed) {
             // Default fx
-            string explosionEffect = "SmallExplosionFX";
+            Effect explosionEffect = Effects.explosion;
             ItemBlock itemBlock = this as ItemBlock;
 
             // If can contain items check for extra properties
@@ -230,7 +231,7 @@ public class Block : Entity {
             }
 
             // Play the effects and generate rubble
-            Effect.PlayEffect(explosionEffect, GetPosition(), 2 * Type.size);
+            EffectPlayer.PlayEffect(explosionEffect, GetPosition(), 2 * Type.size);
             RubbleGenerator.CreateRubble(GetPosition(), Type.size);
         }
 

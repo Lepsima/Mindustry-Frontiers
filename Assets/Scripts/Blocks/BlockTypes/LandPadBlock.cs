@@ -5,8 +5,10 @@ using UnityEngine;
 using Frontiers.Assets;
 
 public class LandPadBlock : Block {
-    static int allyLandPadCount;
-    static int enemyLandPadCount;
+    static List<LandPadBlock> allyLandPads = new();
+    static List<LandPadBlock> enemyLandPads = new();
+
+    private int displayNumber;
 
     public new LandPadBlockType Type { get => (LandPadBlockType)base.Type; protected set => base.Type = value; }
     public List<Unit> landedUnits = new();
@@ -18,15 +20,16 @@ public class LandPadBlock : Block {
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
 
-        if (IsLocalTeam()) allyLandPadCount++;
-        else enemyLandPadCount++;
+        if (IsLocalTeam()) allyLandPads.Add(this);
+        else enemyLandPads.Add(this);
     }
 
     protected override void SetSprites() {
         base.SetSprites();
 
-        int number = IsLocalTeam() ? allyLandPadCount : enemyLandPadCount;
-        transform.CreateNumbers(number);
+        List<LandPadBlock> list = IsLocalTeam() ? allyLandPads : enemyLandPads;
+        displayNumber = list.Count == 0 ? 0 : list[^1].displayNumber + 1;
+        transform.CreateNumbers(displayNumber);
     }
 
     public void Land(Unit unit) {
@@ -47,8 +50,8 @@ public class LandPadBlock : Block {
     public override void OnDestroy() {
         base.OnDestroy();
 
-        if (IsLocalTeam()) allyLandPadCount--;
-        else enemyLandPadCount--;
+        if (IsLocalTeam()) allyLandPads.Remove(this);
+        else enemyLandPads.Remove(this);
     }
 }
 

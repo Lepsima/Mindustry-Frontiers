@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using Frontiers.Content;
 using Frontiers.Content.Flags;
-using Frontiers.Content.Sounds;
+using Frontiers.Content.SoundEffects;
 using Frontiers.Content.Upgrades;
 using Frontiers.Content.Maps;
 using Frontiers.Settings;
@@ -31,6 +31,7 @@ using Animation = Frontiers.Animations.Animation;
 using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
 using Region = Frontiers.Content.Maps.Tilemap.Region;
 using UnityEditor;
+using Frontiers.Content.VisualEffects;
 
 namespace Frontiers.Animations {
     public class Animator {
@@ -442,10 +443,10 @@ namespace Frontiers.Content {
             Launcher.SetState("Loading Base Contents...");
 
             loadedContents = new();
-            modList = new List<Mod>();
+            //modList = new List<Mod>();
 
             // These two don't inherit from the base content class
-            SoundTypes.Load();
+            SoundEffects.Sounds.Load();
             FlagTypes.Load();
 
             Items.Load();
@@ -464,10 +465,11 @@ namespace Frontiers.Content {
 
             Launcher.SetState("Base Contents Loaded");
 
-            // Handle Mods
+            /* Handle Mods
             Launcher.SetState("Loading Mods...");
             LoadMods();
             Launcher.SetState(modList.Count + " Mods Loaded");
+            */
 
             InitializeObjectPools();
         }
@@ -626,9 +628,9 @@ namespace Frontiers.Content {
         // Some details about this content
         public string details;
 
-        [JsonIgnore] public short id;
-        [JsonIgnore] public Sprite sprite;
-        [JsonIgnore] public Sprite spriteFull;
+        public short id;
+        public Sprite sprite;
+        public Sprite spriteFull;
 
         public Content(string name) {
             this.name = name;
@@ -648,8 +650,7 @@ namespace Frontiers.Content {
     #region - Blocks -
 
     public class EntityType : Content {
-        [JsonIgnore] public Type type;
-        public string typeName;
+        public Type type;
 
         public int tier = 1;
 
@@ -664,30 +665,20 @@ namespace Frontiers.Content {
 
         public float blinkInterval = 0.5f, blinkOffset = 0f, blinkLength = 1f, blinkSpritesOffset = 0f;
 
-        public string hitSmokeFX = "HitSmokeFX", deathFX = "ExplosionFX";
-        public string loopSound = "", deathSound = "Bang";
+        public Effect hitSmokeFX = Effects.hitSmoke, deathFX = Effects.explosion;
+        public Sound loopSound = null, deathSound = Sounds.bang;
 
         public EntityType(string name, Type type, int tier = 1) : base(name) {
-            typeName = TypeWrapper.GetString(type);
             this.type = type;
             this.tier = tier;
-        }
-
-        public override void Wrap() {
-            base.Wrap();
-            typeName = TypeWrapper.GetString(type);
-        }
-
-
-        public override void UnWrap() {
-            base.UnWrap();
-            type = TypeWrapper.GetSystemType(typeName);
         }
     }
 
     public class BlockType : EntityType {
-        [JsonIgnore] public Sprite teamSprite, topSprite, bottomSprite;
-        [JsonIgnore] public Sprite[] glowSprites;
+        public Sprite teamSprite, topSprite, bottomSprite;
+        public Sprite[] glowSprites;
+
+        public Sound destroySound = Sounds.@break;
 
         public bool updates = false, breakable = true, solid = true;
         public int size = 1;
@@ -758,7 +749,7 @@ namespace Frontiers.Content {
     }
 
     public class DrillBlockType : ItemBlockType {
-        [JsonIgnore] public Sprite drillRotorSprite;
+        public Sprite drillRotorSprite;
         public float drillHardness, drillRate;
 
         public DrillBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
@@ -768,7 +759,7 @@ namespace Frontiers.Content {
     }
 
     public class ConveyorBlockType : ItemBlockType {
-        [JsonIgnore] public Sprite[,] allConveyorSprites;
+        public Sprite[,] allConveyorSprites;
         public float frameTime = 0.25f;
         public float itemSpeed = 1;
 
@@ -852,6 +843,7 @@ namespace Frontiers.Content {
 
     public class CrafterBlockType : ItemBlockType {
         public CraftPlan craftPlan;
+        public Effect craftEffect = null;
 
         public CrafterBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             updates = true;
@@ -872,22 +864,12 @@ namespace Frontiers.Content {
         }
     }
 
+
     public class CoreBlockType : StorageBlockType {
-        [SerializeField] UpgradeType baseUpgrade;
-        private string baseUpgradeName;
+        public UpgradeType baseUpgrade;
 
         public CoreBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             breakable = false;
-        }
-
-        public override void UnWrap() {
-            base.UnWrap();
-            if (baseUpgradeName != null) baseUpgrade = UpgradeHandler.GetUpgradeByName(baseUpgradeName);
-        }
-
-        public override void Wrap() {
-            base.Wrap();
-            baseUpgradeName = baseUpgrade?.name; 
         }
     }
 
@@ -900,8 +882,7 @@ namespace Frontiers.Content {
     }
 
     public class LandPadBlockType : StorageBlockType {
-        [JsonIgnore] public Vector2[] landPositions;
-        public Wrapper<Vector2> landPositionsList;
+        public Vector2[] landPositions;
 
         public int unitCapacity = 0;
         public float unitSize = 1.5f;
@@ -909,19 +890,7 @@ namespace Frontiers.Content {
         public LandPadBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
         }
-
-        public override void Wrap() {
-            base.Wrap();
-            landPositionsList = new Wrapper<Vector2>(landPositions);
-        }
-
-        public override void UnWrap() {
-            base.UnWrap();
-            landPositions = landPositionsList.array;
-        }
     }
-
-
 
     public class Blocks {
         public const BlockType none = null;
@@ -1080,6 +1049,8 @@ namespace Frontiers.Content {
                     craftTime = 0.66f
                 },
 
+                loopSound = Sounds.smelter,
+
                 health = 125,
                 size = 2,
                 itemCapacity = 30,
@@ -1112,6 +1083,8 @@ namespace Frontiers.Content {
                     craftTime = 0.5f
                 },
 
+                loopSound = Sounds.smelter,
+
                 health = 120,
                 size = 2,
                 itemCapacity = 16,
@@ -1121,6 +1094,9 @@ namespace Frontiers.Content {
 
             conveyor = new ConveyorBlockType("conveyor", typeof(ConveyorBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 2),
+
+                loopSound = Sounds.conveyor,
+
                 health = 75f,
                 size = 1,
                 itemCapacity = 3,
@@ -1160,6 +1136,9 @@ namespace Frontiers.Content {
 
             mechanicalDrill = new DrillBlockType("mechanical-drill", typeof(DrillBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 16),
+
+                loopSound = Sounds.drill,
+
                 health = 100f,
                 size = 2,
                 itemCapacity = 10,
@@ -1172,6 +1151,9 @@ namespace Frontiers.Content {
 
             pneumaticDrill = new DrillBlockType("pneumatic-drill", typeof(DrillBlock), 2) {
                 buildCost = ItemStack.With(Items.copper, 24, Items.graphite, 10),
+
+                loopSound = Sounds.drill,
+
                 health = 175f,
                 size = 2,
                 itemCapacity = 12,
@@ -1187,10 +1169,9 @@ namespace Frontiers.Content {
     #endregion
 
     #region - Units -
-    [Serializable]
     public class UnitType : EntityType {
-        [JsonIgnore] public Sprite cellSprite, outlineSprite;
-        [JsonIgnore] public Type[] priorityList = null;
+        public Sprite cellSprite, outlineSprite;
+        public Type[] priorityList = null;
 
         public float size = 1.5f;
         public float maxVelocity = 2f, rotationSpeed = 90f;
@@ -1208,7 +1189,6 @@ namespace Frontiers.Content {
         public UnitType(string name, Type type, int tier = 1) : base(name, type, tier) {
             cellSprite = AssetLoader.GetSprite(name + "-cell");
             outlineSprite = AssetLoader.GetSprite(name + "-outline");
-            typeName = TypeWrapper.GetString(type);
             this.type = type;
             hasOrientation = true;
 
@@ -1230,8 +1210,9 @@ namespace Frontiers.Content {
     }
 
     public class MechUnitType : UnitType {
-        [JsonIgnore] public Sprite legSprite, baseSprite;
+        public Sprite legSprite, baseSprite;
         public float baseRotationSpeed = 90f, legStepDistance = 0.2f, sideSway = 0.075f, frontSway = 0.01f;
+
         public MechUnitType(string name, Type type, int tier = 1) : base(name, type, tier) {
             legSprite = AssetLoader.GetSprite(name + "-leg");
             baseSprite = AssetLoader.GetSprite(name + "-base");
@@ -1350,8 +1331,6 @@ namespace Frontiers.Content {
         // Degrees / second
         public float wreckSpinAccel = 50f;
         public float wreckSpinMax = 270f;
-
-        public string bladeSound = "copter-blade-loop";
 
         public CopterUnitType(string name, Type type, int tier = 1) : base(name, type, tier) {
             useAerodynamics = hasDragTrails = false; // Copters don't do that
@@ -1516,6 +1495,8 @@ namespace Frontiers.Content {
                 flags = new Flag[] { FlagTypes.copter, FlagTypes.slow, FlagTypes.heavyArmored },
                 priorityList = new Type[5] { typeof(MechUnit), typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
 
+                loopSound = Sounds.copterBladeLoop,
+
                 hasWreck = true,
                 wreckHealth = 125f,
 
@@ -1557,6 +1538,8 @@ namespace Frontiers.Content {
 
                 flags = new Flag[] { FlagTypes.copter, FlagTypes.slow, FlagTypes.heavy, FlagTypes.heavyArmored },
                 priorityList = new Type[5] { typeof(MechUnit), typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
+
+                loopSound = Sounds.copterBladeLoop,
 
                 hasWreck = true,
                 wreckHealth = 225f,
@@ -1656,23 +1639,19 @@ namespace Frontiers.Content {
     #endregion
 
     #region - Weapons -
-    [Serializable]
     public class WeaponType : Content {
-        [JsonIgnore] public Item ammoItem;
-        [JsonIgnore] public Sprite outlineSprite;
-        [JsonIgnore] public Animation[] animations;
-        [JsonIgnore] public WeaponBarrel[] barrels;
+        public Item ammoItem;
+        public Sprite outlineSprite;
+        public Animation[] animations;
+        public WeaponBarrel[] barrels;
 
         public Vector2 shootOffset = Vector2.zero;
         public BulletType bulletType;
 
-        public string shootFX = "MuzzleFX";
-        public string casingFX = "";
-        public float shootFXSize = 1f, casingFXSize = 1f, casingFXOffset = -0.5f;
+        public Sound shootSound = Sounds.pew, reloadSound = Sounds.noAmmo;
+        public Effect shootFX = Effects.muzzle, casingFX = Effects.casing;
 
-        private string ammoItemName;
-        private Wrapper<Animation> animationWrapper;
-        private Wrapper<WeaponBarrel> barrelWrapper;
+        public float shootFXSize = 1f, casingFXSize = 1f, casingFXOffset = -0.5f;
 
         public bool isIndependent = false;
         public bool consumesItems = false;
@@ -1687,25 +1666,10 @@ namespace Frontiers.Content {
 
         public WeaponType(string name, Item ammoItem) : base(name) {
             outlineSprite = AssetLoader.GetSprite(name + "-outline", true);
-            ammoItemName = ammoItem.name;
             this.ammoItem = ammoItem;
         }
 
         public float Range { get => bulletType.Range; }
-
-        public override void Wrap() {
-            base.Wrap();
-            ammoItemName = ammoItem == null ? "empty" : ammoItem.name;
-            animationWrapper = new Wrapper<Animation>(animations);
-            barrelWrapper = new Wrapper<WeaponBarrel>(barrels);
-        }
-
-        public override void UnWrap() {
-            base.UnWrap();
-            ammoItem = ammoItemName == "empty" ? null : ContentLoader.GetContentByName(ammoItemName) as Item;
-            animations = animationWrapper.array;
-            barrels = barrelWrapper.array;
-        }
     }
 
     public class Weapons {
@@ -1733,8 +1697,6 @@ namespace Frontiers.Content {
                 clipSize = 25,
                 shootTime = 0.15f,
                 reloadTime = 5f,
-
-                casingFX = "CasingFX"
             };
 
             flareWeapon = new WeaponType("flare-weapon") {
@@ -1746,8 +1708,6 @@ namespace Frontiers.Content {
                 clipSize = 25,
                 shootTime = 0.15f,
                 reloadTime = 5f,
-
-                casingFX = "CasingFX"
             };
 
             fotonWeapon = new WeaponType("foton-weapon") {
@@ -1769,8 +1729,6 @@ namespace Frontiers.Content {
                 clipSize = 3,
                 shootTime = 0.33f,
                 reloadTime = 1.5f,
-
-                casingFX = "CasingFX"
             };
 
             fortressWeapon = new WeaponType("fortress-weapon") {
@@ -1782,8 +1740,6 @@ namespace Frontiers.Content {
                 clipSize = 3,
                 shootTime = 0.33f,
                 reloadTime = 1.5f,
-
-                casingFX = "CasingFX"
             };
 
             horizonBombBay = new WeaponType("horizon-bomb-bay") {
@@ -1799,7 +1755,7 @@ namespace Frontiers.Content {
                 maxTargetDeviation = 360f,
                 rotateSpeed = 0f,
 
-                shootFX = "",
+                shootFX = null,
             };
 
             zenithMissiles = new WeaponType("zenith-missiles") {
@@ -1831,8 +1787,6 @@ namespace Frontiers.Content {
                 shootTime = 0.075f,
                 reloadTime = 2f,
                 rotateSpeed = 90f,
-
-                casingFX = "CasingFX"
             };
 
             stingerWeapon = new WeaponType("stinger-weapon") {
@@ -1849,8 +1803,6 @@ namespace Frontiers.Content {
                 shootTime = 0.3f,
                 reloadTime = 4f,
                 rotateSpeed = 60f,
-
-                casingFX = "CasingFX"
             };
 
             pathWeapon = new WeaponType("path-weapon") {
@@ -1868,8 +1820,6 @@ namespace Frontiers.Content {
                 shootTime = 0.03f,
                 reloadTime = 6f,
                 rotateSpeed = 120f,
-
-                casingFX = "CasingFX"
             };
 
             spreadWeapon = new WeaponType("spread-weapon") {
@@ -1889,8 +1839,6 @@ namespace Frontiers.Content {
                 shootTime = 0.085f,
                 reloadTime = 6f,
                 rotateSpeed = 100f,
-
-                casingFX = "CasingFX"
             };
 
             missileRack = new WeaponType("missileRack", Items.missileX1) {
@@ -1908,9 +1856,8 @@ namespace Frontiers.Content {
         }
     }
 
-    [Serializable]
     public class BulletType : Content {
-        [JsonIgnore] public GameObjectPool pool;
+        public GameObjectPool pool;
         public string bulletName;
 
         public float damage = 10f, buildingDamageMultiplier = 1f, velocity = 100f, lifeTime = 1f, size = 0.05f;
@@ -1918,7 +1865,7 @@ namespace Frontiers.Content {
 
         public float Range { get => velocity * lifeTime; }
 
-        public string hitFX = "BulletHitFX", despawnFX = "DespawnFX";
+        public Effect hitFX = Effects.bulletHit, despawnFX = Effects.despawn;
 
         public BulletType(string name = null, string bulletName = "tracer") : base(name) {
             pool = PoolManager.GetOrCreatePool(AssetLoader.GetPrefab(bulletName + "-prefab", "tracer-prefab"), 100);
@@ -1984,9 +1931,8 @@ namespace Frontiers.Content {
         }
     }
 
-    [Serializable]
     public class BasicBulletType : BulletType {
-        [JsonIgnore] public Sprite backSprite;
+        public Sprite backSprite;
 
         public BasicBulletType(string name = null, string bulletName = "bullet") : base(name, bulletName) {
             sprite = AssetLoader.GetSprite(bulletName, true);
@@ -2011,13 +1957,12 @@ namespace Frontiers.Content {
 
     }
 
-    [Serializable]
     public class MissileBulletType : BasicBulletType {
         public float homingStrength = 30f;
         public bool canUpdateTarget = true, explodeOnDespawn = true;
         
         public MissileBulletType(string name = null, string bulletName = "missile") : base(name, bulletName) {
-            despawnFX = "BulletHitFX";
+            despawnFX = Effects.bulletHit;
         }
 
 
@@ -2077,8 +2022,8 @@ namespace Frontiers.Content {
         public float fallVelocity = 3f, initialSize = 1f, finalSize = 0.5f;
 
         public BombBulletType(string name = null, string bulletName = "bomb") : base(name, bulletName) {
-            hitFX = "ExplosionFX";
-            despawnFX = "ExplosionFX";
+            hitFX = Effects.explosion;
+            despawnFX = Effects.explosion;
         }
 
         public override void OnPoolObjectCreated(object sender, GameObjectPool.PoolEventArgs e) {
@@ -2110,7 +2055,7 @@ namespace Frontiers.Content {
             }
 
             if (Physics2D.OverlapCircle(transform.position, size, mask)) bullet.OnBulletCollision();
-            else Effect.PlayEffect(despawnFX, transform.position, 1f);
+            else EffectPlayer.PlayEffect(despawnFX, transform.position, 1f);
             
             bullet.Return();
         }
@@ -2159,22 +2104,18 @@ namespace Frontiers.Content {
 
     #region - Map -
 
-    [Serializable]
     public class TileType : Content {
-        [JsonIgnore] public Sprite[] allVariantSprites;
-        [JsonIgnore] private Vector4[] allVariantSpriteUVs;
-        [JsonIgnore] public Item itemDrop;
+        public Sprite[] allVariantSprites;
+        private Vector4[] allVariantSpriteUVs;
+
+        public Item itemDrop;
         public Color color;
 
         public int variants;
         public bool allowBuildings = true, flammable = false, isWater = false;
-        public string itemDropName;
 
         public TileType(string name, int variants = 1, Item itemDrop = null) : base(name) {
-            if (itemDrop != null) {
-                this.itemDrop = itemDrop;
-                itemDropName = itemDrop.name;
-            }
+            if (itemDrop != null) this.itemDrop = itemDrop;
 
             this.variants = variants;
 
@@ -2210,19 +2151,8 @@ namespace Frontiers.Content {
         public Vector4 GetSpriteVariantUV(int index) {
             return allVariantSpriteUVs[index];
         }
-
-        public override void Wrap() {
-            base.Wrap();
-            itemDropName = itemDrop == null ? "empty" : itemDrop.name;
-        }
-
-        public override void UnWrap() {
-            base.UnWrap();
-            itemDrop = itemDropName == "empty" ? null : ContentLoader.GetContentByName(itemDropName) as Item;
-        }
     }
 
-    [Serializable]
     public class OreTileType : TileType {
         public float oreThreshold, oreScale;
 
@@ -2315,7 +2245,7 @@ namespace Frontiers.Content {
         }
     }
 
-    public class MapType : Content{
+    public class MapType : Content {
         public Dictionary<int, TileType> tileReferences = new Dictionary<int, TileType>();
 
         public Wrapper2D<int> wrapper2D;

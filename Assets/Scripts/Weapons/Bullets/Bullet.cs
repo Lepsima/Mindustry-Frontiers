@@ -21,14 +21,14 @@ public class Bullet {
     }
 
     public void OnBulletCollision() {
-        Effect.PlayEffect(Type.hitFX, transform.position, 1f);
+        EffectPlayer.PlayEffect(Type.hitFX, transform.position, 1f);
 
         Collider2D collider = Physics2D.OverlapCircle(transform.position, Type.size, mask);
         if (collider.transform.TryGetComponent(out Entity entity)) Client.BulletHit(entity, Type);
     }
 
     public void OnDespawn() {
-        Effect.PlayEffect(Type.despawnFX, transform.position, 1f);
+        EffectPlayer.PlayEffect(Type.despawnFX, transform.position, 1f);
         Client.Explosion(Type, GetPosition(), GetTeam());
     }
 

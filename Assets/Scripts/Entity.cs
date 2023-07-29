@@ -6,6 +6,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using Photon.Pun.UtilityScripts;
 using Frontiers.Content.Upgrades;
+using Frontiers.Content.SoundEffects;
 using Frontiers.Content;
 using Frontiers.Assets;
 using Frontiers.Teams;
@@ -160,9 +161,8 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
         if (fireCount == 0) return;
 
         if (!fires[fireCount - 1]) {
-            Vector3 worldPosition = transform.position + (new Vector3(UnityEngine.Random.Range(0f, 0.4f), UnityEngine.Random.Range(0f, 0.4f), 0) * size);
-            fires[fireCount - 1] = Instantiate(AssetLoader.GetPrefab(Type.hitSmokeFX), worldPosition, Quaternion.Euler(0, 0, UnityEngine.Random.Range(0f, 359.99f)), transform);
-            fires[fireCount - 1].transform.localScale = Vector3.one * size;
+            Vector3 worldPosition = transform.position + (new Vector3(UnityEngine.Random.Range(-0.4f, 0.4f), UnityEngine.Random.Range(-0.4f, 0.4f), 0) * size);
+            fires[fireCount - 1] = transform.CreateEffect(Type.hitSmokeFX, worldPosition, Quaternion.Euler(0, 0, UnityEngine.Random.Range(0f, 359.99f)), size).gameObject;
         }
     }
 
@@ -187,5 +187,9 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
 
     public bool IsBuilding() {
         return Content.TypeEquals(Type.GetType(), typeof(BlockType));
+    }
+
+    public void PlaySound(Sound sound) {
+        audioSource.PlayOneShot(sound.clip);
     }
 }
