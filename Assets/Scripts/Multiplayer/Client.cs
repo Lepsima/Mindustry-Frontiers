@@ -210,7 +210,7 @@ public class Client : MonoBehaviourPunCallbacks {
 
     public static void Explosion(BulletType bulletType, Vector2 position, byte team) {
         if (!PhotonNetwork.IsMasterClient) return;
-        local.photonView.RPC(nameof(RPC_Damage), RpcTarget.All, bulletType.id, position, team);
+        local.photonView.RPC(nameof(RPC_Explosion), RpcTarget.All, bulletType.id, position, team);
     }
 
     [PunRPC]

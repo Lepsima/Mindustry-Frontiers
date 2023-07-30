@@ -21,6 +21,10 @@ public class MapManager : MonoBehaviour {
     private GameObject blockPrefab;
     private GameObject unitPrefab;
 
+    private void Update() {
+        BulletManager.UpdateBullets();
+    }
+
     public static void InitializeMapManager() {
         Instance = FindObjectOfType<MapManager>();
         Instance.Setup();

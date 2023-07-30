@@ -902,7 +902,7 @@ namespace Frontiers.Content {
 
             landingPad, landingPadLarge,
 
-            tempest, stinger, path, spread, 
+            tempest, windstorm, stinger, path, spread, 
             
             airFactory, 
             
@@ -995,6 +995,17 @@ namespace Frontiers.Content {
                 size = 2,
 
                 canGetOnFire = true,
+            };
+
+            windstorm = new TurretBlockType("windstorm", typeof(TurretBlock), 2) {
+                buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 75),
+                weapon = new WeaponMount(Weapons.windstormWeapon, Vector2.zero),
+
+                health = 540f,
+                size = 3,
+
+                canGetOnFire = true,
+                maximumFires = 2,
             };
 
             stinger = new TurretBlockType("stinger", typeof(TurretBlock), 1) {
@@ -1677,7 +1688,7 @@ namespace Frontiers.Content {
         public const Weapon none = null;
 
         // Base weapons
-        public static WeaponType smallAutoWeapon, tempestWeapon, stingerWeapon, pathWeapon, spreadWeapon;
+        public static WeaponType smallAutoWeapon, tempestWeapon, windstormWeapon, stingerWeapon, pathWeapon, spreadWeapon;
 
         //Unit weapons
         public static WeaponType 
@@ -1790,6 +1801,23 @@ namespace Frontiers.Content {
                 rotateSpeed = 90f,
             };
 
+            windstormWeapon = new WeaponType("windstorm-weapon") {
+                bulletType = Bullets.bigBullet,
+                shootOffset = Vector2.zero,
+
+                barrels = new WeaponBarrel[2] {
+                    new WeaponBarrel("windstorm-weapon", 1, new Vector2(-0.28125f, 1.65f)),
+                    new WeaponBarrel("windstorm-weapon", 2, new Vector2(0.28125f, 1.65f)),
+                },
+
+                isIndependent = true,
+                recoil = 0.4f,
+                clipSize = 2,
+                shootTime = 0.25f,
+                reloadTime = 0.5f,
+                rotateSpeed = 50f,
+            };
+
             stingerWeapon = new WeaponType("stinger-weapon") {
                 bulletType = new BulletType() {
                     damage = 15f,
@@ -1858,6 +1886,8 @@ namespace Frontiers.Content {
     }
 
     public class BulletType : Content {
+        public Sprite backSprite;
+
         public GameObjectPool pool;
         public string bulletName;
 
@@ -1865,6 +1895,7 @@ namespace Frontiers.Content {
         public float blastRadius = -1f, blastRadiusFalloff = -1f, minimumBlastDamage = 0f;
 
         public float Range { get => velocity * lifeTime; }
+        public bool hasSprites;
 
         public Effect hitFX = Effects.bulletHit, despawnFX = Effects.despawn;
 
@@ -1872,8 +1903,17 @@ namespace Frontiers.Content {
             pool = PoolManager.GetOrCreatePool(AssetLoader.GetPrefab(bulletName + "-prefab", "tracer-prefab"), 100);
             this.bulletName = bulletName;
 
+            sprite = AssetLoader.GetSprite(bulletName, true);
+            backSprite = AssetLoader.GetSprite(bulletName + "-back", true);
+
+            // Check if is a sprite bullet or just a tracer bullet
+            hasSprites = sprite != null;
+
             pool.OnGameObjectCreated += OnPoolObjectCreated;
-            pool.OnGameObjectDestroyed += OnPoolObjectDestroyed;
+        }
+
+        public virtual Bullet NewBullet(Weapon weapon, Transform transform) {
+            return new Bullet(weapon, transform);
         }
 
         public float Multiplier(IDamageable damageable) {
@@ -1893,55 +1933,8 @@ namespace Frontiers.Content {
             return new DamageHandler.Area(damage, minimumBlastDamage, blastRadius, buildingDamageMultiplier, blastRadiusFalloff);
         }
 
-        public virtual IEnumerator BulletBehaviour(Bullet bullet) {
-            Transform transform = bullet.transform;
-            int mask = bullet.mask;
-
-            Vector2 startPosition = transform.position;
-            Vector2 hitPos = (Vector2)transform.up * Range + startPosition;
-
-            float distance = Vector2.Distance(startPosition, hitPos);
-            float startingDistance = distance;
-
-            transform.GetComponent<TrailRenderer>().Clear();
-
-            while (distance > 0) {
-                if (!transform) break;
-
-                transform.position = Vector2.Lerp(startPosition, hitPos, 1 - (distance / startingDistance));
-                distance -= Time.deltaTime * velocity;
-
-                if (Physics2D.OverlapCircle(transform.position, size, mask)) {
-                    bullet.OnBulletCollision();
-                    break;
-                }
-
-                yield return null;
-            }
-
-            bullet.Return();
-        }
-
-
         public virtual void OnPoolObjectCreated(object sender, GameObjectPool.PoolEventArgs e) {
-
-        }
-
-        public virtual void OnPoolObjectDestroyed(object sender, GameObjectPool.PoolEventArgs e) {
-
-        }
-    }
-
-    public class BasicBulletType : BulletType {
-        public Sprite backSprite;
-
-        public BasicBulletType(string name = null, string bulletName = "bullet") : base(name, bulletName) {
-            sprite = AssetLoader.GetSprite(bulletName, true);
-            backSprite = AssetLoader.GetSprite(bulletName + "-back", true);
-        }
-
-        public override void OnPoolObjectCreated(object sender, GameObjectPool.PoolEventArgs e) {
-            if (!e.target) return;
+            if (!e.target || !hasSprites) return;
 
             Transform transform = e.target.transform;
             Transform back = transform.GetChild(0);
@@ -1955,76 +1948,31 @@ namespace Frontiers.Content {
             renderer.sprite = backSprite;
             renderer.color = new Color(0.8f, 0.8f, 0.8f);
         }
-
     }
 
-    public class MissileBulletType : BasicBulletType {
+    public class MissileBulletType : BulletType {
         public float homingStrength = 30f;
         public bool canUpdateTarget = true, explodeOnDespawn = true;
         
         public MissileBulletType(string name = null, string bulletName = "missile") : base(name, bulletName) {
-            despawnFX = Effects.bulletHit;
+            despawnFX = Effects.smallExplosion;
         }
 
-
-        public override IEnumerator BulletBehaviour(Bullet bullet) {
-            // Get the bullet transform;
-            Transform transform = bullet.transform;
-
-            // The target the missile should follow
-            byte enemyTeam = TeamUtilities.GetEnemyTeam(bullet.GetTeam());
-            Transform target = MapManager.Map.GetClosestEntity(transform.position, enemyTeam).transform;
-
-            bool hasCollided = false;
-            transform.GetComponent<TrailRenderer>().Clear();
-
-            float lifeTime = Time.time + this.lifeTime;
-            while (Time.time < lifeTime) {
-                if (!transform) break;
-
-                // Try to update target
-                if (!target && canUpdateTarget) {
-                    Entity nTarget = MapManager.Map.GetClosestEntity(transform.position, enemyTeam);
-                    if (!nTarget) break;
-                    target = nTarget.transform;
-                }
-                
-                // Move forward
-                transform.position += Time.deltaTime * velocity * transform.up;
-
-                // If has target rotate towards it
-                if (target) {
-                    Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, target.position - transform.position);
-                    desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
-                    transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRotation, homingStrength * Time.fixedDeltaTime);
-                }
-
-                // Check for collision
-                if (Physics2D.OverlapCircle(transform.position, size, bullet.mask)) {
-                    bullet.OnBulletCollision();
-                    hasCollided = true;
-                    break;
-                }
-
-                yield return null;
-            }
-
-            // If has not collided, explode anyways
-            if (!hasCollided && explodeOnDespawn) {
-                bullet.OnDespawn();
-            }
-
-            bullet.Return();
+        public override Bullet NewBullet(Weapon weapon, Transform transform) {
+            return new MissileBullet(weapon, transform);
         }
     }
 
-    [Serializable]
-    public class BombBulletType : BasicBulletType {
+    public class BombBulletType : BulletType {
         public float fallVelocity = 3f, initialSize = 1f, finalSize = 0.5f;
 
         public BombBulletType(string name = null, string bulletName = "bomb") : base(name, bulletName) {
             hitFX = Effects.explosion;
             despawnFX = Effects.explosion;
+        }
+
+        public override Bullet NewBullet(Weapon weapon, Transform transform) {
+            return new BombBullet(weapon, transform);
         }
 
         public override void OnPoolObjectCreated(object sender, GameObjectPool.PoolEventArgs e) {
@@ -2036,29 +1984,6 @@ namespace Frontiers.Content {
             SpriteRenderer renderer = shadow.GetComponent<SpriteRenderer>();
             renderer.sprite = backSprite;
             renderer.color = new Color(0, 0, 0, 0.5f);
-        }
-
-        public override IEnumerator BulletBehaviour(Bullet bullet) {
-            Transform transform = bullet.transform;
-            Transform shadow = transform.GetChild(1);
-            int mask = bullet.mask;
-
-            // Bomb bullets don't work on block turrets
-            float height = ((Unit)bullet.weapon.parentEntity).GetHeight();
-            float maxHeight = ((Unit)bullet.weapon.parentEntity).Type.groundHeight;
-
-            while (height > 0f) {
-                height -= fallVelocity * Time.deltaTime;
-                transform.localScale = Vector3.one * Mathf.Lerp(initialSize, finalSize, 1 - height / maxHeight);
-                shadow.position = -Vector3.one * (height * 0.2f) + transform.position;
-
-                yield return null;
-            }
-
-            if (Physics2D.OverlapCircle(transform.position, size, mask)) bullet.OnBulletCollision();
-            else EffectPlayer.PlayEffect(despawnFX, transform.position, 1f);
-            
-            bullet.Return();
         }
     }
 

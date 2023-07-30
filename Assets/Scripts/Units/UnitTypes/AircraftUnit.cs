@@ -61,6 +61,9 @@ public class AircraftUnit : Unit {
     }
 
     public override void HandlePhysics() {
+        Vector2 dragDir = velocity - (Vector2)Vector3.Project(velocity, transform.up);
+        acceleration -= (1 - drag * Time.fixedDeltaTime) * dragDir;
+
         // Drag force inversely proportional to velocity
         acceleration -= (1 - drag * Time.fixedDeltaTime) * velocity;
         base.HandlePhysics();

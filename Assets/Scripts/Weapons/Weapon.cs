@@ -13,8 +13,6 @@ using System;
 using Random = UnityEngine.Random;
 
 public class Weapon : MonoBehaviour {
-    private readonly List<Bullet> activeBullets = new();
-
     public WeaponType Type { private set; get; }
     private Vector2 weaponOffset;
 
@@ -218,7 +216,7 @@ public class Weapon : MonoBehaviour {
             barrelIndex++;
             if (barrelIndex >= barrels.Length) barrelIndex = 0;
 
-            activeBullets.Add(barrels[barrelIndex].Shoot(this));
+            barrels[barrelIndex].Shoot(this);
         } else {
             transform.position += transform.up * -Type.recoil;
 
@@ -226,12 +224,8 @@ public class Weapon : MonoBehaviour {
             float bulletAngle = transform.eulerAngles.z + Random.Range(-Type.spread, Type.spread);
 
             if (shootFX) shootFX.Play();
-            activeBullets.Add(this.ShootBullet(bulletOriginPoint, bulletAngle));
+            this.ShootBullet(bulletOriginPoint, bulletAngle);
         }
-    }
-
-    public void ReturnBullet(Bullet bullet) {
-        activeBullets.Remove(bullet);
     }
 
     public void Reload() {
@@ -247,15 +241,6 @@ public class Weapon : MonoBehaviour {
     private Vector3 GetOffset() {
         Vector2 offset = hasMultiBarrel ? barrels[barrelIndex].shootOffset : Type.shootOffset;
         return (offset.x * transform.right) + (offset.y * transform.up);
-    }
-
-    public void OnDestroy() {
-        if (!gameObject.scene.isLoaded) return;
-
-        StopAllCoroutines();
-
-        int amount = activeBullets.Count;
-        for (int i = amount - 1; i >= 0; i--) activeBullets[i].Return();
     }
 }
 
