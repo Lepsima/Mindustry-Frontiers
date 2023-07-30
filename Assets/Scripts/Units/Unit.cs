@@ -72,16 +72,17 @@ public abstract class Unit : Entity, IArmed {
         cargoMass, // The current mass of the cargo of this unit
         enginePower; // The current power at wich the engine works, based on targetPower and regulated by fuel and/or behaviour parameters
 
-    protected bool 
+    protected bool
         isCoreUnit, // Wether this is a core/support unit
         isLanded, // Wether this unit is landed to a landpad/somewhere else or not
         isTakingOff, // Wether this unit is taking off from the previous land point
-        areWeaponsActive; // Wether the weapons of the unit are active or not
+        areWeaponsActive, // Wether the weapons of the unit are active or not
+        canLoseTarget = true; //Wether to update the target lost timer, used to not lose the current target when doing long maneuvers
 
     protected ConstructionBlock constructingBlock;
 
     // Timers
-    private float
+    protected float
         targetSearchTimer, // The next time the unit can search for a target
         landPadSearchTimer, // The next time the unit can search for a landing pad
         constructionSearchTimer, // The next time the unit can search for an unfinished building
@@ -656,7 +657,7 @@ public abstract class Unit : Entity, IArmed {
         if (Target) {
             // Check if target is still valid
             bool inRange = (Target as Unit) == null ? InSearchRange(Target.GetPosition()) : InShootRange(Target.GetPosition(), fov);
-            targetLostTimer = inRange ? 0 : targetLostTimer + Time.deltaTime;
+            targetLostTimer = inRange || canLoseTarget ? 0 : targetLostTimer + Time.deltaTime;
         }
 
         if ((Target == null && targetSearchTimer < Time.time) || targetLostTimer > 2f) {

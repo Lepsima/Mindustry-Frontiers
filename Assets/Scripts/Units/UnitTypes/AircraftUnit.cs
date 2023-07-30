@@ -263,6 +263,16 @@ public class AircraftUnit : Unit {
 
     #region - Behaviour -
 
+    public void Flee(bool value) {
+        isFleeing = value;
+        canLoseTarget = !value;
+
+        if (value) {
+            patrolPosition = GetPosition() + (Vector2)transform.up * 25f;
+            MaintainWeaponsActive(0.5f);
+        }
+    }
+
     protected override void AttackBehaviour() {
         targetHeight = Type.groundHeight;
         targetVelocity = maxVelocity;
@@ -274,16 +284,10 @@ public class AircraftUnit : Unit {
 
         if (IsFleeing()) {
             // If close enough to flee position, stop fleeing, else continue fleeing
-            if (Vector2.Distance(patrolPosition, GetPosition()) < 5f) isFleeing = false;
+            if (Vector2.Distance(patrolPosition, GetPosition()) < 5f) Flee(false);
             else SetBehaviourPosition(patrolPosition);
-        }
-
-        if (Target && Type.useAerodynamics && Vector2.Distance(Target.GetPosition(), transform.position) < 2f) {
-            isFleeing = true;
-            patrolPosition = GetPosition() + (Vector2)transform.up * 25f;
-
-            // Continue shooting for x seconds
-            MaintainWeaponsActive(0.5f);
+        } else if (Target && Type.useAerodynamics && Vector2.Distance(Target.GetPosition(), transform.position) < 2f) { 
+            Flee(true);
         }
     }
 
