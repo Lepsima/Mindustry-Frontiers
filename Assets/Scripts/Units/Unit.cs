@@ -698,7 +698,7 @@ public abstract class Unit : Entity, IArmed {
     #endregion
 
 
-    #region - Math & Getters- 
+    #region - Math & Getters - 
     public float GetHeight() => height;
 
     public virtual float GetTargetVelocity() {

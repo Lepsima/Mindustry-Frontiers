@@ -1810,6 +1810,11 @@ namespace Frontiers.Content {
                     new WeaponBarrel("windstorm-weapon", 2, new Vector2(0.28125f, 1.65f)),
                 },
 
+                casingFX = Effects.casing,
+                
+                shootFXSize = 2f,
+                casingFXSize = 2f,
+
                 isIndependent = true,
                 recoil = 0.4f,
                 clipSize = 2,

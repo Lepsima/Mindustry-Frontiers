@@ -38,6 +38,9 @@ namespace Frontiers.Content.SoundEffects {
             shootAltLong, shootBig, shootSmite, shootSnap, shotgun, smelter, spark, spellLoop, splash, spray, steam, swish, techLoop,
             thruster, titanExplosion, torch, tractorBeam, wave, wind, wind2, wind3, windHowl;
 
+        public static Sound
+            helicopterLoop, helicopterTakeoff, aircraftTakeoff;
+
         // https://processing.org Processing Script to auto generate all sound constructors 
         // Copy consoloe log to get all the generated constructors
 
@@ -58,6 +61,10 @@ namespace Frontiers.Content.SoundEffects {
         }
         */
         public static void Load() {
+            helicopterLoop = new("copterLoop");
+            helicopterTakeoff = new("copterTakeoff");
+            aircraftTakeoff = new("aircraftTakeoff");
+
             artillery = new("artillery");
             bang = new("bang");
             beam = new("beam");

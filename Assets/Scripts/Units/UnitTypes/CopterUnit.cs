@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Frontiers.Content;
 using Frontiers.Assets;
+using Frontiers.Content.SoundEffects;
 
 public class CopterUnit : AircraftUnit {
     public new CopterUnitType Type { get => (CopterUnitType)base.Type; protected set => base.Type = value; }
@@ -149,5 +150,20 @@ public class CopterUnit : AircraftUnit {
 
     public override float CalculateLiftPower() {
         return Mathf.Min(maxRotorOutput, base.CalculateLiftPower());
+    }
+
+    public override void OnTakeOff() {
+        base.OnTakeOff();
+
+        AudioClip clip = Sounds.helicopterTakeoff.clip;
+        audioSource.PlayOneShot(clip);
+
+        Invoke(nameof(PlayLoop), clip.length);
+    }
+
+    private void PlayLoop() {
+        audioSource.loop = true;
+        audioSource.clip = Sounds.helicopterLoop.clip;
+        audioSource.Play();
     }
 }
