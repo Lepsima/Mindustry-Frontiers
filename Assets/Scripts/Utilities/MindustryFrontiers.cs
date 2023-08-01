@@ -735,6 +735,9 @@ namespace Frontiers.Content {
     }
 
     public class ItemBlockType : BlockType {
+        // Liquid capacity in litres, liquid pressure in atmospheres and liquid temperature in kelvin (default = 500ºc)
+        public float liquidCapacity = 20f, maxLiquidPressure = 1f, maxLiquidTemperature = 773.15f;
+
         public ItemBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
         }
@@ -2197,7 +2200,6 @@ namespace Frontiers.Content {
 
     #region - Items -
 
-    [Serializable]
     public class Item : Content {
         public Color color;
         public float explosiveness = 0, flammability = 0, radioactivity = 0, charge = 0;
@@ -2290,6 +2292,54 @@ namespace Frontiers.Content {
         }
     }
 
+    public class Fluid : Content {
+        public Color color;
+
+        // Mass in tons per litre
+        public float density = 0.01f;
+
+        // The atmospheres needed to half the volume (1 = neutral)
+        public float volumePressureRatio = 1f;
+
+        // The max amount of pressure that can be usefully applied
+        public float maxPressure = 1f;
+
+        // Temperature in kelvin (0ºc == 273.15 kelvin)
+        public float temperature = 293.15f;
+
+        // The atmostpheres needed to double the temperature (1 = neutral)
+        public float temperaturePressureRatio = 1f;
+
+        // Set to -1 if cant boil, using kelvin so there should be no problem in that regard
+        public float boilTemperature = -1f; 
+
+        public Fluid(string name) : base(name) {
+
+        }
+    }
+
+    public class Fluids {
+        public static Fluid air, water;
+
+        public static Fluid atmFluid;
+        public static float atmPressure = 1f;
+
+        public static void Load() {
+            // temporal, should be replaced with oxigen/nitrogen/co2 or whatever
+            air = new Fluid("air") {
+                density = 0.00000129f, // Really small numbers, maybe i should measure in kg/l instead of t/l
+                volumePressureRatio = 1.1f,
+                maxPressure = 10.2f,
+            };
+
+            water = new Fluid("water") {
+                density = 0.001f,
+            };
+
+            atmFluid = air;
+        }
+    }
+
     #endregion
 
     #region - Structures - 
@@ -2297,7 +2347,6 @@ namespace Frontiers.Content {
     /// <summary>
     /// Stores the amount of a defined item
     /// </summary>
-    [Serializable]
     public class ItemStack {
         [JsonIgnore]
         public Item item;
