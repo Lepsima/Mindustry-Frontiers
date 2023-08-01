@@ -7,17 +7,21 @@ public class MenuManager : MonoBehaviour {
     public static MenuManager Instance;
 
     [SerializeField] Menu[] menus;
+    [SerializeField] Animator backgroundAnimator;
 
     private void Awake() {
         Instance = this;
     }
 
     public void OpenMenu(string menuName) {
-        for (int i = 0; i < menus.Length; i++) if (menus[i].name == menuName) OpenMenu(menus[i]);
+        foreach (Menu menu in menus) if (menu.name == menuName) OpenMenu(menu);       
     }
 
     public void OpenMenu(Menu menu) {
-        for (int i = 0; i < menus.Length; i++) if (menus[i].isOpen) CloseMenu(menus[i]);
+        for (int i = 0; i < menus.Length; i++) { 
+            if (menus[i].isOpen) CloseMenu(menus[i]); 
+            if (menus[i] == menu) backgroundAnimator.SetInteger("state", i);    
+        }
         menu.Open();
     }
 

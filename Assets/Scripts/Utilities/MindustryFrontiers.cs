@@ -1500,7 +1500,7 @@ namespace Frontiers.Content {
 
             sonar = new CopterUnitType("sonar", typeof(CopterUnit), 2) {
                 rotors = new UnitRotor[1] {
-                    new UnitRotor("sonar-rotor", new(0f, 0.14f), 3f, 1f, 0.667f, 1f),
+                    new UnitRotor("sonar-rotor", new(0f, 0.14f), 3f, 0.5f, 0.667f, 1f),
                 },
 
                 weapons = new WeaponMount[1] {
@@ -1511,6 +1511,8 @@ namespace Frontiers.Content {
                 priorityList = new Type[5] { typeof(MechUnit), typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
 
                 loopSound = Sounds.copterBladeLoop,
+
+                takeoffTime = 6f,
 
                 hasWreck = true,
                 wreckHealth = 125f,

@@ -158,10 +158,11 @@ public class CopterUnit : AircraftUnit {
         AudioClip clip = Sounds.helicopterTakeoff.clip;
         audioSource.PlayOneShot(clip);
 
-        Invoke(nameof(PlayLoop), clip.length);
+        Invoke(nameof(PlayLoop), takeoffTime);
     }
 
     private void PlayLoop() {
+        audioSource.PlayOneShot(Sounds.helicopterTransition.clip);
         audioSource.loop = true;
         audioSource.clip = Sounds.helicopterLoop.clip;
         audioSource.Play();

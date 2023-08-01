@@ -39,7 +39,7 @@ namespace Frontiers.Content.SoundEffects {
             thruster, titanExplosion, torch, tractorBeam, wave, wind, wind2, wind3, windHowl;
 
         public static Sound
-            helicopterLoop, helicopterTakeoff, aircraftTakeoff;
+            helicopterLoop, helicopterTransition, helicopterTakeoff, aircraftTakeoff;
 
         // https://processing.org Processing Script to auto generate all sound constructors 
         // Copy consoloe log to get all the generated constructors
@@ -63,6 +63,7 @@ namespace Frontiers.Content.SoundEffects {
         public static void Load() {
             helicopterLoop = new("copterLoop");
             helicopterTakeoff = new("copterTakeoff");
+            helicopterTransition = new("copterTransition");
             aircraftTakeoff = new("aircraftTakeoff");
 
             artillery = new("artillery");
