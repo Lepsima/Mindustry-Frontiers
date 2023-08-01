@@ -452,6 +452,7 @@ namespace Frontiers.Content {
 
             Items.Load();
             Tiles.Load();
+            Fluids.Load();
 
             // These need flags to be loaded
             UpgradeTypes.Load();
@@ -735,8 +736,7 @@ namespace Frontiers.Content {
     }
 
     public class ItemBlockType : BlockType {
-        // Liquid capacity in litres, liquid pressure in atmospheres and liquid temperature in kelvin (default = 500ºc)
-        public float liquidCapacity = 20f, maxLiquidPressure = 1f, maxLiquidTemperature = 773.15f;
+        public FluidComponentData fluidComponent;
 
         public ItemBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
@@ -905,15 +905,17 @@ namespace Frontiers.Content {
 
             landingPad, landingPadLarge,
 
-            tempest, windstorm, stinger, path, spread, 
-            
-            airFactory, 
-            
+            tempest, windstorm, stinger, path, spread,
+
+            airFactory,
+
             graphitePress, siliconSmelter, kiln,
-            
-            conveyor, router, junction, sorter, overflowGate, 
-            
-            mechanicalDrill, pneumaticDrill;
+
+            conveyor, router, junction, sorter, overflowGate,
+
+            mechanicalDrill, pneumaticDrill,
+
+            conduit, liquidContainer;
 
         public static void Load() {
             copperWall = new BlockType("copper-wall", typeof(Block), 1) {
@@ -1177,6 +1179,20 @@ namespace Frontiers.Content {
                 drillRate = 1.75f,
 
                 canGetOnFire = true,
+            };
+
+            conduit = new StorageBlockType("conduit", typeof(StorageBlock), 1) {
+                health = 100,
+                size = 1,
+
+                fluidComponent = new FluidComponentData(1f, 1f, 10f, 2f),
+            };
+
+
+            liquidContainer = new StorageBlockType("liquid-container", typeof(StorageBlock), 1) {
+                health = 100,
+                size = 1,
+                fluidComponent = new FluidComponentData(2f, 2f, 100f, 4f),
             };
         }
     }
@@ -2294,6 +2310,7 @@ namespace Frontiers.Content {
         }
     }
 
+    [Serializable]
     public class Fluid : Content {
         public Color color;
 
@@ -2306,7 +2323,7 @@ namespace Frontiers.Content {
         // The max amount of pressure that can be usefully applied
         public float maxPressure = 1f;
 
-        // Temperature in kelvin (0ºc == 273.15 kelvin)
+        /* Temperature in kelvin (0ºc == 273.15 kelvin)
         public float temperature = 293.15f;
 
         // The atmostpheres needed to double the temperature (1 = neutral)
@@ -2314,6 +2331,7 @@ namespace Frontiers.Content {
 
         // Set to -1 if cant boil, using kelvin so there should be no problem in that regard
         public float boilTemperature = -1f; 
+        */
 
         public Fluid(string name) : base(name) {
 
@@ -2334,11 +2352,26 @@ namespace Frontiers.Content {
                 maxPressure = 10.2f,
             };
 
-            water = new Fluid("water") {
+            water = new Fluid("liquid-water") {
                 density = 0.001f,
             };
 
             atmFluid = air;
+        }
+    }
+
+    public class FluidComponentData {
+        // Max liters per second this block can output/recive from/to each other block
+        public float maxInput, maxOutput;
+
+        // The maximum volume (1 volume unit = 1 liter at 1 atm), the maximum pressure in atmospheres (atm)
+        public float maxVolume, maxPressure;
+
+        public FluidComponentData(float maxInput, float maxOutput, float maxVolume, float maxPressure) {
+            this.maxInput = maxInput;
+            this.maxOutput = maxOutput;
+            this.maxVolume = maxVolume;
+            this.maxPressure = maxPressure;
         }
     }
 

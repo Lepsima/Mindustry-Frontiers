@@ -2,7 +2,7 @@ using Frontiers.Content;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-
+using Frontiers.FluidSystem;
 
 public abstract class ItemBlock : Block {
     public new ItemBlockType Type { get => (ItemBlockType)base.Type; protected set => base.Type = value; }
@@ -14,6 +14,8 @@ public abstract class ItemBlock : Block {
 
     protected Item[] acceptedItems;
     protected Item[] outputItems;
+
+    public FluidComponent fluidComponent;
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
@@ -27,6 +29,10 @@ public abstract class ItemBlock : Block {
         inventory = new Inventory(Type.allowsSingleItem, Type.itemCapacity, Type.itemMass);
         hasInventory = true;
 
+        if (Type.fluidComponent != null) {
+            fluidComponent = new FluidComponent(Type.fluidComponent);
+        }
+
         base.SetInventory();
     }
 
@@ -36,6 +42,11 @@ public abstract class ItemBlock : Block {
 
     public virtual bool IsAcceptedItem(Item item) => acceptedItems == null || acceptedItems.Length == 0 || acceptedItems.Contains(item);
 
+    protected override void Update() {
+        if (!Type.updates) return;
+        base.Update();
+        fluidComponent?.Update();
+    }
 
     public virtual void OutputItems() {
         int reciverBlockCount = reciverBlocks.Length;
@@ -86,6 +97,13 @@ public abstract class ItemBlock : Block {
 
         reciverBlocks = recivers.ToArray();
         reciverBlockOrientations = reciverOrientations.ToArray();
+
+
+        if (fluidComponent != null) {
+            List<FluidComponent> fluidComponents = new();
+            foreach (ItemBlock itemBlock in reciverBlocks) if (itemBlock.fluidComponent != null) fluidComponents.Add(itemBlock.fluidComponent);
+            fluidComponent.SetLinkedComponents(fluidComponents.ToArray());
+        }
     }
 
     public virtual void UpdateAdjacentBlocks() {
