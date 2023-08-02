@@ -32,6 +32,7 @@ using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
 using Region = Frontiers.Content.Maps.Tilemap.Region;
 using UnityEditor;
 using Frontiers.Content.VisualEffects;
+using Frontiers.FluidSystem;
 
 namespace Frontiers.Animations {
     public class Animator {
@@ -1061,8 +1062,8 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.copper, 50, Items.lead, 45),
 
                 craftPlan = new CraftPlan() {
-                    productStack = new ItemStack(Items.silicon, 1),
-                    materialList = ItemStack.With(Items.sand, 2, Items.coal, 1),
+                    product = new MaterialList(ItemStack.With(Items.silicon, 1), null),
+                    cost = new MaterialList(ItemStack.With(Items.sand, 2, Items.coal, 1), null),
                     craftTime = 0.66f
                 },
 
@@ -1079,8 +1080,8 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.copper, 75, Items.lead, 25),
 
                 craftPlan = new CraftPlan() {
-                    productStack = new ItemStack(Items.graphite, 1),
-                    materialList = ItemStack.With(Items.coal, 2),
+                    product = new MaterialList(ItemStack.With(Items.graphite, 1), null),
+                    cost = new MaterialList(ItemStack.With(Items.coal, 2), null),
                     craftTime = 1.5f
                 },
 
@@ -1095,8 +1096,8 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.copper, 100, Items.lead, 35, Items.graphite, 15),
 
                 craftPlan = new CraftPlan() {
-                    productStack = new ItemStack(Items.metaglass, 1),
-                    materialList = ItemStack.With(Items.sand, 1, Items.lead, 1),
+                    product = new MaterialList(ItemStack.With(Items.metaglass, 1), null),
+                    cost = new MaterialList(ItemStack.With(Items.sand, 1, Items.lead, 1), null),
                     craftTime = 0.5f
                 },
 
@@ -2592,6 +2593,16 @@ namespace Frontiers.Content {
             return amountCap != -1f && Has(item, amountCap);
         }
 
+        public bool FullOfAny(Item[] items) {
+            foreach(Item item in items) if (Full(item)) return true;
+            return false;
+        }
+
+        public bool FullOfAll(Item[] items) {
+            foreach (Item item in items) if (!Full(item)) return false;
+            return true;
+        }
+
         public int AmountToFull(Item item) {
             if (!Contains(item)) return amountCap;
             return amountCap - items[item];
@@ -2759,6 +2770,20 @@ namespace Frontiers.Content {
         }
     }
 
+    public struct MaterialList {
+        public ItemStack[] items;
+        public FluidStack[] fluids;
+
+        public MaterialList(ItemStack[] items, FluidStack[] fluids) {
+            this.items = items;
+            this.fluids = fluids;
+        }
+
+        public static MaterialList Multiply(MaterialList materials, float mult) {
+            return new(ItemStack.Multiply(materials.items, mult), FluidStack.Multiply(materials.fluids, mult));
+        }
+    }
+
     public struct WeaponMount {
         [JsonIgnore] public WeaponType weapon;
         public string weaponName;
@@ -2802,13 +2827,13 @@ namespace Frontiers.Content {
     }
 
     public struct CraftPlan {
-        public ItemStack productStack;
+        public MaterialList product;
+        public MaterialList cost;
         public float craftTime;
-        public ItemStack[] materialList;
 
-        public CraftPlan(ItemStack productStack, float craftTime, ItemStack[] materialList) {
-            this.productStack = productStack;
-            this.materialList = materialList;
+        public CraftPlan(MaterialList product, MaterialList cost, float craftTime) {
+            this.product = product;
+            this.cost = cost;
             this.craftTime = craftTime;
         }
     }

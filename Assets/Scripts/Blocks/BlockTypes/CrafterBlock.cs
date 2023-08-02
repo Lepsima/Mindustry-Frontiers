@@ -18,8 +18,8 @@ public class CrafterBlock : ItemBlock {
     #region - Upgradable Stats -
 
     protected float craftTime;
-    protected ItemStack craftReturn;
-    protected ItemStack[] craftCost;
+    protected MaterialList craftReturn;
+    protected MaterialList craftCost;
 
     #endregion
 
@@ -28,9 +28,9 @@ public class CrafterBlock : ItemBlock {
 
         BlockUpgradeMultipliers mult = upgrade.properties as BlockUpgradeMultipliers;
 
-        craftTime += craftTime * mult.crafter_craftTime;    
-        craftReturn = ItemStack.Multiply(craftReturn, 1f + mult.crafter_craftReturn);
-        craftCost = ItemStack.Multiply(craftCost, 1f + mult.crafter_craftCost);
+        craftTime += craftTime * mult.crafter_craftTime;
+        craftReturn = MaterialList.Multiply(craftReturn, 1f + mult.crafter_craftReturn);
+        craftCost = MaterialList.Multiply(craftCost, 1f + mult.crafter_craftCost);
     }
 
     protected override void SetSprites() {
@@ -60,12 +60,21 @@ public class CrafterBlock : ItemBlock {
         OutputItems();
     }
 
-    public bool CanCraft() => inventory.Has(craftCost) && !inventory.Full(craftReturn.item);
+    public bool CanCraft() { 
+        bool itemPass = inventory.Has(craftCost.items) && !inventory.FullOfAny(ItemStack.ToItems(craftReturn.items)); 
+    }
 
     public virtual void Craft() {
         nextCraftTime = -1f;
-        inventory.Substract(craftCost);
-        inventory.Add(craftReturn);
+
+        if (inventory != null) {
+            inventory.Substract(craftCost.items);
+            inventory.Add(craftReturn.items);
+        }
+ 
+        if (fluidComponent != null) {
+            fluidComponent.Sub();
+        }
     }
 
     public bool IsCrafting() => nextCraftTime != -1f;
@@ -75,8 +84,8 @@ public class CrafterBlock : ItemBlock {
 
         // Copy the craft plan to a local array
         craftTime = Type.craftPlan.craftTime;
-        craftReturn = Type.craftPlan.productStack.Copy();
-        craftCost = (ItemStack[])Type.craftPlan.materialList.Clone();
+        craftReturn = Type.craftPlan.product.Copy();
+        craftCost = (ItemStack[])Type.craftPlan.cost.Clone();
 
         // Set allowed input items
         Item[] allowedItems = new Item[craftCost.Length + 1];
