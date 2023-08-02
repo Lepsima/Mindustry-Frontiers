@@ -737,7 +737,7 @@ namespace Frontiers.Content {
     }
 
     public class ItemBlockType : BlockType {
-        public FluidComponentData fluidComponent;
+        public FluidInventoryData fluidComponent;
 
         public ItemBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
@@ -1186,7 +1186,7 @@ namespace Frontiers.Content {
                 health = 100,
                 size = 1,
                 updates = true,
-                fluidComponent = new FluidComponentData(1f, 1f, 10f, 2f, Fluids.air),
+                fluidComponent = new FluidInventoryData(1f, 1f, 10f, 2f, Fluids.air),
             };
 
 
@@ -1194,7 +1194,7 @@ namespace Frontiers.Content {
                 health = 400,
                 size = 2,
                 updates = true,
-                fluidComponent = new FluidComponentData(2f, 2f, 100f, 4f, Fluids.water),
+                fluidComponent = new FluidInventoryData(2f, 2f, 100f, 4f, Fluids.water),
             };
         }
     }
@@ -2359,22 +2359,6 @@ namespace Frontiers.Content {
             };
 
             atmFluid = air;
-        }
-    }
-
-    public class FluidComponentData {
-        // Max liters per second this block can output/recive from/to each other block
-        public float maxInput, maxOutput;
-
-        // The maximum volume (1 volume unit = 1 liter at 1 atm), the maximum pressure in atmospheres (atm)
-        public float maxVolume, maxPressure;
-        public Fluid fluid;
-        public FluidComponentData(float maxInput, float maxOutput, float maxVolume, float maxPressure, Fluid fluid) {
-            this.maxInput = maxInput;
-            this.maxOutput = maxOutput;
-            this.maxVolume = maxVolume;
-            this.maxPressure = maxPressure;
-            this.fluid = fluid;
         }
     }
 

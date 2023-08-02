@@ -15,7 +15,7 @@ public abstract class ItemBlock : Block {
     protected Item[] acceptedItems;
     protected Item[] outputItems;
 
-    public FluidComponent fluidComponent;
+    public FluidInventory fluidComponent;
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
@@ -30,7 +30,7 @@ public abstract class ItemBlock : Block {
         hasInventory = true;
 
         if (Type.fluidComponent != null) {
-            fluidComponent = new FluidComponent(Type.fluidComponent);
+            fluidComponent = new FluidInventory(Type.fluidComponent);
         }
 
         base.SetInventory();
@@ -99,7 +99,7 @@ public abstract class ItemBlock : Block {
         reciverBlockOrientations = reciverOrientations.ToArray();
 
         if (fluidComponent != null) {
-            List<FluidComponent> fluidComponents = new();
+            List<FluidInventory> fluidComponents = new();
             foreach (ItemBlock itemBlock in adjacentBlocks) if (itemBlock.fluidComponent != null) fluidComponents.Add(itemBlock.fluidComponent);
             fluidComponent.SetLinkedComponents(fluidComponents.ToArray());
         }
