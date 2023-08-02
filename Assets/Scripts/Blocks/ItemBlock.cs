@@ -98,10 +98,9 @@ public abstract class ItemBlock : Block {
         reciverBlocks = recivers.ToArray();
         reciverBlockOrientations = reciverOrientations.ToArray();
 
-
         if (fluidComponent != null) {
             List<FluidComponent> fluidComponents = new();
-            foreach (ItemBlock itemBlock in reciverBlocks) if (itemBlock.fluidComponent != null) fluidComponents.Add(itemBlock.fluidComponent);
+            foreach (ItemBlock itemBlock in adjacentBlocks) if (itemBlock.fluidComponent != null) fluidComponents.Add(itemBlock.fluidComponent);
             fluidComponent.SetLinkedComponents(fluidComponents.ToArray());
         }
     }

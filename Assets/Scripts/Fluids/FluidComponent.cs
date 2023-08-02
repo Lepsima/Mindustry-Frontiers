@@ -20,15 +20,12 @@ namespace Frontiers.FluidSystem {
             }
 
             set {
-                if (fluid == null) {
-                    fluid = Fluids.atmFluid;
-                    value = GetMaxLiters();
+                if (fluid != null) {
+                    liters = value;
+                    pressure = fluid.volumePressureRatio * Mathf.Max(liters / maxVolume, Fluids.atmPressure) - fluid.volumePressureRatio + 1f;
+                    volume = Mathf.Min(maxVolume, liters);
+                    unusedLiters = MaxCapacity() - liters;
                 }
-
-                liters = value;
-                volume = Mathf.Min(liters / (maxPressure / fluid.volumePressureRatio), maxVolume);
-                pressure = Mathf.Min(liters / maxVolume, maxPressure);
-                unusedLiters = maxPressure * fluid.volumePressureRatio * (maxVolume - volume);
             }
         }
 
@@ -40,6 +37,7 @@ namespace Frontiers.FluidSystem {
             this.maxPressure = maxPressure;
             this.maxInput = maxInput;
             this.maxOutput = maxOutput;
+            Liters = 0;
         }
 
         public FluidComponent(FluidComponentData data) {
@@ -47,14 +45,15 @@ namespace Frontiers.FluidSystem {
             maxPressure = data.maxPressure;
             maxInput = data.maxInput;
             maxOutput = data.maxOutput;
+
+            if (data.fluid != Fluids.air) {
+                fluid = data.fluid;
+                Liters = MaxCapacity();
+            }
         }
 
-        public float GetMaxLiters() {
+        public float MaxCapacity() {
             return maxPressure * fluid.volumePressureRatio * maxVolume;
-        }
-
-        public float GetLiters() {
-            return maxPressure * fluid.volumePressureRatio * volume;
         }
 
         public void Add(float liters) {
@@ -71,7 +70,8 @@ namespace Frontiers.FluidSystem {
 
         public void Update() {
             foreach (FluidComponent other in linkedComponents) {
-                if (other.fluid != fluid || other.pressure >= pressure) continue;
+                if ((other.fluid != null && other.fluid != fluid)|| other.pressure >= pressure) continue;
+                if (other.fluid == null) other.fluid = fluid;
 
                 float maxTransfer = Mathf.Min(other.maxInput, maxOutput) * Time.deltaTime;
                 float transferAmount = Mathf.Min(maxTransfer, Liters, other.unusedLiters);
