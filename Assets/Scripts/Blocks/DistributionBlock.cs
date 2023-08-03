@@ -38,7 +38,7 @@ public class DistributionBlock : ItemBlock {
     public override void SetInventory() {
         inventory = null;
         travelTime = 1f / Type.itemSpeed;
-        hasInventory = true;
+        hasItemInventory = true;
     }
 
     public override void GetAdjacentBlocks() {

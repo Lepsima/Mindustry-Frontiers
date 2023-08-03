@@ -247,7 +247,7 @@ public abstract class Unit : Entity, IArmed {
 
         transform.localScale = Vector3.one * Type.size;
         size = Type.size;
-        hasInventory = true;
+        hasItemInventory = true;
 
         maxVelocity = Type.maxVelocity;
         rotationSpeed = Type.rotationSpeed;
@@ -319,7 +319,7 @@ public abstract class Unit : Entity, IArmed {
 
     public override void SetInventory() {
         inventory = new Inventory(itemCapacity, Type.itemMass);
-        hasInventory = true;
+        hasItemInventory = true;
 
         base.SetInventory();
     }

@@ -86,7 +86,7 @@ public class ConveyorBlock : ItemBlock {
     public override void SetInventory() {
         inventory = null;
         itemSpace = 1f / Type.itemCapacity;
-        hasInventory = true;
+        hasItemInventory = true;
     }
 
     protected override void Update() {

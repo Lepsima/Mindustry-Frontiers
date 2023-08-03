@@ -60,20 +60,23 @@ public class CrafterBlock : ItemBlock {
         OutputItems();
     }
 
-    public bool CanCraft() { 
-        bool itemPass = inventory.Has(craftCost.items) && !inventory.FullOfAny(ItemStack.ToItems(craftReturn.items)); 
+    public bool CanCraft() {
+        bool itemPass = !hasItemInventory || inventory.Has(craftCost.items) && !inventory.FullOfAny(ItemStack.ToItems(craftReturn.items));
+        bool fluidPass = !hasFluidInventory || fluidInventory.Has(craftCost.fluids) && fluidInventory.CanRecive(craftReturn.fluids);
+        return itemPass && fluidPass;
     }
 
     public virtual void Craft() {
         nextCraftTime = -1f;
 
-        if (inventory != null) {
+        if (hasItemInventory) {
             inventory.Substract(craftCost.items);
             inventory.Add(craftReturn.items);
         }
  
-        if (fluidComponent != null) {
-            fluidComponent.Sub();
+        if (hasFluidInventory) {
+            fluidInventory.SubLiters(craftCost.fluids);
+            fluidInventory.AddLiters(craftReturn.fluids);
         }
     }
 
@@ -84,17 +87,23 @@ public class CrafterBlock : ItemBlock {
 
         // Copy the craft plan to a local array
         craftTime = Type.craftPlan.craftTime;
-        craftReturn = Type.craftPlan.product.Copy();
-        craftCost = (ItemStack[])Type.craftPlan.cost.Clone();
+        craftReturn = Type.craftPlan.product;
+        craftCost = Type.craftPlan.cost;
 
-        // Set allowed input items
-        Item[] allowedItems = new Item[craftCost.Length + 1];
-        for (int i = 0; i < craftCost.Length; i++) allowedItems[i] = craftCost[i].item;
-        allowedItems[craftCost.Length] = craftReturn.item;
+        if (hasItemInventory) {
+            // Set allowed input items
+            Item[] allowedItems = new Item[craftCost.items.Length + craftReturn.items.Length];
+            for (int i = 0; i < craftCost.items.Length; i++) allowedItems[i] = craftCost.items[i].item;
+            for (int i = 0; i < craftReturn.items.Length; i++) allowedItems[i + craftCost.items.Length - 1] = craftReturn.items[i].item;
 
-        inventory.SetAllowedItems(allowedItems);
-        acceptedItems = ItemStack.ToItems(craftCost);
-        outputItems = new Item[1] { craftReturn.item };
+            inventory.SetAllowedItems(allowedItems);
+            acceptedItems = ItemStack.ToItems(craftCost.items);
+            outputItems = ItemStack.ToItems(craftReturn.items);
+        }
+
+        if (hasFluidInventory) {
+
+        }
     }
 
     public override void OnInventoryValueChange(object sender, System.EventArgs e) {

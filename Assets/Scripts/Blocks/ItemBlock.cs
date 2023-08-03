@@ -15,22 +15,27 @@ public abstract class ItemBlock : Block {
     protected Item[] acceptedItems;
     protected Item[] outputItems;
 
-    public FluidInventory fluidComponent;
+    public FluidInventory fluidInventory;
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
-        hasInventory = true;
+        hasItemInventory = true;
 
         GetAdjacentBlocks();
         UpdateAdjacentBlocks();
     }
 
     public override void SetInventory() {
-        inventory = new Inventory(Type.allowsSingleItem, Type.itemCapacity, Type.itemMass);
-        hasInventory = true;
 
-        if (Type.fluidComponent != null) {
-            fluidComponent = new FluidInventory(Type.fluidComponent);
+        hasItemInventory = Type.hasItemInventory;
+        hasFluidInventory = Type.hasFluidInventory;
+
+        if (hasItemInventory) {
+            inventory = new Inventory(Type.allowsSingleItem, Type.itemCapacity, Type.itemMass);
+        }
+
+        if (hasFluidInventory) {
+            fluidInventory = new FluidInventory(this, Type.fluidInventoryData);
         }
 
         base.SetInventory();
@@ -45,7 +50,7 @@ public abstract class ItemBlock : Block {
     protected override void Update() {
         if (!Type.updates) return;
         base.Update();
-        fluidComponent?.Update();
+        fluidInventory?.Update();
     }
 
     public virtual void OutputItems() {
@@ -98,10 +103,10 @@ public abstract class ItemBlock : Block {
         reciverBlocks = recivers.ToArray();
         reciverBlockOrientations = reciverOrientations.ToArray();
 
-        if (fluidComponent != null) {
+        if (fluidInventory != null) {
             List<FluidInventory> fluidComponents = new();
-            foreach (ItemBlock itemBlock in adjacentBlocks) if (itemBlock.fluidComponent != null) fluidComponents.Add(itemBlock.fluidComponent);
-            fluidComponent.SetLinkedComponents(fluidComponents.ToArray());
+            foreach (ItemBlock itemBlock in adjacentBlocks) if (itemBlock.fluidInventory != null) fluidComponents.Add(itemBlock.fluidInventory);
+            fluidInventory.SetLinkedComponents(fluidComponents.ToArray());
         }
     }
 

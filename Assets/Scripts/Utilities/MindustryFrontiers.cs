@@ -737,7 +737,8 @@ namespace Frontiers.Content {
     }
 
     public class ItemBlockType : BlockType {
-        public FluidInventoryData fluidComponent;
+        public FluidInventoryData fluidInventoryData;
+        public bool hasItemInventory, hasFluidInventory;
 
         public ItemBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
@@ -1186,7 +1187,7 @@ namespace Frontiers.Content {
                 health = 100,
                 size = 1,
                 updates = true,
-                fluidComponent = new FluidInventoryData(1f, 1f, 10f, 2f, Fluids.air),
+                fluidInventoryData = new FluidInventoryData(1f, 1f, 10f, 2f, Fluids.air),
             };
 
 
@@ -1194,7 +1195,7 @@ namespace Frontiers.Content {
                 health = 400,
                 size = 2,
                 updates = true,
-                fluidComponent = new FluidInventoryData(2f, 2f, 100f, 4f, Fluids.water),
+                fluidInventoryData = new FluidInventoryData(2f, 2f, 100f, 4f, Fluids.water),
             };
         }
     }
@@ -2309,56 +2310,6 @@ namespace Frontiers.Content {
                 cost = 5,
                 buildable = false
             };
-        }
-    }
-
-    [Serializable]
-    public class Fluid : Content {
-        public Color color;
-
-        // Mass in tons per litre
-        public float density = 0.01f;
-
-        // The atmospheres needed to half the volume (1 = neutral)
-        public float volumePressureRatio = 1f;
-
-        // The max amount of pressure that can be usefully applied
-        public float maxPressure = 1f;
-
-        /* Temperature in kelvin (0ºc == 273.15 kelvin)
-        public float temperature = 293.15f;
-
-        // The atmostpheres needed to double the temperature (1 = neutral)
-        public float temperaturePressureRatio = 1f;
-
-        // Set to -1 if cant boil, using kelvin so there should be no problem in that regard
-        public float boilTemperature = -1f; 
-        */
-
-        public Fluid(string name) : base(name) {
-
-        }
-    }
-
-    public class Fluids {
-        public static Fluid air, water;
-
-        public static Fluid atmFluid;
-        public static float atmPressure = 1f;
-
-        public static void Load() {
-            // temporal, should be replaced with oxigen/nitrogen/co2 or whatever
-            air = new Fluid("air") {
-                density = 0.00000129f, // Really small numbers, maybe i should measure in kg/l instead of t/l
-                volumePressureRatio = 1.1f,
-                maxPressure = 10.2f,
-            };
-
-            water = new Fluid("liquid-water") {
-                density = 0.001f,
-            };
-
-            atmFluid = air;
         }
     }
 

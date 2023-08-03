@@ -29,138 +29,198 @@ namespace Frontiers.FluidSystem {
             return copy;
         }
     }
+    
 
-    public class FluidMixture {
-        public Dictionary<Fluid, float> fluids = new();
+    // Pressure formula = Mathf.Min((Mathf.Max(liters / data.maxVolume, Fluids.atmPressure) - 1f) / fluid.volumePressureRatio + 1f, fluid.maxPressure, data.maxPressure);
 
-        public void Add(Fluid fluid, float liters) {
-            if (!fluids.ContainsKey(fluid)) fluids.Add(fluid, liters);
-            else fluids[fluid] = liters;
-        }
+    // Volume formula = liters / ((pressure - 1f) * fluid.volumePressureRatio + 1f);
 
+    // Liters formula = return Mathf.Min(liters, MaxLiters());
 
-    }
-
-    public struct FluidContainerData {
-        public Fluid[] allowedFluids;
-        public float maxVolume, maxPressure;
-        public float maxInput, maxOutput;
-    }
-
-    public class FluidContainer {
-        public Fluid fluid;
-        public FluidContainerData data;
-
-        public FluidContainer[] linkedContainers;
-
-        public float liters, unusedLiters, volume, pressure;
-
-        public FluidContainer(FluidContainerData data) {
-            this.data = data;
-        }
-
-        // Returns unused liters
-        public float SetLiters(float liters) {
-            // Calculate the pressure of the fluid inside the max volume, completely clamped value
-            pressure = GetPressure();
-
-            // Clamp to max liters in case there were extra
-            this.liters = GetLiters();
-            unusedLiters = this.liters - MaxLiters();
-
-            // Return excess
-            return liters - this.liters;
-        }
-
-        public float GetPressure() {
-            return Mathf.Min((Mathf.Max(liters / data.maxVolume, Fluids.atmPressure) - 1f) / fluid.volumePressureRatio + 1f, fluid.maxPressure, data.maxPressure);
-        }
-
-        public float GetVolume() {
-            return liters / ((pressure - 1f) * fluid.volumePressureRatio + 1f);
-        }
-
-        public float GetLiters() {
-            return Mathf.Min(liters, MaxLiters());
-        }
-
-        public float MaxLiters() {
-            return pressure * fluid.volumePressureRatio * data.maxVolume;
-        }
-
-        public void UpdateContainer() {
-            if (fluid == null || liters == 0) 
-                return;
-
-            foreach (FluidContainer other in linkedContainers) {
-                if ((other.fluid != null && other.fluid != fluid) || other.pressure >= pressure)
-                    continue;
-
-                other.fluid ??= fluid;
-
-                float maxTransfer = Mathf.Min(other.data.maxInput, data.maxOutput) * Time.deltaTime;
-                float transferAmount = Mathf.Min(maxTransfer, liters, other.unusedLiters);
-
-                other.SetLiters(other.liters + transferAmount);
-                SetLiters(liters - transferAmount);
-            }
-        }
-    }
-
-    public struct FluidInventoryData {
-        // Max liters per second this block can output/recive from/to each other block
-        public float maxInput, maxOutput;
-
-        public FluidContainerData[] containerDatas;
-
-        public FluidInventoryData(float maxInput, float maxOutput, FluidContainerData[] containerDatas) {
-            this.maxInput = maxInput;
-            this.maxOutput = maxOutput;
-            this.containerDatas = containerDatas;
-        }
-    }
+    // pressure * fluid.volumePressureRatio * data.maxVolume;
 
     public class FluidInventory {
         public FluidInventoryData data;
+        public ItemBlock block;
 
-        public (Fluid, FluidContainer)[] fluidContainers;
-        public FluidInventory[] linkedComponents;
+        public bool pressurized, canReciveLowerPressures;
+        public float pressure, usedVolume;
 
+        // Fluid type, (x = liters, y = volume)
+        public Dictionary<Fluid, Vector2> fluids = new();
+        public FluidInventory[] linkedInventories;
 
-        public FluidInventory(FluidInventoryData data) {
+        public FluidInventory(Block block, FluidInventoryData data) {
             this.data = data;
-            fluidContainers = CreateContainers(data.containerDatas);
-        }
-
-        public static (Fluid, FluidContainer)[] CreateContainers(FluidContainerData[] datas) {
-            List<(Fluid, FluidContainer)> containerList = new();
-            foreach(FluidContainerData data in datas) containerList.Add(new(null, new FluidContainer(data)));
-            return containerList.ToArray();
-        }
-
-        public void SetLinkedComponents(FluidInventory[] components) {
-            List<FluidContainer> containers = new List<FluidContainer>();
-
-            foreach(FluidInventory inventory in components) {
-                foreach (FluidContainer fluidContainer in inventory.fluidContainers) {
-                    containers.Add(fluidContainer);
-                }
-            }
-
-            foreach((Fluid, FluidContainer) container in fluidContainers) {
-                container.Item2.linkedContainers = 
-            }
         }
 
         public void Update() {
-            foreach()
-            if (fluid == null || liters == 0) return;
+            bool canBePressurized = CanBePressurized();
 
-            foreach (FluidInventory other in linkedComponents) {
-
+            // If pressurization state changed, update pressure
+            // TODO: change pressure slowly
+            if (canBePressurized != pressurized) {
+                UpdatePressure(canBePressurized ? data.maxPressure : Fluids.atmPressure);
             }
 
-            if (Liters <= 0f) fluid = null; 
+            foreach (FluidInventory other in linkedInventories) {
+                int pressureDiff = PressureDifference(other);
+
+                // Get max output volume
+                float maxVolumePerFluid = Mathf.Min(data.maxOutput, other.data.maxInput, other.EmptyVolume());
+                float transferAmount = maxVolumePerFluid / fluids.Count * Time.deltaTime;
+
+                if (pressureDiff == 1 || other.canReciveLowerPressures) {
+                    foreach (Fluid fluid in fluids.Keys) {
+                        // Transfer
+                        other.AddVolume(fluid, transferAmount);
+                        SubVolume(fluid, transferAmount);
+                    }
+
+                } else if (pressureDiff == 0) {
+                    foreach (Fluid fluid in fluids.Keys) {
+                        // If other's volume is higher, skip
+                        if (other.fluids[fluid].y >= fluids[fluid].y) continue;
+
+                        // Transfer
+                        other.AddVolume(fluid, transferAmount);
+                        SubVolume(fluid, transferAmount);
+                    }
+                } 
+            }
+        }
+
+        public void AddVolume(Fluid fluid, float volume) {
+            if (volume == 0f) return;
+
+            // Add fluid to list
+            if (!fluids.ContainsKey(fluid)) {
+                if (!data.allowedFluids.Contains(fluid)) return;
+                fluids.Add(fluid, Vector2.zero);
+            }
+
+            // Add volume
+            usedVolume += volume;
+            volume += fluids[fluid].y;
+
+            // Calculate liters and set new values
+            float liters = fluid.Liters(volume, pressure);
+            fluids[fluid] = new Vector2(liters, volume);
+        }
+
+        public void AddLiters(FluidStack[] stacks) {
+            foreach (FluidStack stack in stacks) {
+                AddLiters(stack.fluid, stack.liters);
+            }
+        }
+
+        public void AddLiters(Fluid fluid, float liters) {
+            float volume = fluid.Volume(liters, pressure);
+            AddVolume(fluid, volume);
+        }
+
+        public void SubVolume(Fluid fluid, float volume) {
+            // If this inventory doesnt contain this fluid, skip
+            if (!fluids.ContainsKey(fluid)) return;
+
+            // Get the max substract amount and apply it
+            float maxSubstract = Mathf.Min(fluids[fluid].y, volume);
+            usedVolume -= maxSubstract;
+            volume = fluids[fluid].y - maxSubstract;
+
+            if (volume > 0f) {
+                // Calculate liters and set new values
+                float liters = fluid.Liters(volume, pressure);
+                fluids[fluid] = new Vector2(liters, volume);
+            } else {
+                // If 0, remove from fluid list
+                fluids.Remove(fluid);
+            }
+        }
+
+        public void SubLiters(FluidStack[] stacks) {
+            foreach(FluidStack stack in stacks) {
+                SubLiters(stack.fluid, stack.liters);
+            }
+        }
+
+        public void SubLiters(Fluid fluid, float liters) {
+            float volume = fluid.Volume(liters, pressure);
+            SubVolume(fluid, volume);
+        }
+
+        public bool CanBePressurized() {
+            // Cant be pressurized if is too damaged
+            return data.pressurizable && block.GetHealthPercent() > data.minHealthPressurizable;
+        }
+
+        public float EmptyVolume() {
+            return data.maxVolume - usedVolume;
+        }
+
+        public bool CanRecive(FluidStack[] stacks) {
+            foreach(FluidStack stack in stacks) if (!CanRecive(stack)) return false;
+            return true;
+        }
+
+        public bool CanRecive(FluidStack stack) {
+            return CanRecive(stack.fluid, stack.liters);
+        }
+
+        public bool CanRecive(Fluid fluid, float liters) {
+            return EmptyVolume() >= fluid.Volume(liters, pressure);
+        }
+
+        public bool Has(FluidStack[] stacks) {
+            foreach (FluidStack stack in stacks) if (!Has(stack)) return false;
+            return true;
+        }
+
+        public bool Has(FluidStack stack) {
+            return Has(stack.fluid, stack.liters);
+        }
+
+        public bool Has(Fluid fluid, float liters) {
+            return fluids.ContainsKey(fluid) && fluids[fluid].x >= liters;
+        }
+
+        public int PressureDifference(FluidInventory other) {
+            if (other.pressure == pressure) return 0;
+            else if (other.pressure > pressure) return -1;
+            else return 1;
+        }
+
+        public void UpdatePressure(float value) {
+            pressure = Mathf.Max(value, Fluids.atmPressure);
+            float totalVolume = 0f;
+
+            // Loop though each fluid in density order, heavier first
+            for (int i = 0; i < 0; i++) {
+                // Get the current fluid
+                Fluid fluid = fluids.Keys.ElementAt(i);
+
+                // Get the volume that ocupies this fluid
+                float liters = fluids[fluid].x;
+                float volume = fluid.Volume(liters, pressure);
+
+                // Clamp volume to the max it can fit
+                if (totalVolume + volume > data.maxVolume) {
+                    volume = data.maxVolume - totalVolume;
+                    liters = fluid.Liters(volume, pressure);
+                }
+
+                // Add to total
+                totalVolume += volume;
+
+                // Set the calculated value
+                fluids[fluid] = new Vector2(liters, volume);
+            }
+
+            usedVolume = totalVolume;
+        }
+
+        public void SetLinkedComponents(FluidInventory[] inventories) {
+            linkedInventories = inventories;
         }
     }
 }

@@ -251,7 +251,7 @@ public class Client : MonoBehaviourPunCallbacks {
         ItemStack[] stacks = ItemStack.DeSerialize(serializedStacks);
         Entity entity = (Entity)syncObjects[syncID];
 
-        if (!entity.hasInventory) return;
+        if (!entity.hasItemInventory) return;
         entity.GetInventory().Add(stacks);
     }
 

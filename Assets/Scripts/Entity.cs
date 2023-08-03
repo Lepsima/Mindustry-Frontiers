@@ -34,7 +34,7 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
 
     #endregion
 
-    public bool hasInventory = false;
+    public bool hasItemInventory = false, hasFluidInventory = false;
     public float size;
 
     public bool wasDestroyed = false;
@@ -128,7 +128,7 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
     public abstract void OnInventoryValueChange(object sender, EventArgs e);
 
     public virtual bool CanReciveItem(Item item, int orientation = 0) {
-        return hasInventory && inventory != null && inventory.Allowed(item);
+        return hasItemInventory && inventory != null && inventory.Allowed(item);
     }
 
     public virtual void ReciveItems(Item item, int amount = 1, int orientation = 0) {

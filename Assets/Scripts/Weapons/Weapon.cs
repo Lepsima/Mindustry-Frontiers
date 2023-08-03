@@ -129,7 +129,7 @@ public class Weapon : MonoBehaviour {
         Type = weaponType;
 
         weaponOffset = transform.localPosition;
-        if (Type.consumesItems && !parentEntity.hasInventory) Debug.LogWarning(Type.name + " consumes items but " + parentEntity.GetEntityType().name + " doesn't have inventory, this may cause errors");
+        if (Type.consumesItems && !parentEntity.hasItemInventory) Debug.LogWarning(Type.name + " consumes items but " + parentEntity.GetEntityType().name + " doesn't have inventory, this may cause errors");
 
         EndReload();
         SetSprites(onTop);

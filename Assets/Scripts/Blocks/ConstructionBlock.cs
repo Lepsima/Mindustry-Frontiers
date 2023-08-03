@@ -19,7 +19,7 @@ public class ConstructionBlock : Block {
     }
 
     public override void SetInventory() {
-        hasInventory = false;
+        hasItemInventory = false;
         requiredItems = ItemStack.ToItems(Type.buildCost);
 
         inventory = new Inventory(-1, -1, requiredItems);
