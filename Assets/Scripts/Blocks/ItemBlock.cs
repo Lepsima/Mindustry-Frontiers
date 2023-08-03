@@ -19,14 +19,12 @@ public abstract class ItemBlock : Block {
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
-        hasItemInventory = true;
 
         GetAdjacentBlocks();
         UpdateAdjacentBlocks();
     }
 
     public override void SetInventory() {
-
         hasItemInventory = Type.hasItemInventory;
         hasFluidInventory = Type.hasFluidInventory;
 
@@ -48,7 +46,6 @@ public abstract class ItemBlock : Block {
     public virtual bool IsAcceptedItem(Item item) => acceptedItems == null || acceptedItems.Length == 0 || acceptedItems.Contains(item);
 
     protected override void Update() {
-        if (!Type.updates) return;
         base.Update();
         fluidInventory?.Update();
     }

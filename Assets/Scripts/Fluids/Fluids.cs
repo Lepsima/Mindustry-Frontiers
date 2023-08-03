@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Frontiers.Content;
+using System.Linq;
 
 namespace Frontiers.FluidSystem {
 
@@ -22,7 +23,7 @@ namespace Frontiers.FluidSystem {
         }
 
         public float Compression(float pressure) {
-            return (Mathf.Min(pressure - 1f, maxCompression) * compressionRatio + 1f);
+            return (Mathf.Clamp(pressure - 1f, Fluids.atmPressure - 1f, maxCompression) * compressionRatio + 1f);
         }
 
         public float Volume(float liters, float pressure) {
@@ -34,10 +35,53 @@ namespace Frontiers.FluidSystem {
         }
     }
 
+    public class FluidComposite {
+        // all fluids and their percentages
+        public Dictionary<Fluid, float> fluids = new();
+        public float density, maxCompression, compressionRatio;
+
+        public FluidComposite((Fluid, float)[] fluids) {
+            this.fluids = CreateDictionary(fluids);
+            density = Density();
+            maxCompression = MaxCompression();
+            compressionRatio = CompressionRatio();
+        }
+
+        public Dictionary<Fluid, float> CreateDictionary((Fluid, float)[] fluids) {
+            Dictionary<Fluid, float> dictionary = new();
+
+            // Normalize dictionary values to prevent miscalculations
+            float sum = fluids.Sum(x => x.Item2);
+            for (int i = 0; i < fluids.Length; i++) dictionary.Add(fluids[i].Item1, fluids[i].Item2 / sum);
+
+            return dictionary;
+        }
+
+        public float Density() {
+            float density = 0;
+            foreach (Fluid fluid in fluids.Keys) density += fluid.density * fluids[fluid];
+            return density;
+        }
+
+        public float MaxCompression() {
+            // Returns the lowest maxCompression of all fluids
+            float compression = float.MaxValue;
+            foreach (Fluid fluid in fluids.Keys) compression = Mathf.Min(compression, fluid.maxCompression);
+            return compression;
+        }
+
+        public float CompressionRatio() {
+            // Returns the lowest compressionRatio of all fluids
+            float compressionRatio = float.MaxValue;
+            foreach (Fluid fluid in fluids.Keys) compressionRatio = Mathf.Min(compressionRatio, fluid.compressionRatio);
+            return compressionRatio;
+        }
+    }
+
     public class Fluids {
         public static Fluid air, water;
 
-        public static Fluid atmFluid;
+        public static FluidComposite atmFluid;
         public static float atmPressure = 1f;
 
         public static void Load() {
@@ -52,7 +96,7 @@ namespace Frontiers.FluidSystem {
                 density = 0.001f,
             };
 
-            atmFluid = air;
+            atmFluid = new FluidComposite(new (Fluid, float)[1] { (air, 1) });
         }
     }
 

@@ -50,8 +50,11 @@ namespace Frontiers.FluidSystem {
         public Dictionary<Fluid, Vector2> fluids = new();
         public FluidInventory[] linkedInventories;
 
-        public FluidInventory(Block block, FluidInventoryData data) {
+        public FluidInventory(ItemBlock block, FluidInventoryData data) {
+            this.block = block;
             this.data = data;
+
+            UpdatePressure(CanBePressurized() ? data.maxPressure : Fluids.atmPressure);
         }
 
         public void Update() {
@@ -95,13 +98,17 @@ namespace Frontiers.FluidSystem {
 
             // Add fluid to list
             if (!fluids.ContainsKey(fluid)) {
-                if (!data.allowedFluids.Contains(fluid)) return;
+                if (data.allowedFluids != null && !data.allowedFluids.Contains(fluid)) return;
+
+                // Add new fluid and order by density
                 fluids.Add(fluid, Vector2.zero);
+                fluids.OrderBy(x => x.Key.density);
             }
 
             // Add volume
-            usedVolume += volume;
-            volume += fluids[fluid].y;
+            float maxAdd = Mathf.Min(volume, data.maxVolume - usedVolume);
+            usedVolume += maxAdd;
+            volume = fluids[fluid].y + maxAdd;
 
             // Calculate liters and set new values
             float liters = fluid.Liters(volume, pressure);
@@ -195,7 +202,7 @@ namespace Frontiers.FluidSystem {
             float totalVolume = 0f;
 
             // Loop though each fluid in density order, heavier first
-            for (int i = 0; i < 0; i++) {
+            for (int i = 0; i < fluids.Count; i++) {
                 // Get the current fluid
                 Fluid fluid = fluids.Keys.ElementAt(i);
 

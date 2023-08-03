@@ -35,6 +35,7 @@ public class Block : Entity {
 
         base.Set(position, rotation, type, id, teamCode);
 
+        enabled = Type.updates;
         health = Type.health;
 
         //Set position
@@ -100,8 +101,6 @@ public class Block : Entity {
     }
 
     protected virtual void Update() {
-        if (!Type.updates) return;
-
         // Update the glow sprite
         if (glows) {
             for (int i = 0; i < glowSpriteRenderers.Length; i++) {

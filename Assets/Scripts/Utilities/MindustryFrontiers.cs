@@ -738,7 +738,7 @@ namespace Frontiers.Content {
 
     public class ItemBlockType : BlockType {
         public FluidInventoryData fluidInventoryData;
-        public bool hasItemInventory, hasFluidInventory;
+        public bool hasItemInventory = true, hasFluidInventory = false;
 
         public ItemBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
@@ -895,6 +895,14 @@ namespace Frontiers.Content {
 
         public LandPadBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
+        }
+    }
+
+    public class FluidCollectorBlockType : ItemBlockType {
+        public float literCollectionRate = 1f;
+
+        public FluidCollectorBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
+            hasFluidInventory = true;
         }
     }
 
@@ -1183,11 +1191,27 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };
 
-            conduit = new StorageBlockType("conduit", typeof(StorageBlock), 1) {
+            conduit = new FluidCollectorBlockType("conduit", typeof(FluidCollectorBlock), 1) {
                 health = 100,
                 size = 1,
                 updates = true,
-                fluidInventoryData = new FluidInventoryData(1f, 1f, 10f, 2f, Fluids.air),
+
+                hasFluidInventory = true,
+                hasItemInventory = false,
+
+                literCollectionRate = 1f,
+
+                fluidInventoryData = new FluidInventoryData() {
+                    maxInput = 1f, 
+                    maxOutput = 1f,
+                    maxVolume = 10f, 
+
+                    maxPressure = 3f,
+                    minHealthPressurizable = 0.5f,
+                    pressurizable = true,
+
+                    allowedFluids = null,
+                },
             };
 
 
@@ -1195,7 +1219,21 @@ namespace Frontiers.Content {
                 health = 400,
                 size = 2,
                 updates = true,
-                fluidInventoryData = new FluidInventoryData(2f, 2f, 100f, 4f, Fluids.water),
+
+                hasFluidInventory = true,
+                hasItemInventory = false,
+
+                fluidInventoryData = new FluidInventoryData() {
+                    maxInput = 2f,
+                    maxOutput = 2f,
+                    maxVolume = 100f,
+
+                    maxPressure = 4f,
+                    minHealthPressurizable = 0.7f,
+                    pressurizable = true,
+
+                    allowedFluids = null,
+                },
             };
         }
     }
