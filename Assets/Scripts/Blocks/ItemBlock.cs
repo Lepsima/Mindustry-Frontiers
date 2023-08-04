@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using Frontiers.FluidSystem;
+using System;
 
 public abstract class ItemBlock : Block {
     public new ItemBlockType Type { get => (ItemBlockType)base.Type; protected set => base.Type = value; }
@@ -16,12 +17,31 @@ public abstract class ItemBlock : Block {
     protected Item[] outputItems;
 
     public FluidInventory fluidInventory;
+    public SpriteRenderer fluidSpriteRenderer;
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
 
         GetAdjacentBlocks();
         UpdateAdjacentBlocks();
+    }
+
+    protected override void SetSprites() {
+        base.SetSprites();
+
+        if (Type.fluidSprite == null) return;
+
+        Transform fluidTransform = new GameObject("Fluid", typeof(SpriteRenderer)).transform;
+        fluidTransform.parent = transform;
+        fluidTransform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+
+        SpriteRenderer spriteRenderer = fluidTransform.GetComponent<SpriteRenderer>();
+        fluidSpriteRenderer = spriteRenderer;
+
+        spriteRenderer.sprite = Type.fluidSprite;
+        spriteRenderer.color = new Color(1f, 1f, 1f, 0f);
+        spriteRenderer.sortingLayerName = "Blocks";
+        spriteRenderer.sortingOrder = 3;
     }
 
     public override void SetInventory() {
@@ -34,9 +54,15 @@ public abstract class ItemBlock : Block {
 
         if (hasFluidInventory) {
             fluidInventory = new FluidInventory(this, Type.fluidInventoryData);
+            fluidInventory.OnVolumeChanged += OnVolumeChanged;
         }
 
         base.SetInventory();
+    }
+
+    public virtual void OnVolumeChanged(object sender, EventArgs e) {
+        if (fluidSpriteRenderer == null) return;
+        fluidSpriteRenderer.color = new Color(1f, 1f, 1f, fluidInventory.usedVolume / fluidInventory.data.maxVolume);
     }
 
     public override bool CanReciveItem(Item item, int orientation = 0) { 
@@ -100,11 +126,13 @@ public abstract class ItemBlock : Block {
         reciverBlocks = recivers.ToArray();
         reciverBlockOrientations = reciverOrientations.ToArray();
 
-        if (fluidInventory != null) {
-            List<FluidInventory> fluidComponents = new();
-            foreach (ItemBlock itemBlock in adjacentBlocks) if (itemBlock.fluidInventory != null) fluidComponents.Add(itemBlock.fluidInventory);
-            fluidInventory.SetLinkedComponents(fluidComponents.ToArray());
-        }
+        if (fluidInventory != null) SetFluidLinkedComponents(recivers);
+    }
+
+    public virtual void SetFluidLinkedComponents(List<ItemBlock> adjacentBlocks) {
+        List<FluidInventory> fluidComponents = new();
+        foreach (ItemBlock itemBlock in adjacentBlocks) if (itemBlock.fluidInventory != null) fluidComponents.Add(itemBlock.fluidInventory);
+        fluidInventory.SetLinkedComponents(fluidComponents.ToArray());
     }
 
     public virtual void UpdateAdjacentBlocks() {

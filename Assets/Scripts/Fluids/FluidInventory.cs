@@ -43,6 +43,8 @@ namespace Frontiers.FluidSystem {
         public FluidInventoryData data;
         public ItemBlock block;
 
+        public event EventHandler OnVolumeChanged;
+
         public bool pressurized, canReciveLowerPressures;
         public float pressure, usedVolume;
 
@@ -108,6 +110,7 @@ namespace Frontiers.FluidSystem {
             // Add volume
             float maxAdd = Mathf.Min(volume, data.maxVolume - usedVolume);
             usedVolume += maxAdd;
+            OnVolumeChanged?.Invoke(this, EventArgs.Empty);
             volume = fluids[fluid].y + maxAdd;
 
             // Calculate liters and set new values
@@ -128,11 +131,12 @@ namespace Frontiers.FluidSystem {
 
         public void SubVolume(Fluid fluid, float volume) {
             // If this inventory doesnt contain this fluid, skip
-            if (!fluids.ContainsKey(fluid)) return;
+            if (!fluids.ContainsKey(fluid) || volume == 0f) return;
 
             // Get the max substract amount and apply it
             float maxSubstract = Mathf.Min(fluids[fluid].y, volume);
             usedVolume -= maxSubstract;
+            OnVolumeChanged?.Invoke(this, EventArgs.Empty);
             volume = fluids[fluid].y - maxSubstract;
 
             if (volume > 0f) {

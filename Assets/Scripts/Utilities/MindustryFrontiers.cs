@@ -737,11 +737,12 @@ namespace Frontiers.Content {
     }
 
     public class ItemBlockType : BlockType {
+        public Sprite fluidSprite;
         public FluidInventoryData fluidInventoryData;
         public bool hasItemInventory = true, hasFluidInventory = false;
 
         public ItemBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
-
+            fluidSprite = AssetLoader.GetSprite(name + "-fluid");
         }
     }
 
@@ -1200,13 +1201,13 @@ namespace Frontiers.Content {
                 hasItemInventory = false,
 
                 fluidInventoryData = new FluidInventoryData() {
-                    maxInput = 1f, 
-                    maxOutput = 1f,
-                    maxVolume = 10f, 
+                    maxInput = 1000f, 
+                    maxOutput = 1000f,
+                    maxVolume = 1000f, 
 
-                    maxPressure = 3f,
+                    maxPressure = -1f,
                     minHealthPressurizable = 0.5f,
-                    pressurizable = true,
+                    pressurizable = false,
 
                     allowedFluids = null,
                 },
@@ -1222,13 +1223,13 @@ namespace Frontiers.Content {
                 hasItemInventory = false,
 
                 fluidInventoryData = new FluidInventoryData() {
-                    maxInput = 2f,
-                    maxOutput = 2f,
-                    maxVolume = 100f,
+                    maxInput = 1000f,
+                    maxOutput = 1000f,
+                    maxVolume = 1000f,
 
-                    maxPressure = 4f,
+                    maxPressure = -1f,
                     minHealthPressurizable = 0.7f,
-                    pressurizable = true,
+                    pressurizable = false,
 
                     allowedFluids = null,
                 },
@@ -1242,12 +1243,12 @@ namespace Frontiers.Content {
                 hasFluidInventory = true,
                 hasItemInventory = false,
 
-                literCollectionRate = 24f,
+                literCollectionRate = 240f,
 
                 fluidInventoryData = new FluidInventoryData() {
-                    maxInput = 24f,
-                    maxOutput = 24f,
-                    maxVolume = 2000f,
+                    maxInput = 1000f,
+                    maxOutput = 1000f,
+                    maxVolume = 2400f,
 
                     maxPressure = -1f,
                     minHealthPressurizable = 0.7f,
