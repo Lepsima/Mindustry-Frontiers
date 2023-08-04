@@ -109,6 +109,19 @@ namespace Frontiers.FluidSystem {
         public static float atmosphericPressure = 1f;
 
         public static void Load() {
+            Items.carbon = new Item("carbon") {
+                color = new Color(0x53, 0x56, 0x5c),
+                cost = 0.8f
+            };
+
+            Items.sulfur = new Item("sulfur") {
+                color = new Color(0x27, 0x27, 0x27),
+                explosiveness = 0.2f,
+                flammability = 1f,
+                hardness = 2,
+                buildable = false
+            };
+
             hidrogen = new Fluid("fluid-hidrogen") {
                 density = 0.08375f,
                 compressionRatio = 0.55f,

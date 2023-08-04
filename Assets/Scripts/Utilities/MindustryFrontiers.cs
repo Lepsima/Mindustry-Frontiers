@@ -446,7 +446,7 @@ namespace Frontiers.Content {
             loadedContents = new();
             //modList = new List<Mod>();
 
-            // These two don't inherit from the base content class
+            // These three don't inherit from the base content class
             Sounds.Load();
             Effects.Load();
             FlagTypes.Load();
@@ -925,7 +925,7 @@ namespace Frontiers.Content {
 
             mechanicalDrill, pneumaticDrill,
 
-            conduit, liquidContainer;
+            conduit, liquidContainer, oilRefinery, atmosphericCollector;
 
         public static void Load() {
             copperWall = new BlockType("copper-wall", typeof(Block), 1) {
@@ -1191,15 +1191,13 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };
 
-            conduit = new FluidCollectorBlockType("conduit", typeof(FluidCollectorBlock), 1) {
+            conduit = new StorageBlockType("conduit", typeof(StorageBlock), 1) {
                 health = 100,
                 size = 1,
                 updates = true,
 
                 hasFluidInventory = true,
                 hasItemInventory = false,
-
-                literCollectionRate = 1f,
 
                 fluidInventoryData = new FluidInventoryData() {
                     maxInput = 1f, 
@@ -1231,6 +1229,29 @@ namespace Frontiers.Content {
                     maxPressure = 4f,
                     minHealthPressurizable = 0.7f,
                     pressurizable = true,
+
+                    allowedFluids = null,
+                },
+            };
+
+            atmosphericCollector = new FluidCollectorBlockType("atmospheric-collector", typeof(FluidCollectorBlock), 2) {
+                health = 1600,
+                size = 4,
+                updates = true,
+
+                hasFluidInventory = true,
+                hasItemInventory = false,
+
+                literCollectionRate = 24f,
+
+                fluidInventoryData = new FluidInventoryData() {
+                    maxInput = 24f,
+                    maxOutput = 24f,
+                    maxVolume = 2000f,
+
+                    maxPressure = -1f,
+                    minHealthPressurizable = 0.7f,
+                    pressurizable = false,
 
                     allowedFluids = null,
                 },
