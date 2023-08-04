@@ -54,7 +54,7 @@ namespace Frontiers.FluidSystem {
             this.block = block;
             this.data = data;
 
-            UpdatePressure(CanBePressurized() ? data.maxPressure : Fluids.atmPressure);
+            UpdatePressure(CanBePressurized() ? data.maxPressure : Fluids.atmosphericPressure);
         }
 
         public void Update() {
@@ -63,7 +63,7 @@ namespace Frontiers.FluidSystem {
             // If pressurization state changed, update pressure
             // TODO: change pressure slowly
             if (canBePressurized != pressurized) {
-                UpdatePressure(canBePressurized ? data.maxPressure : Fluids.atmPressure);
+                UpdatePressure(canBePressurized ? data.maxPressure : Fluids.atmosphericPressure);
             }
 
             foreach (FluidInventory other in linkedInventories) {
@@ -198,7 +198,7 @@ namespace Frontiers.FluidSystem {
         }
 
         public void UpdatePressure(float value) {
-            pressure = Mathf.Max(value, Fluids.atmPressure);
+            pressure = Mathf.Max(value, Fluids.atmosphericPressure);
             float totalVolume = 0f;
 
             // Loop though each fluid in density order, heavier first

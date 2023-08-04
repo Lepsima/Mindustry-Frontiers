@@ -2259,14 +2259,19 @@ namespace Frontiers.Content {
 
     #region - Items -
 
-    public class Item : Content {
+    public class Element : Content {
         public Color color;
-        public float explosiveness = 0, flammability = 0, radioactivity = 0, charge = 0;
+
+        public float density = 1f;
+        public float explosiveness = 0f, flammability = 0f, radioactivity = 0f, charge = 0f;
+
+        public Element(string name) : base(name) {
+
+        }
+    }
+
+    public class Item : Element {
         public float hardness = 0, cost = 1;
-
-        // Mass in tons per item piece
-        public float mass = 0.01f;
-
         public bool lowPriority = false, buildable = true;
 
         public Item(string name) : base(name) {
@@ -2277,6 +2282,8 @@ namespace Frontiers.Content {
     public class Items {
         public static Item copper, lead, titanium, coal, graphite, metaglass, sand, silicon, thorium;
         public static Item basicAmmo, missileX1;
+
+        public static Item carbon, sulfur;
 
         public static void Load() {
             copper = new Item("copper") {

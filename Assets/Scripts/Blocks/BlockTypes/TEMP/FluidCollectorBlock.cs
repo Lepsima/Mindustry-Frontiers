@@ -7,11 +7,11 @@ using System.Linq;
 
 public class FluidCollectorBlock : ItemBlock {
     public new FluidCollectorBlockType Type { get => (FluidCollectorBlockType)base.Type; protected set => base.Type = value; }
-    public FluidComposite collectionFluid;
+    public Fluid collectionFluid;
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
-        collectionFluid = Fluids.atmFluid;
+        collectionFluid = Fluids.atmosphericFluid;
     }
 
     protected override void Update() {
@@ -25,6 +25,6 @@ public class FluidCollectorBlock : ItemBlock {
         }
 
         float litersToAdd = Type.literCollectionRate * Time.deltaTime;
-        foreach(Fluid fluid in collectionFluid.fluids.Keys) fluidInventory.AddLiters(fluid, litersToAdd * collectionFluid.fluids[fluid]);
+        foreach((Element element, float percent) in collectionFluid.composition) if (element is Fluid fluid) fluidInventory.AddLiters(fluid, litersToAdd * percent);
     }
 }
