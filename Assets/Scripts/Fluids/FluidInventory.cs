@@ -46,7 +46,7 @@ namespace Frontiers.FluidSystem {
         public event EventHandler OnVolumeChanged;
 
         public bool pressurized, canReciveLowerPressures;
-        public float pressure, usedVolume;
+        public float pressure, usedVolume, volumePercent;
 
         // Fluid type, (x = liters, y = volume)
         public Dictionary<Fluid, Vector2> fluids = new();
@@ -57,6 +57,11 @@ namespace Frontiers.FluidSystem {
             this.data = data;
 
             UpdatePressure(CanBePressurized() ? data.maxPressure : Fluids.atmosphericPressure);
+        }
+
+        private void OnVolumeChange() {
+            volumePercent = usedVolume / data.maxVolume;
+            OnVolumeChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void Update() {
@@ -76,16 +81,19 @@ namespace Frontiers.FluidSystem {
                 float transferAmount = maxVolumePerFluid / fluids.Count * Time.deltaTime;
 
                 if (pressureDiff == 1 || other.canReciveLowerPressures) {
-                    foreach (Fluid fluid in fluids.Keys) {
+                    for (int i = fluids.Count - 1; i >= 0; i--) {
+                        Fluid fluid = fluids.Keys.ElementAt(i);
+
                         // Transfer
                         other.AddVolume(fluid, transferAmount);
                         SubVolume(fluid, transferAmount);
                     }
-
                 } else if (pressureDiff == 0) {
-                    foreach (Fluid fluid in fluids.Keys) {
-                        // If other's volume is higher, skip
-                        if (other.fluids[fluid].y >= fluids[fluid].y) continue;
+                    for (int i = fluids.Count - 1; i >= 0; i--) {
+                        Fluid fluid = fluids.Keys.ElementAt(i);
+
+                        // If other's volume percent is higher, skip
+                        if (other.volumePercent > volumePercent) continue;
 
                         // Transfer
                         other.AddVolume(fluid, transferAmount);
@@ -110,7 +118,7 @@ namespace Frontiers.FluidSystem {
             // Add volume
             float maxAdd = Mathf.Min(volume, data.maxVolume - usedVolume);
             usedVolume += maxAdd;
-            OnVolumeChanged?.Invoke(this, EventArgs.Empty);
+            OnVolumeChange();
             volume = fluids[fluid].y + maxAdd;
 
             // Calculate liters and set new values
@@ -136,7 +144,7 @@ namespace Frontiers.FluidSystem {
             // Get the max substract amount and apply it
             float maxSubstract = Mathf.Min(fluids[fluid].y, volume);
             usedVolume -= maxSubstract;
-            OnVolumeChanged?.Invoke(this, EventArgs.Empty);
+            OnVolumeChange();
             volume = fluids[fluid].y - maxSubstract;
 
             if (volume > 0f) {
@@ -228,10 +236,12 @@ namespace Frontiers.FluidSystem {
             }
 
             usedVolume = totalVolume;
+            OnVolumeChange();
         }
 
         public void SetLinkedComponents(FluidInventory[] inventories) {
             linkedInventories = inventories;
+            Debug.Log(linkedInventories.Length);
         }
     }
 }

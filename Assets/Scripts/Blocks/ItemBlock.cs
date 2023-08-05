@@ -41,7 +41,7 @@ public abstract class ItemBlock : Block {
         spriteRenderer.sprite = Type.fluidSprite;
         spriteRenderer.color = new Color(1f, 1f, 1f, 0f);
         spriteRenderer.sortingLayerName = "Blocks";
-        spriteRenderer.sortingOrder = 3;
+        spriteRenderer.sortingOrder = 2;
     }
 
     public override void SetInventory() {
@@ -126,12 +126,12 @@ public abstract class ItemBlock : Block {
         reciverBlocks = recivers.ToArray();
         reciverBlockOrientations = reciverOrientations.ToArray();
 
-        if (fluidInventory != null) SetFluidLinkedComponents(recivers);
+        if (hasFluidInventory) SetFluidLinkedComponents(adjacentBlocks);
     }
 
-    public virtual void SetFluidLinkedComponents(List<ItemBlock> adjacentBlocks) {
+    public void SetFluidLinkedComponents(ItemBlock[] adjacentBlocks) {
         List<FluidInventory> fluidComponents = new();
-        foreach (ItemBlock itemBlock in adjacentBlocks) if (itemBlock.fluidInventory != null) fluidComponents.Add(itemBlock.fluidInventory);
+        foreach (ItemBlock itemBlock in adjacentBlocks) if (itemBlock.hasFluidInventory) fluidComponents.Add(itemBlock.fluidInventory);
         fluidInventory.SetLinkedComponents(fluidComponents.ToArray());
     }
 

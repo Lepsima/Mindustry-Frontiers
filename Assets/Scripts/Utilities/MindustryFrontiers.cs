@@ -907,6 +907,123 @@ namespace Frontiers.Content {
         }
     }
 
+    public class FluidConduitBlockType : ItemBlockType {
+        public Sprite[] allConduitSprites;
+
+        public FluidConduitBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
+            hasFluidInventory = true;
+
+            allConduitSprites = new Sprite[16];
+            for (int i = 0; i < 16; i++) allConduitSprites[i] = AssetLoader.GetSprite($"{name}-{i}");
+        }
+
+        public static int GetVariant(bool front, bool right, bool left, bool back, out bool mirrored) {
+            // None
+            if (!front && !right && !left && !back) {
+                mirrored = false;
+                return 0;
+            }
+
+            // Only one side
+            // Only Back
+            if (!(right || left || front) && back) {
+                mirrored = false;
+                return 1;
+            }
+
+            // Only Left
+            if (!(right || back || front) && left) {
+                mirrored = false;
+                return 2;
+            }
+
+            // Only Front
+            if (!(right || back || left) && front) {
+                mirrored = false;
+                return 3;
+            }
+
+            // Only Right
+            if (!(front || back || left) && right) {
+                mirrored = false;
+                return 4;
+            }
+
+            // Two oposite sides 
+            // Forward-back
+            if (!right && !left && front && back) {
+                mirrored = false;
+                return 5;
+            }
+
+            // Right-left
+            if (right && left && !front && !back) {
+                mirrored = false;
+                return 6;
+            }
+
+            // Two adjacent sides
+            // Left-forward
+            if (!right && left && front && !back) {
+                mirrored = false;
+                return 7;
+            }
+
+            // Forward-right
+            if (right && !left && front && !back) {
+                mirrored = false;
+                return 8;
+            }
+
+            // Right-back
+            if (right && !left && !front && back) {
+                mirrored = false;
+                return 9;
+            }
+
+            // Back-left
+            if (!right && left && !front && back) {
+                mirrored = false;
+                return 10;
+            }
+
+            // All but one side
+            // Not Left
+            if (right && back && front && !left) {
+                mirrored = false;
+                return 11;
+            }
+
+            // Not Front
+            if (right && back && left && !front) {
+                mirrored = false;
+                return 12;
+            }
+
+            // Not Right
+            if (front && back && left && !right) {
+                mirrored = false;
+                return 13;
+            }
+
+            // Not Back
+            if (right && left && front && !back) {
+                mirrored = false;
+                return 14;
+            }
+
+            // All
+            if (right && left && back && front) {
+                mirrored = false;
+                return 15;
+            }
+
+            // This could never happer, but who knows
+            mirrored = false;
+            return 0;
+        }
+    }
+
     public class Blocks {
         public const BlockType none = null;
         public static BlockType
@@ -1192,7 +1309,7 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };
 
-            conduit = new StorageBlockType("conduit", typeof(StorageBlock), 1) {
+            conduit = new FluidConduitBlockType("conduit", typeof(FluidConduitBlock), 1) {
                 health = 100,
                 size = 1,
                 updates = true,
@@ -1201,9 +1318,9 @@ namespace Frontiers.Content {
                 hasItemInventory = false,
 
                 fluidInventoryData = new FluidInventoryData() {
-                    maxInput = 1000f, 
-                    maxOutput = 1000f,
-                    maxVolume = 1000f, 
+                    maxInput = 10f, 
+                    maxOutput = 10f,
+                    maxVolume = 10f, 
 
                     maxPressure = -1f,
                     minHealthPressurizable = 0.5f,
@@ -1223,8 +1340,8 @@ namespace Frontiers.Content {
                 hasItemInventory = false,
 
                 fluidInventoryData = new FluidInventoryData() {
-                    maxInput = 1000f,
-                    maxOutput = 1000f,
+                    maxInput = 50f,
+                    maxOutput = 50f,
                     maxVolume = 1000f,
 
                     maxPressure = -1f,
@@ -1246,8 +1363,8 @@ namespace Frontiers.Content {
                 literCollectionRate = 240f,
 
                 fluidInventoryData = new FluidInventoryData() {
-                    maxInput = 1000f,
-                    maxOutput = 1000f,
+                    maxInput = 0f,
+                    maxOutput = 360f,
                     maxVolume = 2400f,
 
                     maxPressure = -1f,
