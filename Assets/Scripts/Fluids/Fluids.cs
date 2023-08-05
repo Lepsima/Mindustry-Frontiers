@@ -13,32 +13,12 @@ namespace Frontiers.FluidSystem {
         // The max amount this fluid can be compressed
         public float maxCompression = 1f;
 
-        // If this is a molecule ex: water = 0.6667% hidrogen, 0.3333% oxigen / setting to 2 hid and 1 oxigen will normalize to the previous values
-        public (Element, float)[] composition;
-
         public Fluid(string name) : base(name) {
 
         }
 
-        public Fluid(string name, (Element, float)[] composition) : base(name) {
-            this.composition = composition;
+        public Fluid(string name, (Element, float)[] composition) : base(name, composition) {
 
-            density = 0;
-            float sum = composition.Sum(x => x.Item2);
-
-            for (int i = 0; i < composition.Length; i++) {
-                // Normalize
-                composition[i] = (composition[i].Item1, composition[i].Item2 / sum);
-
-                // Calculate total density
-                density += composition[i].Item1.density * composition[i].Item2;
-            }
-        }
-
-        public static (Element, float)[] With(params object[] items) {
-            (Element, float)[] composite = new (Element, float)[items.Length / 2];
-            for (int i = 0; i < items.Length; i += 2) composite[i / 2] = ((Element)items[i], (float)items[i + 1]);
-            return composite;
         }
 
         public float Compression(float pressure) {
@@ -103,25 +83,12 @@ namespace Frontiers.FluidSystem {
         public static Fluid hidrogen, oxigen, nitrogen;
 
         // Mulit atom / molecules type fluids
-        public static Fluid air, water, petroleum, kerosene, gasoline, jetFuel;
+        public static Fluid air, water, co2, petroleum, kerosene, gasoline, jetFuel;
 
         public static Fluid atmosphericFluid;
         public static float atmosphericPressure = 1f;
 
         public static void Load() {
-            Items.carbon = new Item("carbon") {
-                color = new Color(0x53, 0x56, 0x5c),
-                cost = 0.8f
-            };
-
-            Items.sulfur = new Item("sulfur") {
-                color = new Color(0x27, 0x27, 0x27),
-                explosiveness = 0.2f,
-                flammability = 1f,
-                hardness = 2,
-                buildable = false
-            };
-
             hidrogen = new Fluid("fluid-hidrogen") {
                 density = 0.08375f,
                 compressionRatio = 0.55f,
@@ -140,19 +107,22 @@ namespace Frontiers.FluidSystem {
                 maxCompression = 8.9f,
             };
 
-            air = new Fluid("fluid-air", Fluid.With(nitrogen, 78f, oxigen, 22f)) {
+            air = new Fluid("fluid-air", Element.With(nitrogen, 0.78f, oxigen, 0.22f)) {
                 compressionRatio = 1.1f,
                 maxCompression = 7.2f,
             };
 
-            water = new Fluid("fluid-water", Fluid.With(hidrogen, 2f, oxigen, 1f)) {
+            water = new Fluid("fluid-water", Element.With(hidrogen, 2f, oxigen, 1f)) {
                 density = 997f,
                 compressionRatio = 2f,
                 maxCompression = 1.1f,
             };
 
-            // I spent too much time searching that
-            petroleum = new Fluid("fluid-petroleum", Fluid.With(Items.carbon, 75f, hidrogen, 11.5f, Items.sulfur, 6f, nitrogen, 4f, oxigen, 3.5f)) {
+            co2 = new Fluid("carbonDioxide", Element.With(Items.coal, 1f, oxigen, 2f)) {
+
+            };
+
+            petroleum = new Fluid("fluid-petroleum", Element.With(Items.coal, 0.75f, hidrogen, 0.115f, Items.sulfur, 0.06f, nitrogen, 0.04f, oxigen, 0.035f)) {
                 density = 850f,
                 compressionRatio = 3f,
                 maxCompression = 1.5f,
@@ -170,7 +140,7 @@ namespace Frontiers.FluidSystem {
                 maxCompression = 1.4f,
             };
 
-            jetFuel = new Fluid("fluid-jetFuel", Fluid.With(gasoline, 6f, kerosene, 4f)) {
+            jetFuel = new Fluid("fluid-jetFuel", Element.With(gasoline, 0.6f, kerosene, 0.4f)) {
                 density = 804f,
                 compressionRatio = 3.5f,
                 maxCompression = 3f,

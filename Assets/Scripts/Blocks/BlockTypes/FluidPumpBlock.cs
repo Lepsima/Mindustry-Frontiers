@@ -2,27 +2,27 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Frontiers.Content;
-using UnityEngine.Tilemaps;
+using System;
 using Frontiers.Assets;
-using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
+using static Frontiers.Content.Maps.Map;
 using Frontiers.Content.Upgrades;
+using Frontiers.FluidSystem;
 
-public class DrillBlock : ItemBlock {
-    public new DrillBlockType Type { get => (DrillBlockType)base.Type; protected set => base.Type = value; }
+public class FluidPumpBlock : ItemBlock {
+    public new FluidPumpBlockType Type { get => (FluidPumpBlockType)base.Type; protected set => base.Type = value; }
 
-    public float drillTime = 5f;
-    private float nextDrillTime = 0f;
+    public float pumpRate = 5f;
 
     private float rotorVelocity = 0f;
     private float maxRotorVelocity = 0f;
     private readonly float rotorVelocityChange = 0.02f;
 
-    public Item drillItem;
+    public Fluid extractFluid;
     public Transform rotorTransfrom;
-    
+
     #region - Upgradable Stats - 
 
-    protected float hardness, rate;
+    protected float rate;
 
     #endregion
 
@@ -31,29 +31,22 @@ public class DrillBlock : ItemBlock {
 
         BlockUpgradeMultipliers mult = upgrade.properties as BlockUpgradeMultipliers;
 
-        hardness += hardness * mult.drill_hardness;
         rate += rate * mult.drill_rate;
 
-        UpdateDrillValues();
+        UpdatePumpValues();
     }
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
 
-        hardness = Type.drillHardness;
-        rate = Type.drillRate;
+        rate = Type.extractRate;
 
-        UpdateDrillValues();
+        UpdatePumpValues();
     }
 
-    protected virtual void UpdateDrillValues() {
-        drillItem = GetItemFromTiles(out float yieldPercent);
-        drillTime = GetDrillTime(yieldPercent);
-
-        nextDrillTime = Time.time + drillTime;
-
-        outputItems = new Item[1] { drillItem };
-        inventory.SetAllowedItems(outputItems);
+    protected virtual void UpdatePumpValues() {
+        extractFluid = GetFluidFromTiles(out float yieldPercent);
+        pumpRate = GetPumpRate(yieldPercent);
 
         maxRotorVelocity = yieldPercent;
     }
@@ -76,28 +69,21 @@ public class DrillBlock : ItemBlock {
         return false;
     }
 
-    public bool CanDrill(Item item) => !inventory.Full(item);
-
     protected override void Update() {
         base.Update();
+        if (pumpRate == -1f || extractFluid == null) return;
 
-        if (drillTime == -1f || drillItem == null) return;
+        bool canExtract = !fluidInventory.Full();
 
-        OutputItems();
-        bool canDrill = CanDrill(drillItem);
-
-        rotorVelocity = Mathf.Clamp(rotorVelocity + (canDrill ? rotorVelocityChange : -rotorVelocityChange), 0, maxRotorVelocity);
+        rotorVelocity = Mathf.Clamp(rotorVelocity + (canExtract ? rotorVelocityChange : -rotorVelocityChange), 0, maxRotorVelocity);
         rotorTransfrom.eulerAngles += new Vector3(0, 0, rotorVelocity);
 
-        if (nextDrillTime <= Time.time && canDrill) {
-            inventory.Add(drillItem, 1);
-            nextDrillTime = Time.time + drillTime;
-        }
+        if (canExtract) fluidInventory.AddLiters(extractFluid, rate * Time.deltaTime);    
     }
 
-    public Item GetItemFromTiles(out float yieldPercent) {
-        Item priorityItem = null;
-        int itemCount = 0;
+    public Fluid GetFluidFromTiles(out float yieldPercent) {
+        Fluid priorityFluid = null;
+        int fluidTileCount = 0;
         int totalTiles = Type.size * Type.size;
 
         for (int x = 0; x < Type.size; x++) {
@@ -107,25 +93,35 @@ public class DrillBlock : ItemBlock {
                 TileType tile = MapManager.Map.GetMapTileTypeAt(MapLayer.Ore, position);
                 if (tile == null || tile.drop == null) tile = MapManager.Map.GetMapTileTypeAt(MapLayer.Ground, position);
 
-                Item item;
-                if (tile != null && tile.drop is Item drop) item = drop;
+                Fluid fluid;
+                if (tile != null && tile.drop is Fluid drop) fluid = drop;
                 else continue;
 
-                if ((priorityItem == null || priorityItem.hardness < item.hardness) && item.hardness <= hardness) {
-                    priorityItem = item;
-                    itemCount = 1;
-                } else if (priorityItem == item) {
-                    itemCount++;
+                if (priorityFluid == null) {
+                    priorityFluid = fluid;
+                    fluidTileCount = 1;
+                } else if (priorityFluid == fluid) {
+                    fluidTileCount++;
                 }
             }
         }
 
-        yieldPercent = (float)itemCount / totalTiles;
-        return priorityItem;
+        yieldPercent = (float)fluidTileCount / totalTiles;
+        return priorityFluid;
     }
 
-    public float GetDrillTime(float yieldPercent) {
-        if (drillItem == null) return -1f;
-        return (drillTime + 0.833f * drillItem.hardness) / yieldPercent / rate;
+    public float GetPumpRate(float yieldPercent) {
+        if (extractFluid == null) return -1f;
+        return yieldPercent / (rate * pumpRate);
+    }
+}
+
+public class FluidPumpBlockType : ItemBlockType {
+    public Sprite rotorSprite;
+    public float extractRate;
+
+    public FluidPumpBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
+        rotorSprite = AssetLoader.GetSprite(name + "-rotator");
+        updates = true;
     }
 }

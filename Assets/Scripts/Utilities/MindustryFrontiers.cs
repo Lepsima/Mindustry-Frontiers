@@ -756,11 +756,11 @@ namespace Frontiers.Content {
     }
 
     public class DrillBlockType : ItemBlockType {
-        public Sprite drillRotorSprite;
+        public Sprite rotorSprite;
         public float drillHardness, drillRate;
 
         public DrillBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
-            drillRotorSprite = AssetLoader.GetSprite(name + "-rotator");
+            rotorSprite = AssetLoader.GetSprite(name + "-rotator");
             updates = true;
         }
     }
@@ -2076,7 +2076,7 @@ namespace Frontiers.Content {
                 rotateSpeed = 100f,
             };
 
-            missileRack = new WeaponType("missileRack", Items.missileX1) {
+            missileRack = new WeaponType("missileRack", Items.basicAmmo) {
                 bulletType = Bullets.missileBullet,
                 shootOffset = new Vector2(0, 0.5f),
 
@@ -2240,14 +2240,14 @@ namespace Frontiers.Content {
         public Sprite[] allVariantSprites;
         private Vector4[] allVariantSpriteUVs;
 
-        public Item itemDrop;
+        public Element drop;
         public Color color;
 
         public int variants;
         public bool allowBuildings = true, flammable = false, isWater = false;
 
-        public TileType(string name, int variants = 1, Item itemDrop = null) : base(name) {
-            if (itemDrop != null) this.itemDrop = itemDrop;
+        public TileType(string name, int variants = 1, Element drop = null) : base(name) {
+            if (drop != null) this.drop = drop;
 
             this.variants = variants;
 
@@ -2404,8 +2404,29 @@ namespace Frontiers.Content {
         public float density = 1f;
         public float explosiveness = 0f, flammability = 0f, radioactivity = 0f, charge = 0f;
 
+        // If this is a molecule ex: water = 2 hidrogen and 1 oxigen
+        public (Element, float)[] composition;
+
         public Element(string name) : base(name) {
 
+        }
+
+        public Element(string name, (Element, float)[] composition) : base(name) {
+            this.composition = composition;
+
+            density = 0;
+            float sum = composition.Sum(x => x.Item2);
+
+            for (int i = 0; i < composition.Length; i++) {
+                // Calculate total density
+                density += composition[i].Item1.density * composition[i].Item2 / sum;
+            }
+        }
+
+        public static (Element, float)[] With(params object[] items) {
+            (Element, float)[] composite = new (Element, float)[items.Length / 2];
+            for (int i = 0; i < items.Length; i += 2) composite[i / 2] = ((Element)items[i], (float)items[i + 1]); 
+            return composite;
         }
     }
 
@@ -2416,13 +2437,21 @@ namespace Frontiers.Content {
         public Item(string name) : base(name) {
 
         }
+
+        public Item(string name, (Element, float)[] composition) : base(name) {
+
+        }
     }
 
     public class Items {
-        public static Item copper, lead, titanium, coal, graphite, metaglass, sand, silicon, thorium;
-        public static Item basicAmmo, missileX1;
+        // Minerals
+        public static Item copper, lead, titanium, thorium, coal, sand, sulfur;
 
-        public static Item carbon, sulfur;
+        // Materials
+        public static Item metaglass, graphite, silicon;
+
+        // Synthetic
+        public static Item basicAmmo;
 
         public static void Load() {
             copper = new Item("copper") {
@@ -2436,31 +2465,7 @@ namespace Frontiers.Content {
                 hardness = 1,
                 cost = 0.7f
             };
-
-            metaglass = new Item("metaglass") {
-                color = new Color(0xeb, 0xee, 0xf5),
-                cost = 1.5f
-            };
-
-            graphite = new Item("graphite") {
-                color = new Color(0xb2, 0xc6, 0xd2),
-                cost = 1f
-            };
-
-            sand = new Item("sand") {
-                color = new Color(0xf7, 0xcb, 0xa4),
-                lowPriority = true,
-                buildable = false
-            };
-
-            coal = new Item("coal") {
-                color = new Color(0x27, 0x27, 0x27),
-                explosiveness = 0.2f,
-                flammability = 1f,
-                hardness = 2,
-                buildable = false
-            };
-
+            
             titanium = new Item("titanium") {
                 color = new Color(0x8d, 0xa1, 0xe3),
                 hardness = 3,
@@ -2475,23 +2480,47 @@ namespace Frontiers.Content {
                 cost = 1.1f
             };
 
-            silicon = new Item("silicon") {
+            coal = new Item("coal") {
+                color = new Color(0x27, 0x27, 0x27),
+                explosiveness = 0.2f,
+                flammability = 1f,
+                hardness = 2,
+                buildable = false
+            };
+
+            sand = new Item("sand") {
+                color = new Color(0xf7, 0xcb, 0xa4),
+                lowPriority = true,
+                buildable = false
+            };
+
+            sulfur = new Item("sulfur") {
+                color = new Color(0xf3, 0xe9, 0x79),
+                explosiveness = 0.3f,
+                flammability = 0.3f,
+                hardness = 1.5f,
+                cost = 1f,
+                buildable = false
+            };
+
+            metaglass = new Item("metaglass", Element.With(sand, 1f, lead, 1f)) {
+                color = new Color(0xeb, 0xee, 0xf5),
+                cost = 1.5f
+            };
+
+            graphite = new Item("graphite", Element.With(coal, 2f)) {
+                color = new Color(0xb2, 0xc6, 0xd2),
+                cost = 1f
+            };
+
+            silicon = new Item("silicon", Element.With(coal, 1f, sand, 2f)) {
                 color = new Color(0x53, 0x56, 0x5c),
                 cost = 0.8f
             };
 
-            basicAmmo = new Item("basicAmmo") {
+            basicAmmo = new Item("basicAmmo", Element.With(sulfur, 1f, copper, 2f)) {
                 color = new Color(0xD9, 0x9D, 0x73),
                 flammability = 0.1f,
-                buildable = false
-            };
-
-            missileX1 = new Item("missileX1") {
-                color = new Color(0x53, 0x56, 0x5c),
-                explosiveness = 0.75f,
-                flammability = 0.2f,
-                charge = 0.1f,
-                cost = 5,
                 buildable = false
             };
         }

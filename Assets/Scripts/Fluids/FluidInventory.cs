@@ -177,6 +177,10 @@ namespace Frontiers.FluidSystem {
             return data.maxVolume - usedVolume;
         }
 
+        public bool Full() {
+            return volumePercent >= 1f;
+        }
+
         public bool CanRecive(FluidStack[] stacks) {
             foreach(FluidStack stack in stacks) if (!CanRecive(stack)) return false;
             return true;
