@@ -58,7 +58,7 @@ public class FluidPumpBlock : ItemBlock {
         rotorTransfrom = transform.Find("Empty");
         rotorTransfrom.gameObject.AddComponent<SpriteRenderer>();
 
-        SpriteRenderer rotorSpriteRenderer = SetOptionalSprite(rotorTransfrom, AssetLoader.GetSprite(Type.name + "-rotator"));
+        SpriteRenderer rotorSpriteRenderer = SetOptionalSprite(rotorTransfrom, Type.rotorSprite);
 
         if (rotorSpriteRenderer) {
             rotorSpriteRenderer.sortingLayerName = "Blocks";
@@ -76,9 +76,11 @@ public class FluidPumpBlock : ItemBlock {
 
         bool canExtract = !fluidInventory.Full();
 
-        rotorVelocity = Mathf.Clamp(rotorVelocity + (canExtract ? rotorVelocityChange : -rotorVelocityChange), 0, maxRotorVelocity);
-        rotorTransfrom.eulerAngles += new Vector3(0, 0, rotorVelocity);
-
+        if (rotorTransfrom != null) {
+            rotorVelocity = Mathf.Clamp(rotorVelocity + (canExtract ? rotorVelocityChange : -rotorVelocityChange), 0, maxRotorVelocity);
+            rotorTransfrom.eulerAngles += new Vector3(0, 0, rotorVelocity);
+        }
+        
         if (canExtract) fluidInventory.AddLiters(extractFluid, rate * Time.deltaTime);    
     }
 
