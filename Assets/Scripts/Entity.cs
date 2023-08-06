@@ -72,14 +72,14 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
         teamColor = TeamUtilities.GetTeamColor(teamCode);
         audioSource = GetComponent<AudioSource>();
 
+        health = maxHealth = Type.health;
+        itemCapacity = Type.itemCapacity;
+
         SetLayerAllChildren(transform, GetTeamLayer());
         SetInventory();
         SetSprites();
 
         syncValues = 2;
-
-        health = maxHealth = Type.health;
-        itemCapacity = Type.itemCapacity;
     }
 
     protected Color CellColor() {

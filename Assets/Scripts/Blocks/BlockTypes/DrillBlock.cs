@@ -6,6 +6,7 @@ using UnityEngine.Tilemaps;
 using Frontiers.Assets;
 using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
 using Frontiers.Content.Upgrades;
+using Frontiers.Content.Maps;
 
 public class DrillBlock : ItemBlock {
     public new DrillBlockType Type { get => (DrillBlockType)base.Type; protected set => base.Type = value; }

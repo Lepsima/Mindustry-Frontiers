@@ -907,120 +907,14 @@ namespace Frontiers.Content {
         }
     }
 
-    public class FluidConduitBlockType : ItemBlockType {
-        public Sprite[] allConduitSprites;
+    public class FluidPipeBlockType : ItemBlockType {
+        public Sprite[] allPipeSprites;
 
-        public FluidConduitBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
+        public FluidPipeBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             hasFluidInventory = true;
 
-            allConduitSprites = new Sprite[16];
-            for (int i = 0; i < 16; i++) allConduitSprites[i] = AssetLoader.GetSprite($"{name}-{i}");
-        }
-
-        public static int GetVariant(bool front, bool right, bool left, bool back, out bool mirrored) {
-            // None
-            if (!front && !right && !left && !back) {
-                mirrored = false;
-                return 0;
-            }
-
-            // Only one side
-            // Only Back
-            if (!(right || left || front) && back) {
-                mirrored = false;
-                return 1;
-            }
-
-            // Only Left
-            if (!(right || back || front) && left) {
-                mirrored = false;
-                return 2;
-            }
-
-            // Only Front
-            if (!(right || back || left) && front) {
-                mirrored = false;
-                return 3;
-            }
-
-            // Only Right
-            if (!(front || back || left) && right) {
-                mirrored = false;
-                return 4;
-            }
-
-            // Two oposite sides 
-            // Forward-back
-            if (!right && !left && front && back) {
-                mirrored = false;
-                return 5;
-            }
-
-            // Right-left
-            if (right && left && !front && !back) {
-                mirrored = false;
-                return 6;
-            }
-
-            // Two adjacent sides
-            // Left-forward
-            if (!right && left && front && !back) {
-                mirrored = false;
-                return 7;
-            }
-
-            // Forward-right
-            if (right && !left && front && !back) {
-                mirrored = false;
-                return 8;
-            }
-
-            // Right-back
-            if (right && !left && !front && back) {
-                mirrored = false;
-                return 9;
-            }
-
-            // Back-left
-            if (!right && left && !front && back) {
-                mirrored = false;
-                return 10;
-            }
-
-            // All but one side
-            // Not Left
-            if (right && back && front && !left) {
-                mirrored = false;
-                return 11;
-            }
-
-            // Not Front
-            if (right && back && left && !front) {
-                mirrored = false;
-                return 12;
-            }
-
-            // Not Right
-            if (front && back && left && !right) {
-                mirrored = false;
-                return 13;
-            }
-
-            // Not Back
-            if (right && left && front && !back) {
-                mirrored = false;
-                return 14;
-            }
-
-            // All
-            if (right && left && back && front) {
-                mirrored = false;
-                return 15;
-            }
-
-            // This could never happer, but who knows
-            mirrored = false;
-            return 0;
+            allPipeSprites = new Sprite[16];
+            for (int i = 0; i < 16; i++) allPipeSprites[i] = AssetLoader.GetSprite($"{name}-{i}");
         }
     }
 
@@ -1043,7 +937,7 @@ namespace Frontiers.Content {
 
             mechanicalDrill, pneumaticDrill,
 
-            conduit, liquidContainer, oilRefinery, atmosphericCollector;
+            lowPressurePipe, highPressurePipe, liquidContainer, rotatoryPump, oilRefinery, atmosphericCollector;
 
         public static void Load() {
             copperWall = new BlockType("copper-wall", typeof(Block), 1) {
@@ -1309,7 +1203,7 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };
 
-            conduit = new FluidConduitBlockType("conduit", typeof(FluidConduitBlock), 1) {
+            lowPressurePipe = new FluidPipeBlockType("pipe", typeof(FluidPipeBlock), 1) {
                 health = 100,
                 size = 1,
                 updates = true,
@@ -1330,6 +1224,26 @@ namespace Frontiers.Content {
                 },
             };
 
+            highPressurePipe = new FluidPipeBlockType("high-pressure-pipe", typeof(FluidPipeBlock), 1) {
+                health = 100,
+                size = 1,
+                updates = true,
+
+                hasFluidInventory = true,
+                hasItemInventory = false,
+
+                fluidInventoryData = new FluidInventoryData() {
+                    maxInput = 25f,
+                    maxOutput = 25f,
+                    maxVolume = 10f,
+
+                    maxPressure = 3f,
+                    minHealthPressurizable = 0.7f,
+                    pressurizable = true,
+
+                    allowedFluids = null,
+                },
+            };
 
             liquidContainer = new StorageBlockType("liquid-container", typeof(StorageBlock), 1) {
                 health = 400,
@@ -1343,6 +1257,29 @@ namespace Frontiers.Content {
                     maxInput = 50f,
                     maxOutput = 50f,
                     maxVolume = 1000f,
+
+                    maxPressure = -1f,
+                    minHealthPressurizable = 0.7f,
+                    pressurizable = false,
+
+                    allowedFluids = null,
+                },
+            };
+
+            rotatoryPump = new FluidPumpBlockType("rotary-pump", typeof(FluidPumpBlock), 2) {
+                health = 400,
+                size = 2,
+                updates = true,
+
+                hasFluidInventory = true,
+                hasItemInventory = false,
+
+                extractRate = 240f,
+
+                fluidInventoryData = new FluidInventoryData() {
+                    maxInput = 0f,
+                    maxOutput = 360f,
+                    maxVolume = 860f,
 
                     maxPressure = -1f,
                     minHealthPressurizable = 0.7f,
@@ -2236,147 +2173,6 @@ namespace Frontiers.Content {
 
     #region - Map -
 
-    public class TileType : Content {
-        public Sprite[] allVariantSprites;
-        private Vector4[] allVariantSpriteUVs;
-
-        public Element drop;
-        public Color color;
-
-        public int variants;
-        public bool allowBuildings = true, flammable = false, isWater = false;
-
-        public TileType(string name, int variants = 1, Element drop = null) : base(name) {
-            if (drop != null) this.drop = drop;
-
-            this.variants = variants;
-
-            if (this.variants < 1) this.variants = 1;
-
-            allVariantSprites = new Sprite[variants];
-            allVariantSpriteUVs = new Vector4[variants];
-
-            allVariantSprites[0] = sprite;
-            for (int i = 1; i < this.variants; i++) allVariantSprites[i] = AssetLoader.GetAsset<Sprite>(name + (i + 1));
-
-            color = sprite.texture.GetPixel(sprite.texture.width / 2, sprite.texture.height / 2);
-        }
-
-        public virtual Sprite[] GetAllTiles() {
-            if (variants == 1) return new Sprite[1] { sprite };
-            else return allVariantSprites;
-        }
-
-        public virtual Sprite GetRandomTileVariant() {
-            if (variants == 1) return sprite;
-            return allVariantSprites[Random.Range(0, variants - 1)];
-        }
-
-        public void SetSpriteUV(int index, Vector2 uv00, Vector2 uv11) {
-            allVariantSpriteUVs[index] = new Vector4(uv00.x, uv00.y, uv11.x, uv11.y);
-        }
-
-        public Vector4 GetUV() {
-            return GetSpriteVariantUV(0);
-        }
-
-        public Vector4 GetSpriteVariantUV(int index) {
-            return allVariantSpriteUVs[index];
-        }
-    }
-
-    public class OreTileType : TileType {
-        public float oreThreshold, oreScale;
-
-        public OreTileType(string name, int variants, Item itemDrop) : base(name, variants, itemDrop) {
-
-        }
-    }
-
-    public class Tiles {
-        public const TileType none = null;
-        //Base tiles
-        public static TileType darksandWater, darksand, deepWater, grass, ice, metalFloor, metalFloor2, metalFloorWarning, metalFloorDamaged, sandFloor, sandWater, shale, snow, stone, water;
-
-        //Ore tiles
-        public static TileType copperOre, leadOre, titaniumOre, coalOre, thoriumOre;
-
-        //Wall tiles
-        public static TileType daciteWall, dirtWall, duneWall, iceWall, saltWall, sandWall, shaleWall, grassWall, snowWall, stoneWall;
-
-        public static void Load() {
-            darksandWater = new TileType("darksand-water") {
-                isWater = true,
-            };
-
-            darksand = new TileType("darksand", 3, Items.sand);
-
-            deepWater = new TileType("deep-water") {
-                allowBuildings = false,
-                isWater = true,
-            };
-
-            grass = new TileType("grass", 3);
-
-            ice = new TileType("ice", 3);
-
-            metalFloor = new TileType("metal-floor");
-
-            metalFloor2 = new TileType("metal-floor-2");
-
-            metalFloorWarning = new TileType("metal-floor-warning");
-
-            metalFloorDamaged = new TileType("metal-floor-damaged", 3);
-
-            sandFloor = new TileType("sand-floor", 3, Items.sand);
-
-            sandWater = new TileType("sand-water") {
-                isWater = true,
-            };
-
-            shale = new TileType("shale", 3);
-
-            snow = new TileType("snow", 3);
-
-            stone = new TileType("stone", 3);
-
-            water = new TileType("water") {
-                allowBuildings = false,
-                isWater = true,
-            };
-
-            copperOre = new OreTileType("ore-copper", 3, Items.copper);
-
-            leadOre = new OreTileType("ore-lead", 3, Items.lead);
-
-            titaniumOre = new OreTileType("ore-titanium", 3, Items.titanium);
-
-            coalOre = new OreTileType("ore-coal", 3, Items.coal);
-
-            thoriumOre = new OreTileType("ore-thorium", 3, Items.thorium);
-
-            daciteWall = new TileType("dacite-wall", 2);
-
-            dirtWall = new TileType("dirt-wall", 2);
-
-            duneWall = new TileType("dune-wall", 2);
-
-            iceWall = new TileType("ice-wall", 2);
-
-            saltWall = new TileType("salt-wall", 2);
-
-            sandWall = new TileType("sand-wall", 2);
-
-            shaleWall = new TileType("shale-wall", 2);
-
-            grassWall = new TileType("shrubs", 2);
-
-            snowWall = new TileType("snow-wall", 2);
-
-            stoneWall = new TileType("stone-wall", 2);
-        }
-    }
-
     public class MapType : Content {
         public Dictionary<int, TileType> tileReferences = new Dictionary<int, TileType>();
 
@@ -3148,7 +2944,7 @@ namespace Frontiers.Content.Maps {
         public static TileType[] allTiles;
 
         public static TileType RANDOMGEN() {
-            allTiles ??= ContentLoader.GetContentByType<TileType>();
+            allTiles ??= TileLoader.GetLoadedTiles();
 
             return allTiles[Random.Range(0, allTiles.Length)];
         }
@@ -3252,7 +3048,7 @@ namespace Frontiers.Content.Maps {
 
         public static Texture2D GenerateTileTextureAtlas() {
             // Get all tiles loaded by the content loader
-            TileType[] tiles = ContentLoader.GetContentByType<TileType>();
+            TileType[] tiles = TileLoader.GetLoadedTiles();
             List<SpriteLink> links = new();
 
             // Foreach sprite and variant in each tile, add them to a list and link them to their parent tile
@@ -3389,7 +3185,7 @@ namespace Frontiers.Content.Maps {
             for(int i = 0; i < data.Length; i++) {
                 int id = Convert.ToInt32(data[i]) - 32;
                 if (id == 0) continue;
-                Set((TileType)ContentLoader.GetContentById((short)id), (MapLayer)i);
+                Set(TileLoader.GetTileTypeById((short)id), (MapLayer)i);
             }
         }
 
@@ -3447,7 +3243,7 @@ namespace Frontiers.Content.Maps {
                 // Create a new tile array
                 tilemap = new Tile[size.x, size.y];
 
-                // Create all the tiles (now they are set randomly temporarely)
+                // Create all the tiles
                 for (int x = 0; x < size.x; x++) {
                     for (int y = 0; y < size.y; y++) {
                         tilemap[x, y] = new Tile(new Vector2Int(x, y));
@@ -3612,6 +3408,13 @@ namespace Frontiers.Content.Maps {
 
             // End loading
             loaded = true;
+
+            /*for (int x = 0; x < size.x; x++) {
+                for (int y = 0; y < size.y; y++) {
+                    Debug.Log(GetMapTileTypeAt(MapLayer.Ground, new Vector2(x, y)));
+                }
+            }
+            */
         }
 
         public void LoadTilemapData(string[,,] tileNameArray) {
@@ -3723,7 +3526,7 @@ namespace Frontiers.Content.Maps {
 
         public TileType GetTileType(string name) {
             // Get a tile type from a tile name
-            return (TileType)ContentLoader.GetContentByName(name);
+            return TileLoader.GetTileTypeByName(name);
         }
 
         public TileType GetMapTileTypeAt(MapLayer layer, Vector2 position) {
@@ -4112,7 +3915,7 @@ namespace Frontiers.Content.Maps {
                     for (int y = 0; y < size.y; y++) {
                         for (int z = 0; z < size.z; z++) {
                             string name = tileNameGrid[x, y, z];
-                            returnGrid[x, y] += name == null ? (char)32 : (char)(ContentLoader.GetContentByName(name).id + 32);
+                            returnGrid[x, y] += name == null ? (char)32 : (char)(TileLoader.GetTileTypeByName(name).id + 32);
                         }
                     }
                 }
@@ -4154,7 +3957,7 @@ namespace Frontiers.Content.Maps {
                         for (int z = 0; z < layers; z++) {
                             int value = Convert.ToInt32(tileData[z]) - 32;
                             if (value == 0) continue;
-                            returnGrid[x, y, z] = value == 0 ? null : ContentLoader.GetContentById((short)value).name;
+                            returnGrid[x, y, z] = value == 0 ? null : TileLoader.GetTileTypeById((short)value).name;
                         }
                     }
                 }

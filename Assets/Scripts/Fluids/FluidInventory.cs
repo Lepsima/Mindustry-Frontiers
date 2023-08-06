@@ -56,7 +56,7 @@ namespace Frontiers.FluidSystem {
             this.block = block;
             this.data = data;
 
-            UpdatePressure(CanBePressurized() ? data.maxPressure : Fluids.atmosphericPressure);
+            UpdatePressure();
         }
 
         private void OnVolumeChange() {
@@ -65,17 +65,13 @@ namespace Frontiers.FluidSystem {
         }
 
         public void Update() {
-            bool canBePressurized = CanBePressurized();
+            UpdatePressure();
 
-            // If pressurization state changed, update pressure
-            // TODO: change pressure slowly
-            if (canBePressurized != pressurized) {
-                UpdatePressure(canBePressurized ? data.maxPressure : Fluids.atmosphericPressure);
-            }
+            if (volumePercent == 0) return;
 
             foreach (FluidInventory other in linkedInventories) {
                 int pressureDiff = PressureDifference(other);
-
+ 
                 // Get max output volume
                 float maxVolumePerFluid = Mathf.Min(data.maxOutput, other.data.maxInput, other.EmptyVolume());
                 float transferAmount = maxVolumePerFluid / fluids.Count * Time.deltaTime;
@@ -83,23 +79,22 @@ namespace Frontiers.FluidSystem {
                 if (pressureDiff == 1 || other.canReciveLowerPressures) {
                     for (int i = fluids.Count - 1; i >= 0; i--) {
                         Fluid fluid = fluids.Keys.ElementAt(i);
+                        float transfer = Mathf.Min(transferAmount, fluids[fluid].y);
 
                         // Transfer
-                        other.AddVolume(fluid, transferAmount);
-                        SubVolume(fluid, transferAmount);
+                        other.AddVolume(fluid, transfer);
+                        SubVolume(fluid, transfer);
                     }
-                } else if (pressureDiff == 0) {
+                } else if (pressureDiff == 0 && other.volumePercent < volumePercent) {
                     for (int i = fluids.Count - 1; i >= 0; i--) {
                         Fluid fluid = fluids.Keys.ElementAt(i);
-
-                        // If other's volume percent is higher, skip
-                        if (other.volumePercent > volumePercent) continue;
+                        float transfer = Mathf.Min(transferAmount, fluids[fluid].y);
 
                         // Transfer
-                        other.AddVolume(fluid, transferAmount);
-                        SubVolume(fluid, transferAmount);
+                        other.AddVolume(fluid, transfer);
+                        SubVolume(fluid, transfer);
                     }
-                } 
+                }
             }
         }
 
@@ -143,7 +138,7 @@ namespace Frontiers.FluidSystem {
 
             // Get the max substract amount and apply it
             float maxSubstract = Mathf.Min(fluids[fluid].y, volume);
-            usedVolume -= maxSubstract;
+            usedVolume -= maxSubstract; 
             OnVolumeChange();
             volume = fluids[fluid].y - maxSubstract;
 
@@ -207,14 +202,18 @@ namespace Frontiers.FluidSystem {
             return fluids.ContainsKey(fluid) && fluids[fluid].x >= liters;
         }
 
+        // 0 if both are equal, 1 if the other is lower, -1 if the other is higher
         public int PressureDifference(FluidInventory other) {
             if (other.pressure == pressure) return 0;
             else if (other.pressure > pressure) return -1;
             else return 1;
         }
 
-        public void UpdatePressure(float value) {
-            pressure = Mathf.Max(value, Fluids.atmosphericPressure);
+        public void UpdatePressure() {
+            if (CanBePressurized() == pressurized) return;
+            pressurized = !pressurized;
+
+            pressure = pressurized ? data.maxPressure : Fluids.atmosphericPressure;
             float totalVolume = 0f;
 
             // Loop though each fluid in density order, heavier first
@@ -245,7 +244,6 @@ namespace Frontiers.FluidSystem {
 
         public void SetLinkedComponents(FluidInventory[] inventories) {
             linkedInventories = inventories;
-            Debug.Log(linkedInventories.Length);
         }
     }
 }

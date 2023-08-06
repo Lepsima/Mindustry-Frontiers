@@ -62,7 +62,7 @@ public class MapEditor : MonoBehaviour {
             map = new Map(saveName, size.x, size.y, tilemap);
         }
 
-        loadedTiles = ContentLoader.GetContentByType<TileType>();
+        loadedTiles = TileLoader.GetLoadedTiles();
     }
 
     private void OnMapLoaded(object sender, MapLoader.MapLoadedEventArgs e) {

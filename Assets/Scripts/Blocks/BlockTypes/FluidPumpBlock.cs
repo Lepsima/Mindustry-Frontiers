@@ -7,6 +7,7 @@ using Frontiers.Assets;
 using static Frontiers.Content.Maps.Map;
 using Frontiers.Content.Upgrades;
 using Frontiers.FluidSystem;
+using Frontiers.Content.Maps;
 
 public class FluidPumpBlock : ItemBlock {
     public new FluidPumpBlockType Type { get => (FluidPumpBlockType)base.Type; protected set => base.Type = value; }

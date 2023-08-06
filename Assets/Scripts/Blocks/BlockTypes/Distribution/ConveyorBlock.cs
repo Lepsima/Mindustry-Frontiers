@@ -156,7 +156,7 @@ public class ConveyorBlock : ItemBlock {
 
     private bool HasSenderBlockAt(int orientation) {
         ItemBlock itemBlock = GetFacingBlock(orientation) as ItemBlock;
-        if (!itemBlock) return false;
+        if (!itemBlock || !itemBlock.hasItemInventory) return false;
 
         if (itemBlock is ConveyorBlock conveyor) return conveyor.nextAsConveyor == this;
         else return true;   
