@@ -12,6 +12,7 @@ using UnityEngine.EventSystems;
 using System;
 using Cinemachine;
 using UnitMode = Unit.UnitMode;
+using Frontiers.FluidSystem;
 
 public class PlayerManager : MonoBehaviour {
     [SerializeField] float moveSpeed = 2f;
@@ -127,14 +128,23 @@ public class PlayerManager : MonoBehaviour {
 
     public void AddItems(int amount) {
         Content selectedContent = PlayerContentSelector.SelectedContent;
-        if (selectedContent == null || selectedContent is not Item item) return;
+        if (selectedContent == null || selectedContent is not Element element || selectedEntity == null) return;
 
-        if (selectedEntity != null && selectedEntity is SorterBlock sorterBlock) {
-            sorterBlock.ChangeFilterItem(item);
+        if (element is Item item) {
+            if (selectedEntity is SorterBlock sorterBlock) {
+                sorterBlock.SetFilter(item);
+            }
+
+            if (selectedEntity.CanReciveItem(item)) {
+                selectedEntity.ReciveItems(item, amount);
+            }
         }
 
-        if (selectedEntity != null && selectedEntity.CanReciveItem(item)) {
-            selectedEntity.ReciveItems(item, amount);
+
+        if (selectedEntity != null && element is Fluid fluid) {
+            if (selectedEntity is FluidFilterBlock filterBlock) {
+                filterBlock.SetFilter(fluid);
+            }
         }
     }
 

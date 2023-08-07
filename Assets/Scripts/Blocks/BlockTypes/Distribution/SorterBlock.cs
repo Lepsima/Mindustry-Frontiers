@@ -32,7 +32,7 @@ public class SorterBlock : DistributionBlock {
         transform.localScale = Vector3.one * 0.5f;
     }
 
-    public void ChangeFilterItem(Item item) {
+    public void SetFilter(Item item) {
         filterItem = item;
         filterItemSpriteRenderer.sprite = filterItem?.sprite;
     }
