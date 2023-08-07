@@ -112,7 +112,7 @@ namespace Frontiers.FluidSystem {
 
                 // Add new fluid and order by density
                 fluids.Add(fluid, Vector2.zero);
-                fluids.OrderBy(x => x.Key.density);
+                fluids = fluids.OrderBy(x => x.Key.density).ToDictionary(pair => pair.Key, pair => pair.Value);
             }
 
             // Add volume
