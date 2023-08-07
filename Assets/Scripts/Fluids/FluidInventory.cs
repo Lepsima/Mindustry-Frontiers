@@ -52,6 +52,8 @@ namespace Frontiers.FluidSystem {
         public Dictionary<Fluid, Vector2> fluids = new();
         public FluidInventory[] linkedInventories;
 
+        public Fluid displayFluid;
+
         public FluidInventory(ItemBlock block, FluidInventoryData data) {
             this.block = block;
             this.data = data;
@@ -62,12 +64,15 @@ namespace Frontiers.FluidSystem {
         private void OnVolumeChange() {
             volumePercent = usedVolume / data.maxVolume;
             OnVolumeChanged?.Invoke(this, EventArgs.Empty);
+
+            if (fluids.Count == 0) displayFluid = null;
+            else displayFluid = fluids.Keys.ElementAt(0);
         }
 
         public void Update() {
             UpdatePressure();
 
-            if (volumePercent == 0) return;
+            if (volumePercent == 0 || data.inputOnly) return;
 
             foreach (FluidInventory other in linkedInventories) {
                 int pressureDiff = PressureDifference(other);

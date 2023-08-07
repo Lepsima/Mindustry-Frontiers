@@ -898,11 +898,10 @@ namespace Frontiers.Content {
         }
     }
 
-    public class FluidCollectorBlockType : ItemBlockType {
-        public float literCollectionRate = 1f;
-
-        public FluidCollectorBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
+    public class AtmosphericCollectorBlockType : ItemBlockType {
+        public AtmosphericCollectorBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             hasFluidInventory = true;
+            fluidInventoryData.outputOnly = true;
         }
     }
 
@@ -914,6 +913,22 @@ namespace Frontiers.Content {
 
             allPipeSprites = new Sprite[16];
             for (int i = 0; i < 16; i++) allPipeSprites[i] = AssetLoader.GetSprite($"{name}-{i}");
+        }
+    }
+
+    public class FluidExhaustBlockType : ItemBlockType {
+        public FluidExhaustBlockType(string name, Type type, int tier) : base(name, type, tier) {
+            fluidInventoryData.inputOnly = true;
+        }
+    }
+
+    public class FluidPumpBlockType : ItemBlockType {
+        public Sprite rotorSprite;
+
+        public FluidPumpBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
+            rotorSprite = AssetLoader.GetSprite(name + "-rotator");
+            updates = true;
+            fluidInventoryData.outputOnly = true;
         }
     }
 
@@ -936,7 +951,7 @@ namespace Frontiers.Content {
 
             mechanicalDrill, pneumaticDrill,
 
-            lowPressurePipe, highPressurePipe, liquidContainer, rotatoryPump, oilRefinery, atmosphericCollector;
+            lowPressurePipe, highPressurePipe, liquidContainer, rotatoryPump, oilRefinery, atmosphericCollector, fluidExhaust;
 
         public static void Load() {
             copperWall = new BlockType("copper-wall", typeof(Block), 1) {
@@ -1273,10 +1288,8 @@ namespace Frontiers.Content {
                 hasFluidInventory = true,
                 hasItemInventory = false,
 
-                extractRate = 240f,
-
                 fluidInventoryData = new FluidInventoryData() {
-                    maxInput = 0f,
+                    maxInput = 240f,
                     maxOutput = 360f,
                     maxVolume = 860f,
 
@@ -1288,7 +1301,7 @@ namespace Frontiers.Content {
                 },
             };
 
-            atmosphericCollector = new FluidCollectorBlockType("atmospheric-collector", typeof(FluidCollectorBlock), 2) {
+            atmosphericCollector = new AtmosphericCollectorBlockType("atmospheric-collector", typeof(AtmosphericCollectorBlock), 2) {
                 health = 1600,
                 size = 4,
                 updates = true,
@@ -1296,12 +1309,31 @@ namespace Frontiers.Content {
                 hasFluidInventory = true,
                 hasItemInventory = false,
 
-                literCollectionRate = 240f,
-
                 fluidInventoryData = new FluidInventoryData() {
-                    maxInput = 0f,
+                    maxInput = 240f,
                     maxOutput = 360f,
                     maxVolume = 2400f,
+
+                    maxPressure = -1f,
+                    minHealthPressurizable = 0.7f,
+                    pressurizable = false,
+
+                    allowedFluids = null,
+                },
+            };
+
+            fluidExhaust = new FluidExhaustBlockType("fluid-exhaust", typeof(FluidExhaustBlock), 1) {
+                health = 100,
+                size = 1,
+                updates = true,
+
+                hasFluidInventory = true,
+                hasItemInventory = false,
+
+                fluidInventoryData = new FluidInventoryData() {
+                    maxInput = 80f,
+                    maxOutput = 75f,
+                    maxVolume = 100f,
 
                     maxPressure = -1f,
                     minHealthPressurizable = 0.7f,

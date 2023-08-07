@@ -62,7 +62,15 @@ public abstract class ItemBlock : Block {
 
     public virtual void OnVolumeChanged(object sender, EventArgs e) {
         if (fluidSpriteRenderer == null) return;
-        fluidSpriteRenderer.color = new Color(1f, 1f, 1f, fluidInventory.usedVolume / fluidInventory.data.maxVolume);
+
+        if (fluidInventory.displayFluid == null) {
+            fluidSpriteRenderer.color = new Color(1f, 1f, 1f, 0f);
+            return;
+        }
+
+        Color color = fluidInventory.displayFluid.color / 255;
+        color.a = fluidInventory.usedVolume / fluidInventory.data.maxVolume;
+        fluidSpriteRenderer.color = color;
     }
 
     public override bool CanReciveItem(Item item, int orientation = 0) { 
@@ -131,7 +139,7 @@ public abstract class ItemBlock : Block {
 
     public void SetFluidLinkedComponents(ItemBlock[] adjacentBlocks) {
         List<FluidInventory> fluidComponents = new();
-        foreach (ItemBlock itemBlock in adjacentBlocks) if (itemBlock.hasFluidInventory) fluidComponents.Add(itemBlock.fluidInventory);
+        foreach (ItemBlock itemBlock in adjacentBlocks) if (itemBlock.hasFluidInventory && !itemBlock.fluidInventory.data.outputOnly) fluidComponents.Add(itemBlock.fluidInventory);
         fluidInventory.SetLinkedComponents(fluidComponents.ToArray());
     }
 

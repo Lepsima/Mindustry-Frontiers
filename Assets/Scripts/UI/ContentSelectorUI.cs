@@ -16,7 +16,7 @@ public class ContentSelectorUI : MonoBehaviour {
 
         InstantiateContentButtons<BlockType>(contentButtonLists[0]);
         InstantiateContentButtons<UnitType>(contentButtonLists[1]);
-        InstantiateContentButtons<Item>(contentButtonLists[2]);
+        InstantiateContentButtons<Element>(contentButtonLists[2]);
 
         OnChangeContentType(0);
     }

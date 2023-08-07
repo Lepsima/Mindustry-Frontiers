@@ -40,7 +40,7 @@ public class FluidPumpBlock : ItemBlock {
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
 
-        rate = Type.extractRate;
+        rate = Type.fluidInventoryData.maxInput;
 
         UpdatePumpValues();
     }
@@ -116,15 +116,5 @@ public class FluidPumpBlock : ItemBlock {
     public float GetPumpRate(float yieldPercent) {
         if (extractFluid == null) return -1f;
         return yieldPercent / (rate * pumpRate);
-    }
-}
-
-public class FluidPumpBlockType : ItemBlockType {
-    public Sprite rotorSprite;
-    public float extractRate;
-
-    public FluidPumpBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
-        rotorSprite = AssetLoader.GetSprite(name + "-rotator");
-        updates = true;
     }
 }
