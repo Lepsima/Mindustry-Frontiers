@@ -171,7 +171,10 @@ namespace Frontiers.FluidSystem {
         // Whether this block can only output or input
         public bool outputOnly, inputOnly;
 
-        // The allowed fluids
-        public Fluid[] allowedFluids;
+        // The allowed input fluids
+        public Fluid[] allowedInputFluids;
+
+        // The allowed output fluids
+        public Fluid[] allowedOutputFluids;
     }
 }

@@ -10,7 +10,7 @@ public class FluidFilterBlock : ItemBlock {
     public void SetFilter(Fluid filterFluid) {
         this.filterFluid = filterFluid;
         filterFluidSpriteRenderer.sprite = filterFluid?.sprite;
-        fluidInventory.data.allowedFluids = new Fluid[1] { filterFluid };
+        fluidInventory.data.allowedInputFluids = new Fluid[1] { filterFluid };
     }
 
     protected override void SetSprites() {

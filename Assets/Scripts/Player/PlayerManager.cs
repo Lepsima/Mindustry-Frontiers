@@ -128,9 +128,9 @@ public class PlayerManager : MonoBehaviour {
 
     public void AddItems(int amount) {
         Content selectedContent = PlayerContentSelector.SelectedContent;
-        if (selectedContent == null || selectedContent is not Element element || selectedEntity == null) return;
+        if (selectedContent == null || !selectedContent.GetType().EqualsOrInherits(typeof(Element)) || selectedEntity == null) return;
 
-        if (element is Item item) {
+        if (selectedContent is Item item) {
             if (selectedEntity is SorterBlock sorterBlock) {
                 sorterBlock.SetFilter(item);
             }
@@ -138,10 +138,8 @@ public class PlayerManager : MonoBehaviour {
             if (selectedEntity.CanReciveItem(item)) {
                 selectedEntity.ReciveItems(item, amount);
             }
-        }
 
-
-        if (selectedEntity != null && element is Fluid fluid) {
+        } else if (selectedContent is Fluid fluid) {
             if (selectedEntity is FluidFilterBlock filterBlock) {
                 filterBlock.SetFilter(fluid);
             }
@@ -149,7 +147,7 @@ public class PlayerManager : MonoBehaviour {
     }
 
     public void OnSelectedContentChanged(object sender, PlayerContentSelector.ContentEventArgs e) {
-        buildMode = e.content != null && !MapManager.TypeEquals(e.content.GetType(), typeof(Item));
+        buildMode = e.content != null && !e.content.GetType().EqualsOrInherits(typeof(Element));
 
         if (buildMode) {
             selectedEntity = null;

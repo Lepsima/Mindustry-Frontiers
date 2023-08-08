@@ -665,7 +665,7 @@ namespace Frontiers.Content {
         public int maximumFires = 0;
         public bool canGetOnFire = false, canSpreadFire = false;
 
-        public float blinkInterval = 0.5f, blinkOffset = 0f, blinkLength = 1f, blinkSpritesOffset = 0f;
+        public float blinkInterval = 0.5f, blinkOffset = 0f, blinkLength = 1f;
 
         public Effect hitSmokeFX = Effects.hitSmoke, deathFX = Effects.explosion;
         public Sound loopSound = null, deathSound = Sounds.bang;
@@ -935,23 +935,36 @@ namespace Frontiers.Content {
     public class Blocks {
         public const BlockType none = null;
         public static BlockType
+
+            // Walls
             copperWall, copperWallLarge,
 
+            // Cores / storage
             coreShard, container,
 
+            // Landing pads
             landingPad, landingPadLarge,
 
+            // Turrets
             tempest, windstorm, stinger, path, spread,
 
+            // Unit factories
             airFactory,
 
+            // Crafters
             graphitePress, siliconSmelter, kiln,
 
+            // Distribution
             conveyor, router, junction, sorter, overflowGate,
 
+            // Drills
             mechanicalDrill, pneumaticDrill,
 
-            lowPressurePipe, highPressurePipe, liquidContainer, rotatoryPump, oilRefinery, atmosphericCollector, fluidExhaust;
+            // Fluid distribution
+            lowPressurePipe, highPressurePipe, liquidContainer, fluidFilter, fluidExhaust,
+            
+            // Fluid processing 
+            oilRefinery, atmosphericCollector, rotatoryPump;
 
         public static void Load() {
             copperWall = new BlockType("copper-wall", typeof(Block), 1) {
@@ -1018,10 +1031,9 @@ namespace Frontiers.Content {
                 health = 300,
                 size = 3,
                 solid = false,
+                updates = true,
                 unitCapacity = 1,
                 unitSize = 5f,
-
-                blinkLength = 3f,
 
                 landPositions = new Vector2[] {
                     new Vector2(1.5f, 1.5f)
@@ -1234,7 +1246,7 @@ namespace Frontiers.Content {
                     minHealthPressurizable = 0.5f,
                     pressurizable = false,
 
-                    allowedFluids = null,
+                    allowedInputFluids = null,
                 },
             };
 
@@ -1255,7 +1267,7 @@ namespace Frontiers.Content {
                     minHealthPressurizable = 0.7f,
                     pressurizable = true,
 
-                    allowedFluids = null,
+                    allowedInputFluids = null,
                 },
             };
 
@@ -1276,7 +1288,7 @@ namespace Frontiers.Content {
                     minHealthPressurizable = 0.7f,
                     pressurizable = false,
 
-                    allowedFluids = null,
+                    allowedInputFluids = null,
                 },
             };
 
@@ -1297,7 +1309,7 @@ namespace Frontiers.Content {
                     minHealthPressurizable = 0.7f,
                     pressurizable = false,
 
-                    allowedFluids = null,
+                    allowedInputFluids = null,
                 },
             };
 
@@ -1318,7 +1330,7 @@ namespace Frontiers.Content {
                     minHealthPressurizable = 0.7f,
                     pressurizable = false,
 
-                    allowedFluids = null,
+                    allowedInputFluids = null,
                 },
             };
 
@@ -1339,8 +1351,61 @@ namespace Frontiers.Content {
                     minHealthPressurizable = 0.7f,
                     pressurizable = false,
 
-                    allowedFluids = null,
+                    allowedInputFluids = null,
                 },
+            };
+
+            fluidFilter = new StorageBlockType("filter", typeof(FluidFilterBlock), 1) {
+                health = 100,
+                size = 1,
+                updates = true,
+
+                hasFluidInventory = true,
+                hasItemInventory = false,
+
+                fluidInventoryData = new FluidInventoryData() {
+                    maxInput = 25f,
+                    maxOutput = 25f,
+                    maxVolume = 250f,
+
+                    maxPressure = -1f,
+                    minHealthPressurizable = 0.7f,
+                    pressurizable = false,
+
+                    allowedInputFluids = null,
+                },
+            };
+
+            oilRefinery = new CrafterBlockType("oil-refinery", typeof(CrafterBlock)) {
+                buildCost = ItemStack.With(Items.copper, 50, Items.lead, 45),
+
+                health = 125,
+                size = 3,
+                itemCapacity = 30,
+
+                canGetOnFire = true,
+                hasFluidInventory = true,
+                hasItemInventory = false,
+
+                craftPlan = new CraftPlan() {
+                    product = new MaterialList(null, FluidStack.With(Fluids.kerosene, 10f)),
+                    cost = new MaterialList(null, FluidStack.With(Fluids.petroleum, 10f)),
+                    craftTime = 1f
+                },
+
+                fluidInventoryData = new FluidInventoryData() {
+                    maxInput = 20f,
+                    maxOutput = 20f,
+                    maxVolume = 300f,
+
+                    maxPressure = -1f,
+                    minHealthPressurizable = 0.7f,
+                    pressurizable = false,
+
+                    allowedInputFluids = null,
+                },
+
+                loopSound = Sounds.smelter,
             };
         }
     }
