@@ -40,7 +40,7 @@ public class FluidPumpBlock : ItemBlock {
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
 
-        rate = Type.fluidInventoryData.maxInput;
+        rate = Type.maxInput;
 
         UpdatePumpValues();
     }

@@ -121,13 +121,13 @@ namespace Frontiers.Content.Maps {
         public static TileType daciteWall, dirtWall, duneWall, iceWall, saltWall, sandWall, shaleWall, grassWall, snowWall, stoneWall;
 
         public static void Load() {
-            darksandWater = new TileType("darksand-water", 1, Fluids.water) {
+            darksandWater = new TileType("darksand-water", 1, Fluids.petroleum) {
                 isWater = true,
             };
 
             darksand = new TileType("darksand", 3, Items.sand);
 
-            deepWater = new TileType("deep-water", 1, Fluids.water) {
+            deepWater = new TileType("deep-water", 1, Fluids.petroleum) {
                 allowBuildings = false,
                 isWater = true,
             };
@@ -146,7 +146,7 @@ namespace Frontiers.Content.Maps {
 
             sandFloor = new TileType("sand-floor", 3, Items.sand);
 
-            sandWater = new TileType("sand-water", 1, Fluids.water) {
+            sandWater = new TileType("sand-water", 1, Fluids.petroleum) {
                 isWater = true,
             };
 
@@ -156,7 +156,7 @@ namespace Frontiers.Content.Maps {
 
             stone = new TileType("stone", 3);
 
-            water = new TileType("water", 1, Fluids.water) {
+            water = new TileType("water", 1, Fluids.petroleum) {
                 allowBuildings = false,
                 isWater = true,
             };
@@ -190,8 +190,6 @@ namespace Frontiers.Content.Maps {
             snowWall = new TileType("snow-wall", 2);
 
             stoneWall = new TileType("stone-wall", 2);
-
-            Debug.Log("help");
         }
     }
 }

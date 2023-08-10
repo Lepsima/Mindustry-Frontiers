@@ -18,7 +18,7 @@ public class FluidExhaustBlock : ItemBlock {
         int count = fluidInventory.fluids.Count;
         if (count <= 0) return;
 
-        float substractLiters = Type.fluidInventoryData.maxOutput * Time.deltaTime / count;
+        float substractLiters = Type.maxOutput * Time.deltaTime / count;
         for (int i = count - 1; i >= 0; i--) fluidInventory.SubLiters(fluidInventory.fluids.Keys.ElementAt(i), substractLiters);
     }
 }

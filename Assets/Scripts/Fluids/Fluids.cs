@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using Frontiers.Content;
 using System.Linq;
+using System;
 
 namespace Frontiers.FluidSystem {
-
+    [Serializable]
     public class Fluid : Element {
         // The atmospheres needed to half the volume (1 = neutral)
         public float compressionRatio = 1f;
@@ -137,7 +138,7 @@ namespace Frontiers.FluidSystem {
                 maxCompression = 1.5f,
             };
 
-            kerosene = new Fluid("fluid-kerosene") {
+            kerosene = new Fluid("fluid-kerosene", Element.With(petroleum, 1.5f)) {
                 color = new Color(0x84, 0xa9, 0x4b),
                 density = 800f,
                 compressionRatio = 2.5f,
@@ -153,28 +154,5 @@ namespace Frontiers.FluidSystem {
 
             atmosphericFluid = air;
         }
-    }
-
-    public struct FluidInventoryData {
-        // Max volume per second this block can output/recive from/to each other block
-        public float maxInput, maxOutput;
-
-        // Volume = liters at 1 atmosphere, pressure in atm
-        public float maxVolume, maxPressure;
-
-        // The minimum percent of health at wich the object is pressurizable
-        public float minHealthPressurizable;
-
-        // Whether the block can be pressurized to a custom pressure
-        public bool pressurizable;
-
-        // Whether this block can only output or input
-        public bool outputOnly, inputOnly;
-
-        // The allowed input fluids
-        public Fluid[] allowedInputFluids;
-
-        // The allowed output fluids
-        public Fluid[] allowedOutputFluids;
     }
 }

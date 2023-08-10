@@ -737,7 +737,27 @@ namespace Frontiers.Content {
 
     public class ItemBlockType : BlockType {
         public Sprite fluidSprite;
-        public FluidInventoryData fluidInventoryData;
+
+        // Max volume per second this block can output/recive from/to each other block
+        public float maxInput, maxOutput;
+
+        // Volume = liters at 1 atmosphere, pressure in atm
+        public float maxVolume, maxPressure;
+
+        // The minimum percent of health at wich the object is pressurizable
+        public float minHealthPressurizable;
+
+        // Whether the block can be pressurized to a custom pressure
+        public bool pressurizable;
+
+        // Whether this block can only output or input
+        public bool outputOnly, inputOnly;
+
+        // The max amount of liquids
+        public int maxFluids;
+
+        // If true, the block can only contain a fraction of each liquid
+        public bool fixedSpace;
         public bool hasItemInventory = true, hasFluidInventory = false;
 
         public ItemBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
@@ -901,7 +921,7 @@ namespace Frontiers.Content {
     public class AtmosphericCollectorBlockType : ItemBlockType {
         public AtmosphericCollectorBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             hasFluidInventory = true;
-            fluidInventoryData.outputOnly = true;
+            outputOnly = true;
         }
     }
 
@@ -918,7 +938,7 @@ namespace Frontiers.Content {
 
     public class FluidExhaustBlockType : ItemBlockType {
         public FluidExhaustBlockType(string name, Type type, int tier) : base(name, type, tier) {
-            fluidInventoryData.inputOnly = true;
+            inputOnly = true;
         }
     }
 
@@ -928,7 +948,7 @@ namespace Frontiers.Content {
         public FluidPumpBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             rotorSprite = AssetLoader.GetSprite(name + "-rotator");
             updates = true;
-            fluidInventoryData.outputOnly = true;
+            outputOnly = true;
         }
     }
 
@@ -964,7 +984,7 @@ namespace Frontiers.Content {
             lowPressurePipe, highPressurePipe, liquidContainer, fluidFilter, fluidExhaust,
             
             // Fluid processing 
-            oilRefinery, atmosphericCollector, rotatoryPump;
+            oilRefinery, atmosphericCollector, rotatoryPump, fuelMixer;
 
         public static void Load() {
             copperWall = new BlockType("copper-wall", typeof(Block), 1) {
@@ -1109,7 +1129,7 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.copper, 50, Items.lead, 45),
 
                 craftPlan = new CraftPlan() {
-                    product = new MaterialList(ItemStack.With(Items.silicon, 1), null),
+                    output = new MaterialList(ItemStack.With(Items.silicon, 1), null),
                     cost = new MaterialList(ItemStack.With(Items.sand, 2, Items.coal, 1), null),
                     craftTime = 0.66f
                 },
@@ -1127,7 +1147,7 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.copper, 75, Items.lead, 25),
 
                 craftPlan = new CraftPlan() {
-                    product = new MaterialList(ItemStack.With(Items.graphite, 1), null),
+                    output = new MaterialList(ItemStack.With(Items.graphite, 1), null),
                     cost = new MaterialList(ItemStack.With(Items.coal, 2), null),
                     craftTime = 1.5f
                 },
@@ -1143,7 +1163,7 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.copper, 100, Items.lead, 35, Items.graphite, 15),
 
                 craftPlan = new CraftPlan() {
-                    product = new MaterialList(ItemStack.With(Items.metaglass, 1), null),
+                    output = new MaterialList(ItemStack.With(Items.metaglass, 1), null),
                     cost = new MaterialList(ItemStack.With(Items.sand, 1, Items.lead, 1), null),
                     craftTime = 0.5f
                 },
@@ -1237,17 +1257,16 @@ namespace Frontiers.Content {
                 hasFluidInventory = true,
                 hasItemInventory = false,
 
-                fluidInventoryData = new FluidInventoryData() {
-                    maxInput = 10f, 
-                    maxOutput = 10f,
-                    maxVolume = 10f, 
+                maxInput = 10f,
+                maxOutput = 10f,
+                maxVolume = 10f,
 
-                    maxPressure = -1f,
-                    minHealthPressurizable = 0.5f,
-                    pressurizable = false,
+                maxPressure = -1f,
+                minHealthPressurizable = 0.5f,
+                pressurizable = false,
 
-                    allowedInputFluids = null,
-                },
+                maxFluids = 2,
+                fixedSpace = true,
             };
 
             highPressurePipe = new FluidPipeBlockType("high-pressure-pipe", typeof(FluidPipeBlock), 1) {
@@ -1258,17 +1277,16 @@ namespace Frontiers.Content {
                 hasFluidInventory = true,
                 hasItemInventory = false,
 
-                fluidInventoryData = new FluidInventoryData() {
-                    maxInput = 25f,
-                    maxOutput = 25f,
-                    maxVolume = 10f,
+                maxInput = 25f,
+                maxOutput = 25f,
+                maxVolume = 10f,
 
-                    maxPressure = 3f,
-                    minHealthPressurizable = 0.7f,
-                    pressurizable = true,
+                maxPressure = 3f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = true,
 
-                    allowedInputFluids = null,
-                },
+                maxFluids = 2,
+                fixedSpace = true,
             };
 
             liquidContainer = new StorageBlockType("liquid-container", typeof(StorageBlock), 1) {
@@ -1279,17 +1297,15 @@ namespace Frontiers.Content {
                 hasFluidInventory = true,
                 hasItemInventory = false,
 
-                fluidInventoryData = new FluidInventoryData() {
-                    maxInput = 50f,
-                    maxOutput = 50f,
-                    maxVolume = 1000f,
+                maxInput = 50f,
+                maxOutput = 50f,
+                maxVolume = 1000f,
 
-                    maxPressure = -1f,
-                    minHealthPressurizable = 0.7f,
-                    pressurizable = false,
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
 
-                    allowedInputFluids = null,
-                },
+                maxFluids = -1,
             };
 
             rotatoryPump = new FluidPumpBlockType("rotary-pump", typeof(FluidPumpBlock), 2) {
@@ -1300,17 +1316,15 @@ namespace Frontiers.Content {
                 hasFluidInventory = true,
                 hasItemInventory = false,
 
-                fluidInventoryData = new FluidInventoryData() {
-                    maxInput = 240f,
-                    maxOutput = 360f,
-                    maxVolume = 860f,
+                maxInput = 240f,
+                maxOutput = 360f,
+                maxVolume = 860f,
 
-                    maxPressure = -1f,
-                    minHealthPressurizable = 0.7f,
-                    pressurizable = false,
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
 
-                    allowedInputFluids = null,
-                },
+                maxFluids = -1,
             };
 
             atmosphericCollector = new AtmosphericCollectorBlockType("atmospheric-collector", typeof(AtmosphericCollectorBlock), 2) {
@@ -1321,17 +1335,15 @@ namespace Frontiers.Content {
                 hasFluidInventory = true,
                 hasItemInventory = false,
 
-                fluidInventoryData = new FluidInventoryData() {
-                    maxInput = 240f,
-                    maxOutput = 360f,
-                    maxVolume = 2400f,
+                maxInput = 240f,
+                maxOutput = 360f,
+                maxVolume = 2400f,
 
-                    maxPressure = -1f,
-                    minHealthPressurizable = 0.7f,
-                    pressurizable = false,
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
 
-                    allowedInputFluids = null,
-                },
+                maxFluids = -1,
             };
 
             fluidExhaust = new FluidExhaustBlockType("fluid-exhaust", typeof(FluidExhaustBlock), 1) {
@@ -1342,17 +1354,15 @@ namespace Frontiers.Content {
                 hasFluidInventory = true,
                 hasItemInventory = false,
 
-                fluidInventoryData = new FluidInventoryData() {
-                    maxInput = 80f,
-                    maxOutput = 75f,
-                    maxVolume = 100f,
+                maxInput = 80f,
+                maxOutput = 75f,
+                maxVolume = 100f,
 
-                    maxPressure = -1f,
-                    minHealthPressurizable = 0.7f,
-                    pressurizable = false,
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
 
-                    allowedInputFluids = null,
-                },
+                maxFluids = -1,
             };
 
             fluidFilter = new StorageBlockType("filter", typeof(FluidFilterBlock), 1) {
@@ -1363,47 +1373,75 @@ namespace Frontiers.Content {
                 hasFluidInventory = true,
                 hasItemInventory = false,
 
-                fluidInventoryData = new FluidInventoryData() {
-                    maxInput = 25f,
-                    maxOutput = 25f,
-                    maxVolume = 250f,
+                maxInput = 25f,
+                maxOutput = 25f,
+                maxVolume = 250f,
 
-                    maxPressure = -1f,
-                    minHealthPressurizable = 0.7f,
-                    pressurizable = false,
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
 
-                    allowedInputFluids = null,
-                },
+                maxFluids = 1,
             };
 
             oilRefinery = new CrafterBlockType("oil-refinery", typeof(CrafterBlock)) {
                 buildCost = ItemStack.With(Items.copper, 50, Items.lead, 45),
 
-                health = 125,
+                health = 325,
                 size = 3,
-                itemCapacity = 30,
 
                 canGetOnFire = true,
                 hasFluidInventory = true,
                 hasItemInventory = false,
 
                 craftPlan = new CraftPlan() {
-                    product = new MaterialList(null, FluidStack.With(Fluids.kerosene, 10f)),
-                    cost = new MaterialList(null, FluidStack.With(Fluids.petroleum, 10f)),
+                    output = new MaterialList(null, FluidStack.With(Fluids.kerosene, 20f)),
+                    cost = MaterialList.Multiply(new MaterialList(Fluids.kerosene.CompositionToStacks()), 20f),
                     craftTime = 1f
                 },
 
-                fluidInventoryData = new FluidInventoryData() {
-                    maxInput = 20f,
-                    maxOutput = 20f,
-                    maxVolume = 300f,
+                maxInput = 20f,
+                maxOutput = 20f,
+                maxVolume = 300f,
 
-                    maxPressure = -1f,
-                    minHealthPressurizable = 0.7f,
-                    pressurizable = false,
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
 
-                    allowedInputFluids = null,
+                maxFluids = 2,
+                fixedSpace = true,
+
+                loopSound = Sounds.smelter,
+            };
+
+            fuelMixer = new CrafterBlockType("fuel-mixer", typeof(CrafterBlock)) {
+                buildCost = ItemStack.With(Items.copper, 50, Items.lead, 45),
+
+                health = 325,
+                size = 3,
+
+                itemCapacity = 30,
+
+                canGetOnFire = true,
+                hasFluidInventory = true,
+                hasItemInventory = true,
+
+                craftPlan = new CraftPlan() {
+                    output = new MaterialList(null, FluidStack.With(Fluids.fuel, 20f)),
+                    cost = MaterialList.Multiply(new MaterialList(Fluids.fuel.CompositionToStacks()), 20f),
+                    craftTime = 2f
                 },
+
+                maxInput = 20f,
+                maxOutput = 20f,
+                maxVolume = 300f,
+
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
+
+                maxFluids = 2,
+                fixedSpace = true,
 
                 loopSound = Sounds.smelter,
             };
@@ -2320,6 +2358,30 @@ namespace Frontiers.Content {
             for (int i = 0; i < items.Length; i += 2) composite[i / 2] = ((Element)items[i], (float)items[i + 1]); 
             return composite;
         }
+
+        public (ItemStack[], FluidStack[]) CompositionToStacks() {
+            if (composition == null) return (null, null);
+
+            List<ItemStack> itemStacks = new();
+            List<FluidStack> fluidStacks = new();
+
+            for (int i = 0; i < composition.Length; i++) {
+                Element element = composition[i].Item1;
+
+                switch (element) {
+                    case Item item:
+                        itemStacks.Add(new ItemStack(item, (int)composition[i].Item2));
+                        break;
+                    case Fluid fluid:
+                        fluidStacks.Add(new FluidStack(fluid, composition[i].Item2));
+                        break;
+                }
+            }
+
+            ItemStack[] itemStackArray = itemStacks.Count == 0 ? null : itemStacks.ToArray();
+            FluidStack[] fluidStackArray = fluidStacks.Count == 0 ? null : fluidStacks.ToArray();
+            return (itemStackArray, fluidStackArray);
+        }
     }
 
     #endregion
@@ -2346,6 +2408,11 @@ namespace Frontiers.Content {
         public MaterialList(ItemStack[] items, FluidStack[] fluids) {
             this.items = items;
             this.fluids = fluids;
+        }
+
+        public MaterialList((ItemStack[], FluidStack[]) elementStacks) {
+            items = elementStacks.Item1;
+            fluids = elementStacks.Item2;
         }
 
         public static MaterialList Multiply(MaterialList materials, float mult) {
@@ -2396,12 +2463,12 @@ namespace Frontiers.Content {
     }
 
     public struct CraftPlan {
-        public MaterialList product;
+        public MaterialList output;
         public MaterialList cost;
         public float craftTime;
 
         public CraftPlan(MaterialList product, MaterialList cost, float craftTime) {
-            this.product = product;
+            this.output = product;
             this.cost = cost;
             this.craftTime = craftTime;
         }

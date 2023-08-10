@@ -132,16 +132,21 @@ namespace Frontiers.Content {
         }
 
         public static Item[] ToItems(ItemStack[] stacks) {
+            if (stacks == null) return null;
+
             Item[] items = new Item[stacks.Length];
             for (int i = 0; i < stacks.Length; i++) items[i] = stacks[i].item;
             return items;
         }
 
         public static ItemStack Multiply(ItemStack stack, float amount) {
+            if (stack == null) return null;
             return new ItemStack(stack.item, Mathf.RoundToInt(stack.amount * amount));
         }
 
         public static ItemStack[] Multiply(ItemStack[] stacks, float amount) {
+            if (stacks == null) return null;
+
             ItemStack[] copy = new ItemStack[stacks.Length];
             for (int i = 0; i < copy.Length; i++) {
                 copy[i] = new ItemStack(stacks[i].item, Mathf.RoundToInt(stacks[i].amount * amount));

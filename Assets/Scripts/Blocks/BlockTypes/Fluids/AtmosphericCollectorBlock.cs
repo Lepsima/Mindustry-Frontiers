@@ -17,7 +17,7 @@ public class AtmosphericCollectorBlock : ItemBlock {
     protected override void Update() {
         base.Update();
 
-        float litersToAdd = Type.fluidInventoryData.maxInput * Time.deltaTime;
+        float litersToAdd = Type.maxInput * Time.deltaTime;
         foreach((Element element, float percent) in collectionFluid.composition) if (element is Fluid fluid) fluidInventory.AddLiters(fluid, litersToAdd * percent);
     }
 }

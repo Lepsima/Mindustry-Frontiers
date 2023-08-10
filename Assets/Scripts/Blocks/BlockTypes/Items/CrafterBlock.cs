@@ -1,5 +1,7 @@
 using Frontiers.Content;
 using Frontiers.Content.Upgrades;
+using Frontiers.FluidSystem;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,13 +9,14 @@ using UnityEngine;
 public class CrafterBlock : ItemBlock {
     public new CrafterBlockType Type { get => (CrafterBlockType)base.Type; protected set => base.Type = value; }
 
-    private float nextCraftTime = -1f;
+    private float craftTimer = -1f;
     private Transform topTransform;
 
     private bool hasTop = false;
 
     private float warmup;
-    private float progress;
+
+    private bool itemPass = true, fluidPass = true;
 
     #region - Upgradable Stats -
 
@@ -46,28 +49,22 @@ public class CrafterBlock : ItemBlock {
         base.Update();
 
         bool isCrafting = IsCrafting();
-        warmup = Mathf.Clamp01((isCrafting ? 2f : -2f) * Time.deltaTime + warmup);
+        warmup = Mathf.Clamp01((isCrafting ? 0.5f : -0.5f) * Time.deltaTime + warmup);
 
         if (hasTop) {
             topTransform.localScale = (Mathf.Abs(Mathf.Sin(Time.time * 1.3f) * warmup) + 0.5f * warmup) * Vector3.one;
         }
 
-        if (isCrafting && Time.time >= nextCraftTime) {
-            progress += warmup * Time.deltaTime;
-            if (progress >= 1) Craft();
+        if (isCrafting) {
+            craftTimer = Mathf.Clamp(craftTimer - (warmup * Time.deltaTime), 0, craftTime);
+            if (craftTimer <= 0) Craft();
         }
 
         OutputItems();
     }
 
-    public bool CanCraft() {
-        bool itemPass = !hasItemInventory || inventory.Has(craftCost.items) && !inventory.FullOfAny(ItemStack.ToItems(craftReturn.items));
-        bool fluidPass = !hasFluidInventory || fluidInventory.Has(craftCost.fluids) && fluidInventory.CanRecive(craftReturn.fluids);
-        return itemPass && fluidPass;
-    }
-
     public virtual void Craft() {
-        nextCraftTime = -1f;
+        craftTimer = -1f;
 
         if (hasItemInventory) {
             inventory.Substract(craftCost.items);
@@ -76,38 +73,57 @@ public class CrafterBlock : ItemBlock {
  
         if (hasFluidInventory) {
             fluidInventory.SubLiters(craftCost.fluids);
-            fluidInventory.AddLiters(craftReturn.fluids);
+            fluidInventory.AddProductLiters(craftReturn.fluids);
         }
     }
 
-    public bool IsCrafting() => nextCraftTime != -1f;
+    public bool IsCrafting() => craftTimer != -1f;
 
     public override void SetInventory() {
         base.SetInventory();
 
         // Copy the craft plan to a local array
         craftTime = Type.craftPlan.craftTime;
-        craftReturn = Type.craftPlan.product;
+        craftReturn = Type.craftPlan.output;
         craftCost = Type.craftPlan.cost;
 
         if (hasItemInventory) {
             // Set allowed input items
-            Item[] allowedItems = new Item[craftCost.items.Length + craftReturn.items.Length];
-            for (int i = 0; i < craftCost.items.Length; i++) allowedItems[i] = craftCost.items[i].item;
-            for (int i = 0; i < craftReturn.items.Length; i++) allowedItems[i + craftCost.items.Length - 1] = craftReturn.items[i].item;
+            List<Item> allowedItems = new();
+            if (craftCost.items != null) for (int i = 0; i < craftCost.items.Length; i++) allowedItems.Add(craftCost.items[i].item);
+            if (craftReturn.items != null) for (int i = 0; i < craftReturn.items.Length; i++) allowedItems.Add(craftReturn.items[i].item);
 
-            inventory.SetAllowedItems(allowedItems);
+            inventory.SetAllowedItems(allowedItems.ToArray());
+
             acceptedItems = ItemStack.ToItems(craftCost.items);
             outputItems = ItemStack.ToItems(craftReturn.items);
+
+            itemPass = false;
         }
 
         if (hasFluidInventory) {
+            FluidStack[] inputStacks = Type.craftPlan.cost.fluids;
+            if (inputStacks != null) allowedInputFluids = FluidStack.ToFluids(inputStacks);
 
+            FluidStack[] outputStacks = Type.craftPlan.output.fluids;
+            if (outputStacks != null) allowedOutputFluids = FluidStack.ToFluids(outputStacks);
+
+            fluidPass = false;
         }
     }
 
     public override void OnInventoryValueChange(object sender, System.EventArgs e) {
-        if (!CanCraft()) nextCraftTime = -1f;
-        else if (!IsCrafting()) nextCraftTime = craftTime + Time.time;
+        itemPass = !hasItemInventory || inventory.Has(craftCost.items) && !inventory.FullOfAny(ItemStack.ToItems(craftReturn.items));
+        CraftState(itemPass && fluidPass);
+    }
+
+    public override void OnVolumeChanged(object sender, EventArgs e) {
+        fluidPass = !hasFluidInventory || fluidInventory.Has(craftCost.fluids) && fluidInventory.CanRecive(craftReturn.fluids);
+        CraftState(itemPass && fluidPass);
+    }
+
+    private void CraftState(bool pass) {
+        if (!pass) craftTimer = -1f;
+        else if (!IsCrafting()) craftTimer = craftTime;
     }
 }

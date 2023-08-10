@@ -16,6 +16,9 @@ public abstract class ItemBlock : Block {
     protected Item[] acceptedItems;
     protected Item[] outputItems;
 
+    protected Fluid[] allowedInputFluids;
+    protected Fluid[] allowedOutputFluids;
+
     public FluidInventory fluidInventory;
     public SpriteRenderer fluidSpriteRenderer;
 
@@ -53,7 +56,7 @@ public abstract class ItemBlock : Block {
         }
 
         if (hasFluidInventory) {
-            fluidInventory = new FluidInventory(this, Type.fluidInventoryData);
+            fluidInventory = new FluidInventory(this);
             fluidInventory.OnVolumeChanged += OnVolumeChanged;
         }
 
@@ -69,12 +72,20 @@ public abstract class ItemBlock : Block {
         }
 
         Color color = fluidInventory.displayFluid.color / 255;
-        color.a = fluidInventory.usedVolume / fluidInventory.data.maxVolume;
+        color.a = fluidInventory.usedVolume / Type.maxVolume;
         fluidSpriteRenderer.color = color;
     }
 
     public override bool CanReciveItem(Item item, int orientation = 0) { 
         return base.CanReciveItem(item) && IsAcceptedItem(item) && !inventory.Full(item); 
+    }
+
+    public virtual bool CanOutputFluid(Fluid fluid) {
+        return allowedOutputFluids == null || allowedOutputFluids.Contains(fluid);
+    }
+
+    public virtual bool CanReciveFluid(Fluid fluid) {
+        return allowedInputFluids == null || allowedInputFluids.Contains(fluid);
     }
 
     public virtual bool IsAcceptedItem(Item item) => acceptedItems == null || acceptedItems.Length == 0 || acceptedItems.Contains(item);
@@ -139,7 +150,7 @@ public abstract class ItemBlock : Block {
 
     public void SetFluidLinkedComponents(ItemBlock[] adjacentBlocks) {
         List<FluidInventory> fluidComponents = new();
-        foreach (ItemBlock itemBlock in adjacentBlocks) if (itemBlock.hasFluidInventory && !itemBlock.fluidInventory.data.outputOnly) fluidComponents.Add(itemBlock.fluidInventory);
+        foreach (ItemBlock itemBlock in adjacentBlocks) if (itemBlock.hasFluidInventory && !itemBlock.Type.outputOnly) fluidComponents.Add(itemBlock.fluidInventory);
         fluidInventory.SetLinkedComponents(fluidComponents.ToArray());
     }
 
