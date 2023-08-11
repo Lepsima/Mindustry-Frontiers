@@ -20,6 +20,9 @@ public class RoomManager : MonoBehaviourPunCallbacks {
     private float switchButtonCooldown;
     private bool updateManagers = false;
 
+    public int shardedTeamPlayers;
+    public int cruxTeamPlayers;
+
     #region - Unity callbacks -
 
     private void Awake() {
@@ -63,6 +66,13 @@ public class RoomManager : MonoBehaviourPunCallbacks {
     public override void OnPlayerLeftRoom(Player otherPlayer) {
         if (!TeamUtilities.IsMaster()) return;
         otherPlayer.LeaveCurrentTeam();
+    }
+
+    public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps) {
+        if (!changedProps.ContainsKey("_pt")) return;
+
+        shardedTeamPlayers = TeamUtilities.TryGetTeamMembers(1).Length;
+        cruxTeamPlayers = TeamUtilities.TryGetTeamMembers(2).Length;
     }
 
     public void SwitchTeam() {

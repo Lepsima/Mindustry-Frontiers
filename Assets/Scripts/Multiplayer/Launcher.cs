@@ -31,6 +31,8 @@ public class Launcher : MonoBehaviourPunCallbacks {
     [SerializeField] GameObject playerListItemPrefab;
     [SerializeField] GameObject startGameButton;
 
+    private static string state = "";
+
     private void Awake() {
         Instance = this;
         PhotonNetwork.GameVersion = VERSION;
@@ -44,10 +46,24 @@ public class Launcher : MonoBehaviourPunCallbacks {
 
         SetState("Connecting To Master...");
         PhotonNetwork.ConnectUsingSettings();
+
+        GameObject discordGameObject = new("Discord rich presence", typeof(DiscordController));
+        DontDestroyOnLoad(discordGameObject);
+
+        DiscordAcitvities.SetState(DiscordAcitvities.State.MainMenu);
     }
 
     public static void SetState(string value) {
+        state = value;
         if (Instance) Instance.SetStateText(value);
+    }
+
+    public string GetState() {
+        return state;
+    }
+
+    public int GetRoomCount() {
+        return cachedRoomList.Count;
     }
 
     private void SetStateText(string value) {
@@ -75,12 +91,19 @@ public class Launcher : MonoBehaviourPunCallbacks {
         if (string.IsNullOrEmpty(roomNameInputField.text)) return;
 
         SetState("Creating Room...");
+        DiscordAcitvities.SetState(DiscordAcitvities.State.CreatingRoom);
+
         PhotonNetwork.CreateRoom(roomNameInputField.text);
         MenuManager.Instance.OpenMenu("LoadingMenu");
     }
 
+    public void SearchingRooms() {
+        DiscordAcitvities.SetState(DiscordAcitvities.State.SearchingRoom);
+    }
+
     public override void OnJoinedRoom() {
         SetState("Joined Room");
+        DiscordAcitvities.SetState(DiscordAcitvities.State.InRoom);
 
         roomNameText.text = PhotonNetwork.CurrentRoom.Name;
         MenuManager.Instance.OpenMenu("RoomMenu");

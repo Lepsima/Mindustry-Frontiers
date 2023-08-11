@@ -327,7 +327,6 @@ namespace Frontiers.Teams {
             RoomManager.Instance.photonTeamsManager.TryGetTeamMembers(code, out Player[] members);
             return members;
         }
-
     }
 }
 
