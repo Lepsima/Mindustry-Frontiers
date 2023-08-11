@@ -455,9 +455,9 @@ namespace Frontiers.Content.Maps {
             // Check if a block exists in (x, y)
             void Handle(int x, int y, int o) {
                 Vector2Int offset = new(x, y);
-                ItemBlock block = (ItemBlock)GetBlockAt(offset + position);
 
-                if (block != null && itemBlock != block && !adjacentBlocks.Contains(block)) {
+                if (GetBlockAt(offset + position) is ItemBlock block) {
+                    if (block == null || itemBlock == block || adjacentBlocks.Contains(block)) return;
                     adjacentBlocks.Add(block);
                     adjacentBlockOrientations.Add(o);
                 }

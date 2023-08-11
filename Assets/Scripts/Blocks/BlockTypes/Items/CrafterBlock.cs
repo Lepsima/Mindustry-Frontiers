@@ -21,8 +21,8 @@ public class CrafterBlock : ItemBlock {
     #region - Upgradable Stats -
 
     protected float craftTime;
-    protected MaterialList craftReturn;
-    protected MaterialList craftCost;
+    protected MaterialList craftProduction;
+    protected MaterialList craftConsumption;
 
     #endregion
 
@@ -32,8 +32,8 @@ public class CrafterBlock : ItemBlock {
         BlockUpgradeMultipliers mult = upgrade.properties as BlockUpgradeMultipliers;
 
         craftTime += craftTime * mult.crafter_craftTime;
-        craftReturn = MaterialList.Multiply(craftReturn, 1f + mult.crafter_craftReturn);
-        craftCost = MaterialList.Multiply(craftCost, 1f + mult.crafter_craftCost);
+        craftProduction = MaterialList.Multiply(craftProduction, 1f + mult.crafter_craftReturn);
+        craftConsumption = MaterialList.Multiply(craftConsumption, 1f + mult.crafter_craftCost);
     }
 
     protected override void SetSprites() {
@@ -67,13 +67,13 @@ public class CrafterBlock : ItemBlock {
         craftTimer = -1f;
 
         if (hasItemInventory) {
-            inventory.Substract(craftCost.items);
-            inventory.Add(craftReturn.items);
+            if (craftConsumption.items != null) inventory.Substract(craftConsumption.items);
+            if (craftProduction.items != null) inventory.Add(craftProduction.items);
         }
  
         if (hasFluidInventory) {
-            fluidInventory.SubLiters(craftCost.fluids);
-            fluidInventory.AddProductLiters(craftReturn.fluids);
+            if (craftConsumption.fluids != null) fluidInventory.SubLiters(craftConsumption.fluids);
+            if (craftProduction.fluids != null) fluidInventory.AddProductLiters(craftProduction.fluids);
         }
     }
 
@@ -84,41 +84,38 @@ public class CrafterBlock : ItemBlock {
 
         // Copy the craft plan to a local array
         craftTime = Type.craftPlan.craftTime;
-        craftReturn = Type.craftPlan.output;
-        craftCost = Type.craftPlan.cost;
+        craftProduction = Type.craftPlan.production;
+        craftConsumption = Type.craftPlan.consumption;
 
         if (hasItemInventory) {
             // Set allowed input items
             List<Item> allowedItems = new();
-            if (craftCost.items != null) for (int i = 0; i < craftCost.items.Length; i++) allowedItems.Add(craftCost.items[i].item);
-            if (craftReturn.items != null) for (int i = 0; i < craftReturn.items.Length; i++) allowedItems.Add(craftReturn.items[i].item);
+            if (craftConsumption.items != null) for (int i = 0; i < craftConsumption.items.Length; i++) allowedItems.Add(craftConsumption.items[i].item);
+            if (craftProduction.items != null) for (int i = 0; i < craftProduction.items.Length; i++) allowedItems.Add(craftProduction.items[i].item);
 
             inventory.SetAllowedItems(allowedItems.ToArray());
 
-            acceptedItems = ItemStack.ToItems(craftCost.items);
-            outputItems = ItemStack.ToItems(craftReturn.items);
+            acceptedItems = ItemStack.ToItems(craftConsumption.items);
+            outputItems = ItemStack.ToItems(craftProduction.items);
 
             itemPass = false;
         }
 
         if (hasFluidInventory) {
-            FluidStack[] inputStacks = Type.craftPlan.cost.fluids;
-            if (inputStacks != null) allowedInputFluids = FluidStack.ToFluids(inputStacks);
-
-            FluidStack[] outputStacks = Type.craftPlan.output.fluids;
-            if (outputStacks != null) allowedOutputFluids = FluidStack.ToFluids(outputStacks);
+            if (Type.craftPlan.consumption.fluids != null) allowedInputFluids = FluidStack.ToFluids(Type.craftPlan.consumption.fluids);
+            if (Type.craftPlan.production.fluids != null) allowedOutputFluids = FluidStack.ToFluids(Type.craftPlan.production.fluids);
 
             fluidPass = false;
         }
     }
 
     public override void OnInventoryValueChange(object sender, System.EventArgs e) {
-        itemPass = !hasItemInventory || inventory.Has(craftCost.items) && !inventory.FullOfAny(ItemStack.ToItems(craftReturn.items));
+        itemPass = !hasItemInventory || inventory.Has(craftConsumption.items) && inventory.Fits(craftProduction.items);
         CraftState(itemPass && fluidPass);
     }
 
     public override void OnVolumeChanged(object sender, EventArgs e) {
-        fluidPass = !hasFluidInventory || fluidInventory.Has(craftCost.fluids) && fluidInventory.CanRecive(craftReturn.fluids);
+        fluidPass = !hasFluidInventory || fluidInventory.Has(craftConsumption.fluids) && fluidInventory.CanRecive(craftProduction.fluids);
         CraftState(itemPass && fluidPass);
     }
 

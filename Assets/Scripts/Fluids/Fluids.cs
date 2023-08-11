@@ -14,12 +14,19 @@ namespace Frontiers.FluidSystem {
         // The max amount this fluid can be compressed
         public float maxCompression = 1f;
 
+        // Whether if this fluid is used by units to refuel
+        public bool isUnitFuel = false;
+
         public Fluid(string name) : base(name) {
 
         }
 
         public Fluid(string name, (Element, float)[] composition) : base(name, composition) {
 
+        }
+
+        public FluidStack ReturnStack(float mult = 1f) {
+            return new FluidStack(this, returnAmount * mult);
         }
 
         public float Compression(float pressure) {
@@ -89,6 +96,16 @@ namespace Frontiers.FluidSystem {
         public static Fluid atmosphericFluid;
         public static float atmosphericPressure = 1f;
 
+        public static Fluid[] unitFuelFluids;
+
+        public static Fluid[] GetFuelFluids() {
+            Fluid[] allFluids = ContentLoader.GetContentByType<Fluid>();
+            List<Fluid> fuelFluids = new();
+
+            foreach(Fluid fluid in allFluids) if (fluid.isUnitFuel) fuelFluids.Add(fluid);
+            return fuelFluids.ToArray();
+        }
+
         public static void Load() {
             hydrogen = new Fluid("fluid-hydrogen") {
                 color = new Color(0xd1, 0xe4, 0xff),
@@ -131,21 +148,25 @@ namespace Frontiers.FluidSystem {
                 maxCompression = 1.1f,
             };
 
-            petroleum = new Fluid("fluid-petroleum", Element.With(Items.coal, 0.75f, hydrogen, 0.115f, Items.sulfur, 0.06f, nitrogen, 0.04f, oxigen, 0.035f)) {
+            petroleum = new Fluid("fluid-petroleum", Element.With(Items.coal, 7f, hydrogen, 1.5f, Items.sulfur, 1f, nitrogen, 0.3f, oxigen, 0.2f)) {
+                returnAmount = 10f,
+
                 color = new Color(0x31, 0x31, 0x31),
                 density = 850f,
                 compressionRatio = 3f,
                 maxCompression = 1.5f,
             };
 
-            kerosene = new Fluid("fluid-kerosene", Element.With(petroleum, 1.5f)) {
+            kerosene = new Fluid("fluid-kerosene", Element.With(petroleum, 0.5f)) {
                 color = new Color(0x84, 0xa9, 0x4b),
                 density = 800f,
                 compressionRatio = 2.5f,
                 maxCompression = 2f,
             };
 
-            fuel = new Fluid("fluid-fuel", Element.With(kerosene, 0.7f, Items.coal, 0.3f)) {
+            fuel = new Fluid("fluid-fuel", Element.With(kerosene, 7f, Items.coal, 3f)) {
+                returnAmount = 10f,
+
                 color = new Color(0xff, 0xcd, 0x66),
                 density = 804f,
                 compressionRatio = 3.5f,
@@ -153,6 +174,8 @@ namespace Frontiers.FluidSystem {
             };
 
             atmosphericFluid = air;
+
+            unitFuelFluids = GetFuelFluids();
         }
     }
 }

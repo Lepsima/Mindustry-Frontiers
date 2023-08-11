@@ -751,7 +751,7 @@ namespace Frontiers.Content {
         public bool pressurizable;
 
         // Whether this block can only output or input
-        public bool outputOnly, inputOnly;
+        public bool fluidOutputOnly, fluidInputOnly;
 
         // The max amount of liquids
         public int maxFluids;
@@ -907,7 +907,7 @@ namespace Frontiers.Content {
         }
     }
 
-    public class LandPadBlockType : StorageBlockType {
+    public class LandPadBlockType : ItemBlockType {
         public Vector2[] landPositions;
 
         public int unitCapacity = 0;
@@ -921,7 +921,7 @@ namespace Frontiers.Content {
     public class AtmosphericCollectorBlockType : ItemBlockType {
         public AtmosphericCollectorBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             hasFluidInventory = true;
-            outputOnly = true;
+            fluidOutputOnly = true;
         }
     }
 
@@ -938,7 +938,7 @@ namespace Frontiers.Content {
 
     public class FluidExhaustBlockType : ItemBlockType {
         public FluidExhaustBlockType(string name, Type type, int tier) : base(name, type, tier) {
-            inputOnly = true;
+            fluidInputOnly = true;
         }
     }
 
@@ -948,7 +948,7 @@ namespace Frontiers.Content {
         public FluidPumpBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             rotorSprite = AssetLoader.GetSprite(name + "-rotator");
             updates = true;
-            outputOnly = true;
+            fluidOutputOnly = true;
         }
     }
 
@@ -1037,6 +1037,15 @@ namespace Frontiers.Content {
                 unitCapacity = 4,
                 unitSize = 2.5f,
 
+                hasItemInventory = false,
+                hasFluidInventory = true,
+
+                maxInput = 50f,
+                maxOutput = 0f,
+                maxVolume = 300f,
+
+                fluidInputOnly = true,
+
                 landPositions = new Vector2[] {
                     new Vector2(0.8f, 0.8f),
                     new Vector2(0.8f, 2.2f),
@@ -1054,6 +1063,15 @@ namespace Frontiers.Content {
                 updates = true,
                 unitCapacity = 1,
                 unitSize = 5f,
+
+                hasItemInventory = false,
+                hasFluidInventory = true,
+
+                maxInput = 50f,
+                maxOutput = 0f,
+                maxVolume = 500f,
+
+                fluidInputOnly = true,
 
                 landPositions = new Vector2[] {
                     new Vector2(1.5f, 1.5f)
@@ -1129,8 +1147,8 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.copper, 50, Items.lead, 45),
 
                 craftPlan = new CraftPlan() {
-                    output = new MaterialList(ItemStack.With(Items.silicon, 1), null),
-                    cost = new MaterialList(ItemStack.With(Items.sand, 2, Items.coal, 1), null),
+                    production = new MaterialList(ItemStack.With(Items.silicon, 1), null),
+                    consumption = new MaterialList(ItemStack.With(Items.sand, 2, Items.coal, 1), null),
                     craftTime = 0.66f
                 },
 
@@ -1147,8 +1165,8 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.copper, 75, Items.lead, 25),
 
                 craftPlan = new CraftPlan() {
-                    output = new MaterialList(ItemStack.With(Items.graphite, 1), null),
-                    cost = new MaterialList(ItemStack.With(Items.coal, 2), null),
+                    production = new MaterialList(ItemStack.With(Items.graphite, 1), null),
+                    consumption = new MaterialList(ItemStack.With(Items.coal, 2), null),
                     craftTime = 1.5f
                 },
 
@@ -1163,8 +1181,8 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.copper, 100, Items.lead, 35, Items.graphite, 15),
 
                 craftPlan = new CraftPlan() {
-                    output = new MaterialList(ItemStack.With(Items.metaglass, 1), null),
-                    cost = new MaterialList(ItemStack.With(Items.sand, 1, Items.lead, 1), null),
+                    production = new MaterialList(ItemStack.With(Items.metaglass, 1), null),
+                    consumption = new MaterialList(ItemStack.With(Items.sand, 1, Items.lead, 1), null),
                     craftTime = 0.5f
                 },
 
@@ -1395,8 +1413,8 @@ namespace Frontiers.Content {
                 hasItemInventory = false,
 
                 craftPlan = new CraftPlan() {
-                    output = new MaterialList(null, FluidStack.With(Fluids.kerosene, 20f)),
-                    cost = MaterialList.Multiply(new MaterialList(Fluids.kerosene.CompositionToStacks()), 20f),
+                    production = new MaterialList(null, new FluidStack[] { Fluids.kerosene.ReturnStack() }),
+                    consumption = new MaterialList(Fluids.kerosene.CompositionToStacks()),
                     craftTime = 1f
                 },
 
@@ -1427,8 +1445,8 @@ namespace Frontiers.Content {
                 hasItemInventory = true,
 
                 craftPlan = new CraftPlan() {
-                    output = new MaterialList(null, FluidStack.With(Fluids.fuel, 20f)),
-                    cost = MaterialList.Multiply(new MaterialList(Fluids.fuel.CompositionToStacks()), 20f),
+                    production = new MaterialList(null, new FluidStack[] { Fluids.fuel.ReturnStack() }),
+                    consumption = new MaterialList(Fluids.fuel.CompositionToStacks()),
                     craftTime = 2f
                 },
 
@@ -2335,6 +2353,7 @@ namespace Frontiers.Content {
         public float explosiveness = 0f, flammability = 0f, radioactivity = 0f, charge = 0f;
 
         // If this is a molecule ex: water = 2 hidrogen and 1 oxigen
+        public float returnAmount = 1f;
         public (Element, float)[] composition;
 
         public Element(string name) : base(name) {
@@ -2370,7 +2389,7 @@ namespace Frontiers.Content {
 
                 switch (element) {
                     case Item item:
-                        itemStacks.Add(new ItemStack(item, (int)composition[i].Item2));
+                        itemStacks.Add(new ItemStack(item, Mathf.RoundToInt(composition[i].Item2)));
                         break;
                     case Fluid fluid:
                         fluidStacks.Add(new FluidStack(fluid, composition[i].Item2));
@@ -2410,9 +2429,14 @@ namespace Frontiers.Content {
             this.fluids = fluids;
         }
 
-        public MaterialList((ItemStack[], FluidStack[]) elementStacks) {
+        public MaterialList((ItemStack[], FluidStack[]) elementStacks, float mult = 1f) {
             items = elementStacks.Item1;
             fluids = elementStacks.Item2;
+
+            if (mult != 1f) {
+                items = ItemStack.Multiply(items, mult);
+                fluids = FluidStack.Multiply(fluids, mult);
+            }
         }
 
         public static MaterialList Multiply(MaterialList materials, float mult) {
@@ -2463,13 +2487,13 @@ namespace Frontiers.Content {
     }
 
     public struct CraftPlan {
-        public MaterialList output;
-        public MaterialList cost;
+        public MaterialList production;
+        public MaterialList consumption;
         public float craftTime;
 
         public CraftPlan(MaterialList product, MaterialList cost, float craftTime) {
-            this.output = product;
-            this.cost = cost;
+            this.production = product;
+            this.consumption = cost;
             this.craftTime = craftTime;
         }
     }

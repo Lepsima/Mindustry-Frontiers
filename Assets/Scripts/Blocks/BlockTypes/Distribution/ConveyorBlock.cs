@@ -188,7 +188,7 @@ public class ConveyorBlock : ItemBlock {
             nextAsConveyor.ReciveItem(convItem, GetOrientation());
         } else {
             convItem.End();
-            next.ReciveItems(item, 0, GetOrientation());
+            next.ReciveItems(item, 1, GetOrientation());
         }
 
         return true;

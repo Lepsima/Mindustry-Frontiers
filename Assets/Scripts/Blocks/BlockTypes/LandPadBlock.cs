@@ -3,8 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Frontiers.Assets;
+using Frontiers.FluidSystem;
 
-public class LandPadBlock : Block {
+public class LandPadBlock : ItemBlock {
     static List<LandPadBlock> allyLandPads = new();
     static List<LandPadBlock> enemyLandPads = new();
 
@@ -35,6 +36,11 @@ public class LandPadBlock : Block {
     public void Land(Unit unit) {
         unit.transform.position = GetLandPosition(landedUnits.Count);
         landedUnits.Add(unit);
+    }
+
+    public override void SetInventory() {
+        base.SetInventory();
+        allowedInputFluids = Fluids.unitFuelFluids;
     }
 
     private Vector2 GetLandPosition(int index) {

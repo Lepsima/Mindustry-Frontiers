@@ -150,7 +150,7 @@ public abstract class ItemBlock : Block {
 
     public void SetFluidLinkedComponents(ItemBlock[] adjacentBlocks) {
         List<FluidInventory> fluidComponents = new();
-        foreach (ItemBlock itemBlock in adjacentBlocks) if (itemBlock.hasFluidInventory && !itemBlock.Type.outputOnly) fluidComponents.Add(itemBlock.fluidInventory);
+        foreach (ItemBlock itemBlock in adjacentBlocks) if (itemBlock.hasFluidInventory && !itemBlock.Type.fluidOutputOnly) fluidComponents.Add(itemBlock.fluidInventory);
         fluidInventory.SetLinkedComponents(fluidComponents.ToArray());
     }
 

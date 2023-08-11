@@ -94,7 +94,7 @@ namespace Frontiers.FluidSystem {
             UpdatePressure();
 
             // Skip update if possible
-            if (volumePercent == 0 || Type.inputOnly || fluids.Count == 0) return;
+            if (volumePercent == 0 || Type.fluidInputOnly || fluids.Count == 0) return;
 
             foreach (FluidInventory other in linkedInventories) {
                 // If cant transfer to this inventory, skip

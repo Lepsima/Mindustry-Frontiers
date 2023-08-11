@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Collections.Generic;
 
 namespace Frontiers.Content {
+    [Serializable]
     public class Item : Element {
         public float hardness = 0, cost = 1;
         public bool lowPriority = false, buildable = true;
@@ -11,6 +12,10 @@ namespace Frontiers.Content {
         public Item(string name) : base(name) { }
 
         public Item(string name, (Element, float)[] composition) : base(name, composition) { }
+
+        public ItemStack ReturnStack(float mult = 1f) {
+            return new ItemStack(this, Mathf.RoundToInt(returnAmount * mult));
+        }
     }
 
     public class Items {
@@ -148,9 +153,7 @@ namespace Frontiers.Content {
             if (stacks == null) return null;
 
             ItemStack[] copy = new ItemStack[stacks.Length];
-            for (int i = 0; i < copy.Length; i++) {
-                copy[i] = new ItemStack(stacks[i].item, Mathf.RoundToInt(stacks[i].amount * amount));
-            }
+            for (int i = 0; i < copy.Length; i++) copy[i] = new ItemStack(stacks[i].item, Mathf.RoundToInt(stacks[i].amount * amount));
             return copy;
         }
 
@@ -371,6 +374,7 @@ namespace Frontiers.Content {
         }
 
         public bool Fits(ItemStack[] stacks) {
+            if (stacks == null) return true;
             foreach (ItemStack stack in stacks) if (!Fits(stack)) return false;
             return true;
         }
