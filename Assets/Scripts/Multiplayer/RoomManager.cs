@@ -83,6 +83,8 @@ public class RoomManager : MonoBehaviourPunCallbacks {
 
     void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode) {
         if (scene.buildIndex == 1) {
+            DiscordActivities.SetState(DiscordActivities.State.InGame);
+
             // Initialize managers
             MapManager.InitializeMapManager();
 

@@ -50,7 +50,7 @@ public class Launcher : MonoBehaviourPunCallbacks {
         GameObject discordGameObject = new("Discord rich presence", typeof(DiscordController));
         DontDestroyOnLoad(discordGameObject);
 
-        DiscordAcitvities.SetState(DiscordAcitvities.State.MainMenu);
+        DiscordActivities.SetState(DiscordActivities.State.MainMenu);
     }
 
     public static void SetState(string value) {
@@ -91,19 +91,28 @@ public class Launcher : MonoBehaviourPunCallbacks {
         if (string.IsNullOrEmpty(roomNameInputField.text)) return;
 
         SetState("Creating Room...");
-        DiscordAcitvities.SetState(DiscordAcitvities.State.CreatingRoom);
-
         PhotonNetwork.CreateRoom(roomNameInputField.text);
         MenuManager.Instance.OpenMenu("LoadingMenu");
     }
 
-    public void SearchingRooms() {
-        DiscordAcitvities.SetState(DiscordAcitvities.State.SearchingRoom);
+    public void OnEnterRoomCreationMenu() {
+        SetState("Room Creation Menu");
+        DiscordActivities.SetState(DiscordActivities.State.CreatingRoom);
+    }
+
+    public void OnEnterRoomSearchingMenu() {
+        SetState("Room Search Menu");
+        DiscordActivities.SetState(DiscordActivities.State.SearchingRoom);
+    }
+
+    public void OnEnterMainMenu() {
+        SetState("Joined Lobby");
+        DiscordActivities.SetState(DiscordActivities.State.MainMenu);
     }
 
     public override void OnJoinedRoom() {
         SetState("Joined Room");
-        DiscordAcitvities.SetState(DiscordAcitvities.State.InRoom);
+        DiscordActivities.SetState(DiscordActivities.State.InRoom);
 
         roomNameText.text = PhotonNetwork.CurrentRoom.Name;
         MenuManager.Instance.OpenMenu("RoomMenu");
