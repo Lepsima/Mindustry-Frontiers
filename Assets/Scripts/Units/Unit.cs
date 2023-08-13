@@ -193,8 +193,8 @@ public abstract class Unit : Entity, IArmed {
         }
 
         if (currentLandPadBlock != null && fuel < fuelCapacity) {
-            if (fuel < fuelCapacity) {
-                fuel += fuelRefillRate * Time.deltaTime;
+            if (fuel < fuelCapacity) { 
+                fuel += currentLandPadBlock.Refuel(fuelRefillRate * Time.deltaTime);
 
                 // When fuel is completely refilled, continue the previous mode
                 if (fuel > fuelCapacity) {

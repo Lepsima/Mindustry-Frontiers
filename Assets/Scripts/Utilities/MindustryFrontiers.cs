@@ -1412,9 +1412,9 @@ namespace Frontiers.Content {
                 hasItemInventory = false,
 
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(null, new FluidStack[] { Fluids.kerosene.ReturnStack() }),
-                    consumption = new MaterialList(Fluids.kerosene.CompositionToStacks()),
-                    craftTime = 1f
+                    production = MaterialList.Multiply(new MaterialList(null, new FluidStack[] { Fluids.kerosene.ReturnStack() }), 10f),
+                    consumption = MaterialList.Multiply(new MaterialList(Fluids.kerosene.CompositionToStacks()), 10f),
+                    craftTime = 0.33f
                 },
 
                 maxInput = 20f,
@@ -1444,9 +1444,9 @@ namespace Frontiers.Content {
                 hasItemInventory = true,
 
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(null, new FluidStack[] { Fluids.fuel.ReturnStack() }),
-                    consumption = new MaterialList(Fluids.fuel.CompositionToStacks()),
-                    craftTime = 2f
+                    production = MaterialList.Multiply(new MaterialList(null, new FluidStack[] { Fluids.fuel.ReturnStack() }), 3f),
+                    consumption = MaterialList.Multiply(new MaterialList(Fluids.fuel.CompositionToStacks()), 3f),
+                    craftTime = 1f
                 },
 
                 maxInput = 20f,

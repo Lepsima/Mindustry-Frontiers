@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Frontiers.Assets;
 using Frontiers.FluidSystem;
+using System.Linq;
 
 public class LandPadBlock : ItemBlock {
     static List<LandPadBlock> allyLandPads = new();
@@ -51,6 +52,23 @@ public class LandPadBlock : ItemBlock {
 
     public void TakeOff(Unit unit) {
         if (landedUnits.Contains(unit)) landedUnits.Remove(unit);
+    }
+
+    /// <summary>
+    /// Substracts the most of the given liters from the fluid inventory and gives the substracted amount
+    /// </summary>
+    /// <param name="liters">The amount that will be transfered</param>
+    /// <returns>The real amount that was substracted</returns>
+    public float Refuel(float liters) {
+        if (fluidInventory.fluids.Count <= 0) return 0;
+
+        // Get the maximum transfer amount
+        Fluid fluid = fluidInventory.fluids.Keys.ElementAt(0);
+        float transfer = Mathf.Min(fluidInventory.fluids[fluid].x, liters);
+
+        // Substract and return the amount
+        fluidInventory.SubLiters(fluid, transfer);
+        return transfer;
     }
 
     public override void OnDestroy() {

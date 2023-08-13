@@ -6,7 +6,7 @@ public class DiscordController : MonoBehaviour {
     public Discord.Discord discord;
 
     void Awake() {
-        discord = new Discord.Discord(1139523769984110635L, (ulong)Discord.CreateFlags.NoRequireDiscord);
+        discord = new Discord.Discord(1139523769984110635L, (ulong)CreateFlags.NoRequireDiscord);
         startTime = System.DateTimeOffset.Now.ToUnixTimeMilliseconds();
     }
 

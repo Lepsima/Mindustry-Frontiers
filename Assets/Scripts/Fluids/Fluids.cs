@@ -164,13 +164,15 @@ namespace Frontiers.FluidSystem {
                 maxCompression = 2f,
             };
 
-            fuel = new Fluid("fluid-fuel", Element.With(kerosene, 7f, Items.coal, 3f)) {
+            fuel = new Fluid("fluid-fuel", Element.With(kerosene, 7f, Items.coal, 1f)) {
                 returnAmount = 10f,
 
                 color = new Color(0xff, 0xcd, 0x66),
                 density = 804f,
                 compressionRatio = 3.5f,
                 maxCompression = 1.2f,
+
+                isUnitFuel = true,
             };
 
             atmosphericFluid = air;
