@@ -28,7 +28,7 @@ public class PlayerManager : MonoBehaviour {
     private CinemachineVirtualCamera virtualCamera;
     private Transform playerTransform;
 
-    public bool buildMode = false;
+    public bool buildMode = false, forceFollow = false;
     public int unitFollowIndex = 0;
 
     public static Vector3 mousePos;
@@ -43,7 +43,7 @@ public class PlayerManager : MonoBehaviour {
         virtualCamera = GetComponent<CinemachineVirtualCamera>();
         Follow(playerTransform);
 
-        playerTransform.position = TeamUtilities.GetClosestAllyCoreBlock(playerTransform.position).GetPosition();
+        PlayerUI.Instance.EnableLoadingScreen(true);
     }
 
     public bool IsFollowingPlayer() {
@@ -51,7 +51,7 @@ public class PlayerManager : MonoBehaviour {
     }
 
     public void Update() {
-        playerTransform.position += Time.deltaTime * virtualCamera.m_Lens.OrthographicSize * new Vector3(Input.GetAxis("Horizontal") * moveSpeed, Input.GetAxis("Vertical") * moveSpeed, 0);
+        if (!forceFollow) playerTransform.position += Time.deltaTime * virtualCamera.m_Lens.OrthographicSize * new Vector3(Input.GetAxis("Horizontal") * moveSpeed, Input.GetAxis("Vertical") * moveSpeed, 0);
         mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
         if (buildMode) HandleBuildMode();
@@ -122,7 +122,7 @@ public class PlayerManager : MonoBehaviour {
 
             float delta = Input.mouseScrollDelta.y;
             float change = delta * zoomSpeed * ( delta < 0f ? zoomOutMultiplier : zoomInMultiplier) * Time.deltaTime;
-            virtualCamera.m_Lens.OrthographicSize = Mathf.Clamp(virtualCamera.m_Lens.OrthographicSize - change, zoomClampMin, zoomClampMax);
+            if (!forceFollow) virtualCamera.m_Lens.OrthographicSize = Mathf.Clamp(virtualCamera.m_Lens.OrthographicSize - change, zoomClampMin, zoomClampMax);
         }
     }
 
@@ -157,6 +157,8 @@ public class PlayerManager : MonoBehaviour {
     }
 
     public void ChangeFollowingUnit(int increment) {
+        if (MapManager.Map.units.Count == 0) return;
+
         unitFollowIndex += increment;
 
         if (unitFollowIndex >= MapManager.Map.units.Count) unitFollowIndex = 0;
@@ -172,11 +174,26 @@ public class PlayerManager : MonoBehaviour {
 
     public void OnFollowingUnitDestroyed(object sender, Entity.EntityArg e) {
         // If there's a registered killer, follow that entity
-        Follow(e.other ? e.other.transform : playerTransform);
+        Follow(e.other != null ? e.other.transform : null);
     }
 
-    public void Follow(Transform target) {
-        virtualCamera.Follow = target;
+    public void FixFollow(Transform target, float fovSize) {
+        virtualCamera.Follow = target == null ? playerTransform : target;
+        virtualCamera.m_Lens.OrthographicSize = fovSize;
+        forceFollow = true;
+    }
+
+    public void Follow(Transform target, bool forceFollow = false) {
+        if (this.forceFollow && virtualCamera.Follow != null) return;
+
+        virtualCamera.Follow = target == null ? playerTransform : target;
+        this.forceFollow = forceFollow;
+    }
+
+    public void UnFollow(Vector2 position) {
+        forceFollow = false;
+        playerTransform.position = position;
+        Follow(playerTransform);
     }
 
     public void CameraShake() {

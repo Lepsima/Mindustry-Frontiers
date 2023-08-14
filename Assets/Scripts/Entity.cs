@@ -161,8 +161,9 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
         if (fireCount == 0) return;
 
         if (!fires[fireCount - 1]) {
-            Vector3 position = new Vector3(UnityEngine.Random.Range(-0.4f, 0.4f), UnityEngine.Random.Range(-0.4f, 0.4f), 0) * size;
-            fires[fireCount - 1] = transform.CreateEffect(Type.hitSmokeFX, position, Quaternion.Euler(0, 0, UnityEngine.Random.Range(0f, 359.99f)), size).gameObject;
+            float sizeMult = GetType().EqualsOrInherits(typeof(Unit)) ? 1f : size;
+            Vector3 position = new Vector3(UnityEngine.Random.Range(-0.4f, 0.4f), UnityEngine.Random.Range(-0.4f, 0.4f), 0) * sizeMult;
+            fires[fireCount - 1] = transform.CreateEffect(Type.hitSmokeFX, position, Quaternion.Euler(0, 0, UnityEngine.Random.Range(0f, 359.99f)), sizeMult).gameObject;
         }
     }
 

@@ -2,6 +2,7 @@ using Frontiers.Content;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Frontiers.Assets;
 using Frontiers.Teams;
 
 public class CoreBlock : StorageBlock {
@@ -13,6 +14,34 @@ public class CoreBlock : StorageBlock {
 
         inventory.Add(Items.copper, 325);
         inventory.Add(Items.titanium, 125);
+
+        if (IsLocalTeam()) {
+            // Hide until animation ends
+            ShowSprites(false);
+
+            // Instantiate animation prefab
+            GameObject animationPrefab = AssetLoader.GetPrefab("CoreLandAnimationPrefab");
+            GameObject instance = Instantiate(animationPrefab, GetPosition(), Quaternion.identity);
+
+            // Subscribe to event
+            instance.GetComponentInChildren<CoreLandController>().OnAnimationEnd += OnCoreAnimationEnd;
+
+            // Disable loading screen
+            PlayerUI.Instance.EnableLoadingScreen(false);
+
+            // Follow animation
+            PlayerManager.Instance.FixFollow(instance.transform.GetChild(0), 25f);
+        }
+    }
+
+    public void OnCoreAnimationEnd(object sender, System.EventArgs e) {
+        ShowSprites(true);
+        PlayerManager.Instance.UnFollow(GetPosition());
+    }
+
+    private void ShowSprites(bool state) {
+        SpriteRenderer[] allRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+        foreach (SpriteRenderer spriteRenderer in allRenderers) spriteRenderer.enabled = state;
     }
 
     public override void OnDestroy() {

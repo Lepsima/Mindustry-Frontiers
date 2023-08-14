@@ -1,14 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 [ExecuteInEditMode]
-public class CoreLandEffectController : MonoBehaviour {
+public class CoreLandController : MonoBehaviour {
+    public GameObject parent;
+
     public ParticleSystem thruster1;
     public ParticleSystem thruster2;
     public ParticleSystem thruster3;
     public ParticleSystem thruster4;
     public ParticleSystem crashEffect;
+
+    public EventHandler OnAnimationEnd;
 
     public void OnEnable() {
         thruster1.Play();
@@ -20,6 +25,8 @@ public class CoreLandEffectController : MonoBehaviour {
 
     public void PlayCrashEffect() {
         crashEffect.Play();
+        OnAnimationEnd?.Invoke(this, EventArgs.Empty);
+        Destroy(parent, 5f);
     }
 
     public void OnDisable() {
@@ -27,5 +34,6 @@ public class CoreLandEffectController : MonoBehaviour {
         thruster2.Stop();
         thruster3.Stop();
         thruster4.Stop();
+        crashEffect.Stop();
     }
 }
