@@ -70,6 +70,7 @@ public class DrillBlock : ItemBlock {
         if (rotorSpriteRenderer) {
             rotorSpriteRenderer.sortingLayerName = "Blocks";
             rotorSpriteRenderer.sortingOrder = 4;
+            rotorSpriteRenderer.material = new(AssetLoader.GetAsset<Material>("RotationShader"));
         }
     }
 

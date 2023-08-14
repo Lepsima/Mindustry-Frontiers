@@ -4939,7 +4939,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 7b3097e1807975e488da00c3cc39c4c8, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -10015,7 +10015,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1734967199276386417}
-  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!198 &1931994295387582437
 ParticleSystem:
   m_ObjectHideFlags: 0
@@ -24760,6 +24760,7 @@ MonoBehaviour:
   thruster2: {fileID: 4687638446369634279}
   thruster3: {fileID: 4895507869406849628}
   thruster4: {fileID: 8253236336345864248}
+  crashEffect: {fileID: 1931994295387582437}
 --- !u!1 &6835435516124864719
 GameObject:
   m_ObjectHideFlags: 0
@@ -24897,7 +24898,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 7b3097e1807975e488da00c3cc39c4c8, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
