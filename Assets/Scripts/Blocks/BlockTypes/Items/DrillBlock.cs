@@ -65,7 +65,7 @@ public class DrillBlock : ItemBlock {
         rotorTransfrom = transform.Find("Empty");
         rotorTransfrom.gameObject.AddComponent<SpriteRenderer>();
 
-        SpriteRenderer rotorSpriteRenderer = SetOptionalSprite(rotorTransfrom, AssetLoader.GetSprite(Type.name + "-rotator"));
+        SpriteRenderer rotorSpriteRenderer = SetOptionalSprite(rotorTransfrom, Type.rotorSprite);
 
         if (rotorSpriteRenderer) {
             rotorSpriteRenderer.sortingLayerName = "Blocks";
@@ -89,7 +89,7 @@ public class DrillBlock : ItemBlock {
         bool canDrill = CanDrill(drillItem);
 
         rotorVelocity = Mathf.Clamp(rotorVelocity + (canDrill ? rotorVelocityChange : -rotorVelocityChange), 0, maxRotorVelocity);
-        rotorTransfrom.eulerAngles += new Vector3(0, 0, rotorVelocity);
+        rotorTransfrom.eulerAngles += new Vector3(0, 0, rotorVelocity * Time.deltaTime);
 
         if (nextDrillTime <= Time.time && canDrill) {
             inventory.Add(drillItem, 1);
