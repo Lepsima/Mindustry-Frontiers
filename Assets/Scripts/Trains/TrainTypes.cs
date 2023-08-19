@@ -5,12 +5,12 @@ using Frontiers.Content;
 using System;
 
 namespace Frontiers.Content {
-    public class TrainEntityType : EntityType {
+    public class TrainType : UnitType {
         public bool isCapWagon = false;
-        public float connectionPinOffset = 1f;
+        public float connectionPinOffset = 2.4f;
         public float connectionPinMaxDistance = 0.1f;
 
-        public TrainEntityType(string name, Type type, int tier = 1) : base(name, type, tier) {
+        public TrainType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
         }
     }

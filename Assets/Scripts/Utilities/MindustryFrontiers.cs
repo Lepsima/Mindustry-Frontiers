@@ -1644,14 +1644,19 @@ namespace Frontiers.Content {
 
     public class Units {
         public const UnitType none = null;
-        public static UnitType 
+        public static UnitType
             flare, horizon, zenith,  // Assault - air
             poly,                    // Support - air
             sonar, foton,            // Copter - air
-            dagger, fortress,        // Assault - ground
-            train;       
+            dagger, fortress;        // Assault - ground       
+
+        public static EntityType train;
 
         public static void Load() {
+            train = new TrainType("train", typeof(TrainSegment)) {
+
+            };
+
             flare = new AircraftUnitType("flare", typeof(AircraftUnit), 1) {
                 weapons = new WeaponMount[1] {
                     new WeaponMount(Weapons.flareWeapon, new(-0.25f, 0.3f), true),

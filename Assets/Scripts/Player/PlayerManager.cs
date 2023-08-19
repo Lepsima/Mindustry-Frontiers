@@ -97,7 +97,7 @@ public class PlayerManager : MonoBehaviour {
         PlayerContentSelector.ChangeSelectedContentOrientation(Input.mouseScrollDelta.y);
     }
 
-    TrainTrack track;
+    public static TrainTrack track;
     List<Vector2> trackPoints = new() { Vector2.zero };
 
     private void HandleMainMode() {
@@ -127,6 +127,12 @@ public class PlayerManager : MonoBehaviour {
                 trackPoints.Add(mousePos);
                 Debug.Log(trackPoints.Count);
                 track = new TrainTrack(trackPoints.ToArray());
+            }
+
+            if (Input.GetKeyDown(KeyCode.T)) {
+                if (track != null) {
+                    Client.CreateUnit(mousePos, 0f, Units.train, TeamUtilities.GetLocalTeam());
+                }
             }
 
             float delta = Input.mouseScrollDelta.y;

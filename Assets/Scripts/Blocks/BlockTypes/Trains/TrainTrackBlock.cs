@@ -55,6 +55,19 @@ public class TrainTrack {
         return points[index];
     }
 
+    public Vector2 GetPositionAtDistance(float distance) {
+        int index = 0;
+        for (int i = 0; i < pointDistance.Length; i++) if (pointDistance[i] < distance) index = i;
+
+        if (pointDistance.Length - 1 <= index) return points[pointDistance.Length - 1];
+
+        float localDistance = distance - pointDistance[index];
+        float totalDistance = pointDistance[index + 1] - pointDistance[index];
+        float percent = localDistance / totalDistance;
+
+        return Vector2.Lerp(points[index], points[index + 1], percent);
+    }
+
     public void Destroy() {
         Object.Destroy(rendererGameObject);
     }
