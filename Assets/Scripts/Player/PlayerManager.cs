@@ -135,6 +135,12 @@ public class PlayerManager : MonoBehaviour {
                 }
             }
 
+            if (Input.GetKeyDown(KeyCode.H)) {
+                if (track != null) {
+                    Client.CreateUnit(mousePos, 0f, Units.turretTrain, TeamUtilities.GetLocalTeam());
+                }
+            }
+
             float delta = Input.mouseScrollDelta.y;
             float change = delta * zoomSpeed * ( delta < 0f ? zoomOutMultiplier : zoomInMultiplier) * Time.deltaTime;
             if (!forceFollow) virtualCamera.m_Lens.OrthographicSize = Mathf.Clamp(virtualCamera.m_Lens.OrthographicSize - change, zoomClampMin, zoomClampMax);

@@ -156,18 +156,16 @@ public class Weapon : MonoBehaviour {
         spriteRenderer.flipX = mirrored;
         spriteRenderer.sortingOrder = onTop ? 5 : 2;
 
-        SetOptionalSprite(transform.Find("Outline"), Type.outlineSprite);
-    }
+        Transform outlineTransform = transform.Find("Outline");
+        SpriteRenderer outlineSpriteRenderer = outlineTransform.GetComponent<SpriteRenderer>();
 
-    public void SetOptionalSprite(Transform transform, Sprite sprite) {
-        SpriteRenderer spriteRenderer = transform.GetComponent<SpriteRenderer>();
+        if (!Type.outlineSprite) Destroy(outlineTransform.gameObject);
+        if (!Type.outlineSprite || !outlineSpriteRenderer) return;
 
-        if (!sprite) Destroy(transform.gameObject);
-        if (!sprite || !spriteRenderer) return;
-
-        spriteRenderer.sprite = sprite;
-        spriteRenderer.flipX = mirrored;
-        transform.localScale = Vector3.one;
+        outlineSpriteRenderer.sprite = Type.outlineSprite;
+        outlineSpriteRenderer.flipX = mirrored;
+        outlineSpriteRenderer.sortingOrder = onTop ? 5 : -1;
+        outlineTransform.localScale = Vector3.one;
     }
 
     private bool SetAnimations(Animation[] allAnimations) {

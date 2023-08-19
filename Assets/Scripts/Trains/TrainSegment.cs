@@ -71,12 +71,16 @@ public class TrainSegment : Unit {
         FrontTrain = BackTrain = null;
 
         track = PlayerManager.track;
-    }
 
-    public Transform ConnectedTo(TrainSegment train) {
-        if (FrontTrain == train) return frontPin;
-        else if (BackTrain == train) return backPin;
-        else return null;
+        foreach(TrainSegment train in unconnectedTrains) {
+            if (train == this) continue;
+
+            if (!train.BackTrain && !Type.isCapWagon) {
+                train.BackTrain = this;
+                FrontTrain = train;
+                break;
+            }
+        }
     }
 
     public bool IsMovingForward() {
@@ -133,7 +137,7 @@ public class TrainSegment : Unit {
         // Update back train's position
         if (backTrain) {
             float backDistance = Type.connectionPinOffset + backTrain.Type.connectionPinOffset;
-            backTrain.SetDistance(distance + (backDistance * Mathf.Sign(velocity)));
+            backTrain.SetDistance(distance + (backDistance * -Mathf.Sign(velocity)));
             backTrain.UpdatePosition();
         }
  
@@ -151,6 +155,8 @@ public class TrainSegment : Unit {
         if ((FrontTrain || Type.isCapWagon) && BackTrain) return;
 
         foreach (TrainSegment train in unconnectedTrains) {
+            if (train == this || FrontTrain == train || BackTrain == train) continue;
+
             if (!train.FrontTrain && !BackTrain && ValidConnection(train.frontPin, backPin)) {
                 train.FrontTrain = this;
                 BackTrain = train;

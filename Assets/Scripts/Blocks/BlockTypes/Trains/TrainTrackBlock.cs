@@ -42,10 +42,10 @@ public class TrainTrack {
         for (int i = 0; i < points.Length; i++) {
             float distance = Vector2.Distance(points[i], previousPoint);
             previousPoint = points[i];
-
-            pointDistance[i] = length;
             lineRenderer.SetPosition(i, points[i]);
+
             length += distance;
+            pointDistance[i] = length;
         }
     }
 
@@ -61,9 +61,10 @@ public class TrainTrack {
 
         if (pointDistance.Length - 1 <= index) return points[pointDistance.Length - 1];
 
-        float localDistance = distance - pointDistance[index];
-        float totalDistance = pointDistance[index + 1] - pointDistance[index];
-        float percent = localDistance / totalDistance;
+        float a = pointDistance[index];
+        float b = pointDistance[index + 1];
+
+        float percent = (distance - a) / (b - a);
 
         return Vector2.Lerp(points[index], points[index + 1], percent);
     }

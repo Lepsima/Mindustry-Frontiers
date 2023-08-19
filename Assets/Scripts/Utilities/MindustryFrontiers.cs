@@ -1650,11 +1650,20 @@ namespace Frontiers.Content {
             sonar, foton,            // Copter - air
             dagger, fortress;        // Assault - ground       
 
-        public static EntityType train;
+        public static EntityType train, turretTrain;
 
         public static void Load() {
             train = new TrainType("train", typeof(TrainSegment)) {
+                connectionPinOffset = 3.75f,
+            };
 
+            turretTrain = new TrainType("trainTurret", typeof(TrainSegment)) {
+                weapons = new WeaponMount[2] {
+                    new WeaponMount(Weapons.trainTurret, new(-1.135f, 0.9f), true, true),
+                    new WeaponMount(Weapons.trainTurret, new(-1.135f, -0.9f), true, true),
+                },
+
+                connectionPinOffset = 2.6f,
             };
 
             flare = new AircraftUnitType("flare", typeof(AircraftUnit), 1) {
@@ -1994,7 +2003,22 @@ namespace Frontiers.Content {
         // Item related weapons 
         public static WeaponType missileRack;
 
+        // Train weapon
+        public static WeaponType trainTurret;
+
         public static void Load() {
+            trainTurret = new WeaponType("trainTurret-weapon") {
+                bulletType = Bullets.basicBullet,
+                shootOffset = new Vector2(0, 0.37f),
+
+                isIndependent = true,
+                rotateSpeed = 90f,
+
+                recoil = 0f,
+                clipSize = 12,
+                shootTime = 0.15f,
+                reloadTime = 3.5f,
+            };
 
             smallAutoWeapon = new WeaponType("small-auto-weapon") {
                 bulletType = Bullets.basicBullet,
