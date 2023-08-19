@@ -1648,7 +1648,8 @@ namespace Frontiers.Content {
             flare, horizon, zenith,  // Assault - air
             poly,                    // Support - air
             sonar, foton,            // Copter - air
-            dagger, fortress;        // Assault - ground
+            dagger, fortress,        // Assault - ground
+            train;       
 
         public static void Load() {
             flare = new AircraftUnitType("flare", typeof(AircraftUnit), 1) {

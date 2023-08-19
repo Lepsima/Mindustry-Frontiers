@@ -97,6 +97,9 @@ public class PlayerManager : MonoBehaviour {
         PlayerContentSelector.ChangeSelectedContentOrientation(Input.mouseScrollDelta.y);
     }
 
+    TrainTrack track;
+    List<Vector2> trackPoints = new() { Vector2.zero };
+
     private void HandleMainMode() {
         if (!EventSystem.current.IsPointerOverGameObject()) {
             if (Input.GetMouseButtonDown(0)) {
@@ -116,9 +119,15 @@ public class PlayerManager : MonoBehaviour {
             }
 
             if (Input.GetMouseButtonDown(1)) {
+                if (track != null) track.Destroy();
 
+                if (trackPoints == null) trackPoints = new() { Vector2.zero };
+
+                Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                trackPoints.Add(mousePos);
+                Debug.Log(trackPoints.Count);
+                track = new TrainTrack(trackPoints.ToArray());
             }
-
 
             float delta = Input.mouseScrollDelta.y;
             float change = delta * zoomSpeed * ( delta < 0f ? zoomOutMultiplier : zoomInMultiplier) * Time.deltaTime;
