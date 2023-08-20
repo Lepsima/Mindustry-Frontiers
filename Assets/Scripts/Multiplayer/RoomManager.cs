@@ -68,7 +68,7 @@ public class RoomManager : MonoBehaviourPunCallbacks {
         otherPlayer.LeaveCurrentTeam();
     }
 
-    public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps) {
+    public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps) {
         if (!changedProps.ContainsKey("_pt")) return;
 
         shardedTeamPlayers = TeamUtilities.TryGetTeamMembers(1).Length;
@@ -90,8 +90,8 @@ public class RoomManager : MonoBehaviourPunCallbacks {
 
             // If this client is the master, spawn cores
             if (TeamUtilities.IsMaster()) {
-                MapLoader.LoadMap("Default Map 02");
-                Invoke(nameof(SpawnCores), 5f);
+                MapLoader.LoadMap(Launcher.Instance.selectedMap);
+                Invoke(nameof(SpawnCores), 3f);
             } else {
                 Client.RequestMap();
             }

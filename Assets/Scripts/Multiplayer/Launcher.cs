@@ -11,6 +11,7 @@ using Frontiers.Content.Maps;
 using Frontiers.Content.Upgrades;
 using Frontiers.Assets;
 using Frontiers.Teams;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class Launcher : MonoBehaviourPunCallbacks {
     const string VERSION = "v0.2d";
@@ -21,15 +22,23 @@ public class Launcher : MonoBehaviourPunCallbacks {
     [SerializeField] TMP_Text stateText;
     [SerializeField] TMP_Text errorText;
     [SerializeField] TMP_Text roomNameText;
+    [SerializeField] TMP_Text mapNameText;
+    [SerializeField] TMP_Text localMapNameText;
 
     [SerializeField] Color localPlayerColor;
 
     [SerializeField] Transform roomListContent;
     [SerializeField] Transform playerListContentTeam1;
     [SerializeField] Transform playerListContentTeam2;
+    [SerializeField] Transform mapListContent;
+
     [SerializeField] GameObject roomListItemPrefab;
     [SerializeField] GameObject playerListItemPrefab;
+    [SerializeField] GameObject mapListItemPrefab;
     [SerializeField] GameObject startGameButton;
+
+    public MapFile[] allMaps;
+    public MapFile selectedMap;
 
     private static string state = "";
 
@@ -123,6 +132,22 @@ public class Launcher : MonoBehaviourPunCallbacks {
         startGameButton.SetActive(PhotonNetwork.IsMasterClient);
     }
 
+    public void RefreshMapList() {
+        allMaps = MapLoader.GetMaps();
+        foreach (Transform transform in mapListContent) Destroy(transform.gameObject);
+
+        for (int i = 0; i < allMaps.Length; i++) {
+            MapFileItem item = Instantiate(mapListItemPrefab, mapListContent).GetComponent<MapFileItem>();
+            item.SetUp(allMaps[i]);
+        }
+    }
+
+    public void ChangeSelectedMap(MapFile mapFile) {
+        selectedMap = mapFile;
+        localMapNameText.text = mapFile.name;
+        PhotonNetwork.CurrentRoom.SetCustomProperties(new Hashtable { { "_map", mapFile.name } });
+    }
+
     void SetPlayerListContent(Transform contentList, Player[] players) {
         foreach (Transform transform in contentList) Destroy(transform.gameObject);
 
@@ -136,11 +161,16 @@ public class Launcher : MonoBehaviourPunCallbacks {
         }
     }
 
-    public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps) {
+    public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps) {
         if (!changedProps.ContainsKey("_pt")) return;
 
         SetPlayerListContent(playerListContentTeam1, TeamUtilities.TryGetTeamMembers(1));
         SetPlayerListContent(playerListContentTeam2, TeamUtilities.TryGetTeamMembers(2));
+    }
+
+    public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged) {
+        if (!propertiesThatChanged.ContainsKey("_map")) return;
+        mapNameText.text = (string)propertiesThatChanged.GetValueOrDefault("_map");
     }
 
     public override void OnMasterClientSwitched(Player newMasterClient) {
