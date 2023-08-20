@@ -34,6 +34,11 @@ public class PlayerManager : MonoBehaviour {
     public static Vector3 mousePos;
 
     private void Start() {
+        track = new(new Vector2[2] { Vector2.zero, Vector2.zero });
+
+        tool.Init();
+        tool.editingTrack = track;
+
         Instance = this;
         PlayerContentSelector.OnSelectedContentChanged += Instance.OnSelectedContentChanged;
 
@@ -99,13 +104,13 @@ public class PlayerManager : MonoBehaviour {
 
     public static TrainTrack track;
     List<Vector2> trackPoints = new() { Vector2.zero };
+    TrackPlacerTool tool = new();
 
     private void HandleMainMode() {
         if (!EventSystem.current.IsPointerOverGameObject()) {
             if (Input.GetMouseButtonDown(0)) {
                 selectedEntity = null;
 
-                Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 Collider2D[] allColliders = Physics2D.OverlapCircleAll(mousePos, 0.05f);
 
                 foreach (Collider2D collider in allColliders) {
@@ -119,14 +124,7 @@ public class PlayerManager : MonoBehaviour {
             }
 
             if (Input.GetMouseButtonDown(1)) {
-                if (track != null) track.Destroy();
-
-                if (trackPoints == null) trackPoints = new() { Vector2.zero };
-
-                Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                trackPoints.Add(mousePos);
-                Debug.Log(trackPoints.Count);
-                track = new TrainTrack(trackPoints.ToArray());
+                tool.Place();
             }
 
             if (Input.GetKeyDown(KeyCode.T)) {
@@ -140,6 +138,8 @@ public class PlayerManager : MonoBehaviour {
                     Client.CreateUnit(mousePos, 0f, Units.turretTrain, TeamUtilities.GetLocalTeam());
                 }
             }
+
+            tool.Update();
 
             float delta = Input.mouseScrollDelta.y;
             float change = delta * zoomSpeed * ( delta < 0f ? zoomOutMultiplier : zoomInMultiplier) * Time.deltaTime;

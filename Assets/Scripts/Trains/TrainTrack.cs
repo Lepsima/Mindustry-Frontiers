@@ -9,6 +9,7 @@ public class TrainTrack {
     public float[] pointDistance;
 
     public float length;
+    public LineRenderer lineRenderer;
     public GameObject rendererGameObject;
 
     public TrainTrack(Vector2[] points) {
@@ -25,7 +26,7 @@ public class TrainTrack {
         pointDistance = new float[points.Length];
 
         rendererGameObject = new("Track renderer", typeof(LineRenderer));
-        LineRenderer lineRenderer = rendererGameObject.GetComponent<LineRenderer>();
+        lineRenderer = rendererGameObject.GetComponent<LineRenderer>();
 
         lineRenderer.useWorldSpace = true;
         lineRenderer.textureMode = LineTextureMode.Tile;
@@ -47,6 +48,19 @@ public class TrainTrack {
             length += distance;
             pointDistance[i] = length;
         }
+    }
+
+    public void AddPoints(Vector3[] points, bool continuesCurrent) {
+        // if continues current, skip the first position
+        int startPos = continuesCurrent ? 1 : 0;
+
+        // New point count
+        int oldPointCount = lineRenderer.positionCount;
+        int newPointCount = oldPointCount + points.Length - startPos;
+        lineRenderer.positionCount = newPointCount;
+
+        // Apply points
+        for (int i = oldPointCount; i < newPointCount; i++) lineRenderer.SetPosition(i, points[i + startPos - oldPointCount]);
     }
 
     public Vector2 GetNextPoint(float distance, bool isGoingForward) {
