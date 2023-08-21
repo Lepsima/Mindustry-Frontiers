@@ -6,7 +6,6 @@ using System.Linq;
 using System;
 
 namespace Frontiers.FluidSystem {
-    [Serializable]
     public class Fluid : Element {
         // The atmospheres needed to half the volume (1 = neutral)
         public float compressionRatio = 1f;

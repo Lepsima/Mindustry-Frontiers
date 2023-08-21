@@ -769,7 +769,7 @@ namespace Frontiers.Content {
         public bool inverted = false;
 
         public DistributionBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
-
+            updates = true;
         }
     }
 
@@ -885,7 +885,7 @@ namespace Frontiers.Content {
         public WeaponMount weapon;
 
         public TurretBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
-
+            updates = true;
         }
     }
 

@@ -52,11 +52,9 @@ namespace Frontiers.FluidSystem {
     // Liters formula = return Mathf.Min(liters, MaxLiters());
 
     // pressure * fluid.volumePressureRatio * data.maxVolume;
-
-    [Serializable]
     public class FluidInventory {
         public ItemBlockType Type;
-        [NonSerialized] public ItemBlock block;
+        public ItemBlock block;
 
         public event EventHandler OnVolumeChanged;
 
@@ -68,7 +66,7 @@ namespace Frontiers.FluidSystem {
 
         // Fluid type, (x = liters, y = volume)
         public Dictionary<Fluid, Vector2> fluids = new();
-        [NonSerialized] public FluidInventory[] linkedInventories;
+        public FluidInventory[] linkedInventories;
 
         public Fluid displayFluid;
 

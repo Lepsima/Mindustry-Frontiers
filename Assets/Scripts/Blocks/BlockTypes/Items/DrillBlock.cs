@@ -56,7 +56,7 @@ public class DrillBlock : ItemBlock {
         outputItems = new Item[1] { drillItem };
         inventory.SetAllowedItems(outputItems);
 
-        maxRotorVelocity = yieldPercent;
+        maxRotorVelocity = yieldPercent * 50f;
     }
 
     protected override void SetSprites() {
