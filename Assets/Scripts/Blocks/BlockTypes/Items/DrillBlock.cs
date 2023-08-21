@@ -16,7 +16,7 @@ public class DrillBlock : ItemBlock {
 
     private float rotorVelocity = 0f;
     private float maxRotorVelocity = 0f;
-    private readonly float rotorVelocityChange = 0.02f;
+    private readonly float rotorVelocityChange = 50f;
 
     public Item drillItem;
     public Transform rotorTransfrom;
@@ -56,7 +56,7 @@ public class DrillBlock : ItemBlock {
         outputItems = new Item[1] { drillItem };
         inventory.SetAllowedItems(outputItems);
 
-        maxRotorVelocity = yieldPercent * 50f;
+        maxRotorVelocity = yieldPercent * 150f;
     }
 
     protected override void SetSprites() {
@@ -88,7 +88,7 @@ public class DrillBlock : ItemBlock {
         OutputItems();
         bool canDrill = CanDrill(drillItem);
 
-        rotorVelocity = Mathf.Clamp(rotorVelocity + (canDrill ? rotorVelocityChange : -rotorVelocityChange), 0, maxRotorVelocity);
+        rotorVelocity = Mathf.Clamp(rotorVelocity + (canDrill ? rotorVelocityChange : -rotorVelocityChange) * Time.deltaTime, 0, maxRotorVelocity);
         rotorTransfrom.eulerAngles += new Vector3(0, 0, rotorVelocity * Time.deltaTime);
 
         if (nextDrillTime <= Time.time && canDrill) {
