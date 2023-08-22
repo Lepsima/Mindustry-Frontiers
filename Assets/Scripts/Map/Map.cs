@@ -165,8 +165,8 @@ namespace Frontiers.Content.Maps {
 
         #region - Tilemaps -
 
-        public bool IsInBounds(Vector2 position) {
-            return position.x >= 0 && position.x < size.x && position.y >= 0 && position.y < size.y;
+        public bool InBounds(Vector2 position) {
+            return tilemap.InBounds(position);
         }
 
         public TileType GetTileType(string name) {

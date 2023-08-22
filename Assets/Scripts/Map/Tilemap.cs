@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Search;
 using UnityEngine;
 using static Frontiers.Content.Maps.Map;
 
@@ -204,8 +205,12 @@ namespace Frontiers.Content.Maps {
             }
         }
 
+        public bool InBounds(Vector2 position) {
+            return position.x >= 0 && position.x < size.x && position.y >= 0 && position.y < size.y;
+        }
+
         public void GenerateColliders() {
-            List<Vector2[]> outlines = GetSolidOutlines();
+            List<Vector2[]> outlines = GetWallOutlines();
             List<EdgeCollider2D> edgeColliders = new();
 
             foreach(Vector2[] outline in outlines) {
@@ -214,119 +219,116 @@ namespace Frontiers.Content.Maps {
             }
         }
 
-        private List<Vector2[]> GetSolidOutlines() {
-            List<Tile> solidTiles = GetAllSolidTiles();
-            Vector2Int[] offsetPoints = new Vector2Int[8] { new(0, 1), new(1, 0), new(-1, 0), new(0, -1), new(1, 1), new(-1, -1), new(-1, 1), new(1, -1) };
+        private List<Vector2[]> GetWallOutlines() {
+            List<Tile> tiles = GetAllSolidTiles();
+            Vector2Int[] nearOffsets = new Vector2Int[8] { new(0, 1), new(1, 0), new(0, -1), new(-1, 0), new(1, 1), new(-1, -1), new(-1, 1), new(1, -1) };
 
-            List<Vector2[]> outlines = new();
+            // First iteration to discard blocked tiles
+            for (int i = tiles.Count - 1; i >= 0; i--) {
+                Tile tile = tiles[i];
 
-            while (solidTiles.Count > 0) {
-                Tile tile = solidTiles[0];
-                solidTiles.Remove(tile);
+                // Check if is surrounded by other tiles
+                bool isBlocked = true;
 
-                List<CollisionNode> nodes = new();
+                for (int j = 0; j < 4; j++) {
+                    // Add an offset to the current tile position
+                    Vector2Int pos = nearOffsets[j] + tile.position;
 
-                New(tile.position);
-                New(tile.position + new Vector2Int(0, 1));
-                New(tile.position + new Vector2Int(1, 1));
-                New(tile.position + new Vector2Int(1, 0));
+                    // If is out of bounds or blocked by another wall, shouldnt need collider
+                    if (!InBounds(pos) || GetTile(pos).IsWall())
+                        continue;
 
-                nodes[0].next = nodes[3];
-                nodes[1].next = nodes[0];
-                nodes[2].next = nodes[1];
-                nodes[3].next = nodes[2];
-
-                //CollisionNode Get(Vector2Int position) => nodeList.ContainsKey(position) ? nodeList[position] : new(position);
-
-                CollisionNode New(Vector2Int position, CollisionNode next = null) {
-                    CollisionNode newNode = new(next, position);
-                    nodes.Add(newNode);
-                    return newNode;
+                    // If this tile is not blocked, immediately aprove of it as an outline
+                    isBlocked = false;
+                    break;
                 }
 
-                CalculateTile(tile);
-
-                //The current node list should be the outline of a group of blocks
-                Vector2[] outlinePoints = new Vector2[nodes.Count];
-                int i = 0;
-                AddToPointList(nodes[0]);
-
-                void AddToPointList(CollisionNode node) {
-                    outlinePoints[i] = node.position;
-                    i++;
-                    if (i < outlinePoints.Length) AddToPointList(node.next);
-                }
-
-                void CalculateTile(Tile cTile) {
-                    if (!solidTiles.Contains(cTile) || !cTile.IsWall()) return;
-                    solidTiles.Remove(cTile);
-
-                    List<Tile> neighbourTiles = new();
-
-                    for (int i = 0; i < 8; i++) {
-                        Vector2Int neighbourPos = cTile.position + offsetPoints[i];
-                        if (neighbourPos.x < 0 || neighbourPos.y < 0 || neighbourPos.x >= size.x || neighbourPos.y >= size.y) continue;
-
-                        Tile neighbourTile = GetTile(neighbourPos);
-                        if (!neighbourTile.IsWall()) continue;
-                        neighbourTiles.Add(neighbourTile);
-                        Debug.Log("CHK");
-
-                        switch (i) {
-                            case 0:
-                                nodes[1].next = New(cTile.position + new Vector2Int(0, 2), New(cTile.position + new Vector2Int(1, 2), nodes[2]));
-                                break;
-
-                            case 1:
-                                nodes[2].next = New(cTile.position + new Vector2Int(2, 1), New(cTile.position + new Vector2Int(2, 0), nodes[3]));
-                                break;
-
-                            case 2:
-                                nodes[0].next = New(cTile.position + new Vector2Int(-1, 0), New(cTile.position + new Vector2Int(-1, 1), nodes[1]));
-                                break;
-
-                            case 3:
-                                nodes[3].next = New(cTile.position + new Vector2Int(0, -1), New(cTile.position + new Vector2Int(1, -1), nodes[0]));
-                                break;
-
-                            case 4:
-                                nodes[2].position += new Vector2Int(0, 1);
-                                nodes[1].next.next = nodes[2];
-                                nodes[2].next = nodes[2].next.next;
-                                break;
-
-                            case 5:
-                                nodes[0].position += new Vector2Int(0, -1);
-                                nodes[3].next.next = nodes[0];
-                                nodes[0].next = nodes[0].next.next;
-                                break;
-
-                            case 6:
-                                nodes[1].position += new Vector2Int(-1, 0);
-                                nodes[0].next.next = nodes[1];
-                                nodes[1].next = nodes[1].next.next;
-                                break;
-
-                            case 7:
-                                nodes[3].position += new Vector2Int(1, 0);
-                                nodes[2].next.next = nodes[3];
-                                nodes[3].next = nodes[3].next.next;
-                                break;
-
-                            default:
-                                break;
-                        }
-                    }
-
-                    foreach(Tile neighbourTile in neighbourTiles) {
-                        CalculateTile(neighbourTile);
-                    }
-                }
-
-                outlines.Add(outlinePoints);
+                // If is blocked, remove from list
+                if (isBlocked)
+                    tiles.Remove(tile);
             }
 
-            return outlines;
+            // A list of all the outline paths
+            List<Vector2[]> paths = new();
+
+            while (tiles.Count > 0) {
+                // Init tile list
+                Tile tile = tiles[0];
+                List<Tile> path = new() { tile };
+
+                // Search for a path
+                Search(path, tile, null, -1);
+
+                // Convert path to an array of positions
+                Vector2[] pathPositions = new Vector2[path.Count];
+
+                // Loop thru path and add offset to each position to be in the middle of the tile
+                for (int i = 0; i < path.Count; i++) pathPositions[i] = path[i].position + new Vector2(0.5f, 0.5f);
+
+                // Add to path list
+                paths.Add(pathPositions);
+            }
+
+            // Return found paths
+            return paths;
+
+            void Search(List<Tile> path, Tile tile, Tile last, int lastDir) {
+                if (path.Count >= 1000)
+                    return;
+
+                Tile[] nearTiles = new Tile[8];
+
+                for (int i = 0; i < 8; i++) {
+                    // Add an offset to the current tile position
+                    Vector2Int pos = nearOffsets[i] + tile.position;
+
+                    // Add to near tiles
+                    Tile nearTile = tiles.Find(x => x.position == pos);
+                    nearTiles[i] = nearTile;
+
+                    // If there is no tile, is going back, is already on the path or is used, skip
+                    if (nearTile == null || last == nearTile || path.Contains(nearTile))
+                        continue;
+
+                    // If line is going in the same direction, remove last
+                    //if (lastDir == i && path.Count > 0)
+                    //    path.Remove(last);
+
+                    // Add tile to the path and remove from main list
+                    path.Add(nearTile);
+                    tiles.Remove(nearTile);
+
+                    // Continue search
+                    Search(path, nearTile, tile, i);
+                    return;
+                }
+
+                return;
+
+                // If there is no last tile, this is a single block path
+                if (last == null)
+                    return;
+
+                // If couldn't find any tiles, try to close loop or go backwards
+                for (int i = 0; i < 8; i++) {
+                    Tile nearTile = nearTiles[i];
+
+                    // If is invalid, skip
+                    if (nearTile == last || nearTile == null)
+                        continue;
+
+                    // If near is the start, close loop
+                    if (nearTile == path[0]) {
+                        path.Add(nearTile);
+                        break;
+                    }
+
+                    // Add tile to path, thus going backwards
+                    path.Add(nearTile);
+                    Search(path, nearTile, tile, i);
+                    return;
+                }
+            }
         }
 
         public void HoldMeshUpdate(bool state) {

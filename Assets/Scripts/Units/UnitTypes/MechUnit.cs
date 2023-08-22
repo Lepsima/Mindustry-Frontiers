@@ -129,7 +129,7 @@ public class MechUnit : Unit {
     public override TileType GetGroundTile() {
         // Since ground units are on the ground, find the under tile relative to the main unit body
         Vector2 position = transform.position;
-        if (!MapManager.Map.IsInBounds(position)) return null;
+        if (!MapManager.Map.InBounds(position)) return null;
         return MapManager.Map.GetMapTileTypeAt(Map.MapLayer.Ground, position);
     }
 

@@ -1,11 +1,17 @@
 using UnityEngine;
 using Discord;
+using System.Diagnostics;
 
 public class DiscordController : MonoBehaviour {
     public static long startTime;
     public Discord.Discord discord;
 
     void Awake() {
+        if (Process.GetProcessesByName("Discord").Length <= 0) {
+            Destroy(gameObject);
+            return;
+        } 
+
         discord = new Discord.Discord(1139523769984110635L, (ulong)CreateFlags.NoRequireDiscord);
         startTime = System.DateTimeOffset.Now.ToUnixTimeMilliseconds();
     }
@@ -24,7 +30,7 @@ public class DiscordController : MonoBehaviour {
             var activity = DiscordActivities.GetActivity();
 
             activityManager.UpdateActivity(activity, (res) => {
-                if (res != Result.Ok) Debug.LogWarning("Failed connecting to Discord!");
+                if (res != Result.Ok) UnityEngine.Debug.LogWarning("Failed connecting to Discord!");
             });
 
         } catch {

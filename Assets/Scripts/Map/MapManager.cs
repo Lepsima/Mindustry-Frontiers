@@ -54,7 +54,7 @@ public class MapManager : MonoBehaviour {
         int size = selectedContent == null ? 1 : TypeEquals(selectedContent.GetType(), typeof(BlockType)) ? ((BlockType)selectedContent).size : 1;
         Vector2Int mouseGridPos = Vector2Int.CeilToInt(PlayerManager.mousePos - (Vector3.one * 0.5f) - (0.5f * size * Vector3.one));
 
-        mouseGridAllowsPlace = Map.IsInBounds(mouseGridPos) && Map.CanPlaceBlockAt(mouseGridPos, size);
+        mouseGridAllowsPlace = Map.InBounds(mouseGridPos) && Map.CanPlaceBlockAt(mouseGridPos, size);
         MapManager.mouseGridPos = mouseGridPos;
     }
 
