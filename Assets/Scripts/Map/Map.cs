@@ -59,6 +59,7 @@ namespace Frontiers.Content.Maps {
                 }
             }
             */
+            tilemap.GenerateColliders();
         }
 
         public void LoadTilemapData(string[,,] tileNameArray) {

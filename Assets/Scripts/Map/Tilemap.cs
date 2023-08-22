@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static Frontiers.Content.Maps.Map;
 
@@ -36,6 +38,10 @@ namespace Frontiers.Content.Maps {
 
         public bool IsSolid() {
             return HasBlock() || HasTile(MapLayer.Solid);
+        }
+
+        public bool IsWall() {
+            return HasTile(MapLayer.Solid);
         }
 
         public bool IsWalkable() {
@@ -184,6 +190,145 @@ namespace Frontiers.Content.Maps {
             }
         }
 
+        class CollisionNode {
+            public CollisionNode next;
+            public Vector2Int position;
+
+            public CollisionNode(Vector2Int position) {
+                this.position = position;
+            }
+
+            public CollisionNode(CollisionNode next, Vector2Int position) {
+                this.next = next;
+                this.position = position;
+            }
+        }
+
+        public void GenerateColliders() {
+            List<Vector2[]> outlines = GetSolidOutlines();
+            List<EdgeCollider2D> edgeColliders = new();
+
+            foreach(Vector2[] outline in outlines) {
+                EdgeCollider2D edgeCollider = new GameObject("Outline", typeof(EdgeCollider2D)).GetComponent<EdgeCollider2D>();
+                edgeCollider.SetPoints(outline.ToList());
+            }
+        }
+
+        private List<Vector2[]> GetSolidOutlines() {
+            List<Tile> solidTiles = GetAllSolidTiles();
+            Vector2Int[] offsetPoints = new Vector2Int[8] { new(0, 1), new(1, 0), new(-1, 0), new(0, -1), new(1, 1), new(-1, -1), new(-1, 1), new(1, -1) };
+
+            List<Vector2[]> outlines = new();
+
+            while (solidTiles.Count > 0) {
+                Tile tile = solidTiles[0];
+                solidTiles.Remove(tile);
+
+                List<CollisionNode> nodes = new();
+
+                New(tile.position);
+                New(tile.position + new Vector2Int(0, 1));
+                New(tile.position + new Vector2Int(1, 1));
+                New(tile.position + new Vector2Int(1, 0));
+
+                nodes[0].next = nodes[3];
+                nodes[1].next = nodes[0];
+                nodes[2].next = nodes[1];
+                nodes[3].next = nodes[2];
+
+                //CollisionNode Get(Vector2Int position) => nodeList.ContainsKey(position) ? nodeList[position] : new(position);
+
+                CollisionNode New(Vector2Int position, CollisionNode next = null) {
+                    CollisionNode newNode = new(next, position);
+                    nodes.Add(newNode);
+                    return newNode;
+                }
+
+                CalculateTile(tile);
+
+                //The current node list should be the outline of a group of blocks
+                Vector2[] outlinePoints = new Vector2[nodes.Count];
+                int i = 0;
+                AddToPointList(nodes[0]);
+
+                void AddToPointList(CollisionNode node) {
+                    outlinePoints[i] = node.position;
+                    i++;
+                    if (i < outlinePoints.Length) AddToPointList(node.next);
+                }
+
+                void CalculateTile(Tile cTile) {
+                    if (!solidTiles.Contains(cTile) || !cTile.IsWall()) return;
+                    solidTiles.Remove(cTile);
+
+                    List<Tile> neighbourTiles = new();
+
+                    for (int i = 0; i < 8; i++) {
+                        Vector2Int neighbourPos = cTile.position + offsetPoints[i];
+                        if (neighbourPos.x < 0 || neighbourPos.y < 0 || neighbourPos.x >= size.x || neighbourPos.y >= size.y) continue;
+
+                        Tile neighbourTile = GetTile(neighbourPos);
+                        if (!neighbourTile.IsWall()) continue;
+                        neighbourTiles.Add(neighbourTile);
+                        Debug.Log("CHK");
+
+                        switch (i) {
+                            case 0:
+                                nodes[1].next = New(cTile.position + new Vector2Int(0, 2), New(cTile.position + new Vector2Int(1, 2), nodes[2]));
+                                break;
+
+                            case 1:
+                                nodes[2].next = New(cTile.position + new Vector2Int(2, 1), New(cTile.position + new Vector2Int(2, 0), nodes[3]));
+                                break;
+
+                            case 2:
+                                nodes[0].next = New(cTile.position + new Vector2Int(-1, 0), New(cTile.position + new Vector2Int(-1, 1), nodes[1]));
+                                break;
+
+                            case 3:
+                                nodes[3].next = New(cTile.position + new Vector2Int(0, -1), New(cTile.position + new Vector2Int(1, -1), nodes[0]));
+                                break;
+
+                            case 4:
+                                nodes[2].position += new Vector2Int(0, 1);
+                                nodes[1].next.next = nodes[2];
+                                nodes[2].next = nodes[2].next.next;
+                                break;
+
+                            case 5:
+                                nodes[0].position += new Vector2Int(0, -1);
+                                nodes[3].next.next = nodes[0];
+                                nodes[0].next = nodes[0].next.next;
+                                break;
+
+                            case 6:
+                                nodes[1].position += new Vector2Int(-1, 0);
+                                nodes[0].next.next = nodes[1];
+                                nodes[1].next = nodes[1].next.next;
+                                break;
+
+                            case 7:
+                                nodes[3].position += new Vector2Int(1, 0);
+                                nodes[2].next.next = nodes[3];
+                                nodes[3].next = nodes[3].next.next;
+                                break;
+
+                            default:
+                                break;
+                        }
+                    }
+
+                    foreach(Tile neighbourTile in neighbourTiles) {
+                        CalculateTile(neighbourTile);
+                    }
+                }
+
+                outlines.Add(outlinePoints);
+            }
+
+            return outlines;
+        }
+
         public void HoldMeshUpdate(bool state) {
             // Used when updating the whole map is needed, to not call update 5000000 times, only once finished
             for (int x = 0; x < regions.GetLength(0); x++) {
@@ -191,6 +336,19 @@ namespace Frontiers.Content.Maps {
                     regions[x, y].HoldMeshUpdate(state);
                 }
             }
+        }
+
+        public List<Tile> GetAllSolidTiles() {
+            List<Tile> solidTiles = new();
+
+            for (int x = 0; x < size.x; x++) {
+                for (int y = 0; y < size.y; y++) {
+                    Tile tile = GetTile(new(x, y));
+                    if (tile.IsWall()) solidTiles.Add(tile);
+                }
+            }
+
+            return solidTiles;
         }
 
         public Tile GetTile(Vector2Int position) {
