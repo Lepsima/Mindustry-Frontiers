@@ -26,15 +26,15 @@ public static class MapRaycaster {
             bool yChange = oldY != y;
 
             if (xChange || yChange) {
+                if (!map.InBounds(point)) {
+                    return new Vector2(Mathf.Clamp(point.x, 0, map.size.x), Mathf.Clamp(point.y, 0, map.size.y));
+                }
+
                 if (map.tilemap.GetTile(new Vector2Int(x, y)).IsSolid()) {
                     if (xChange) point.x -= direction.x;
                     if (yChange) point.y -= direction.y;
 
                     return point;
-                }
-
-                if (!map.InBounds(point)) {
-                    return new Vector2(Mathf.Clamp(point.x, 0, map.size.x), Mathf.Clamp(point.y, 0, map.size.y));
                 }
             }
         }
@@ -64,7 +64,7 @@ public static class MapRaycaster {
             bool xChange = oldX != x;
             bool yChange = oldY != y;
 
-            if ((xChange || yChange) && (map.tilemap.GetTile(new Vector2Int(x, y)).IsSolid() || !map.InBounds(point))) {
+            if ((xChange || yChange) && (!map.InBounds(point) || map.tilemap.GetTile(new Vector2Int(x, y)).IsSolid())) {
                 break;
             }
         }

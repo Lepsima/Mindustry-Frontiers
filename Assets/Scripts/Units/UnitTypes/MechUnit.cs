@@ -4,6 +4,9 @@ using UnityEngine;
 using Frontiers.Content;
 using Frontiers.Content.Maps;
 using Frontiers.Content.Upgrades;
+using static UnityEngine.UI.CanvasScaler;
+using UnityEngine.UIElements;
+using UnityEngine.U2D;
 
 public class MechUnit : Unit {
     public new MechUnitType Type { get => (MechUnitType)base.Type; protected set => base.Type = value; }
@@ -21,7 +24,7 @@ public class MechUnit : Unit {
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
-        baseRotationSpeed = Type.baseRotationSpeed;
+        baseRotationSpeed = Type.turretRotationSpeed;
     }
 
     protected override void Update() {
@@ -92,14 +95,6 @@ public class MechUnit : Unit {
     }
 
     protected void HandleMech() {
-        // Get the desired rotation of the base
-        Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, ((Vector3)GetBehaviourPosition() - baseTransform.position).normalized);
-        desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
-
-        // Rotate the base transform
-        float speed = baseRotationSpeed * Time.fixedDeltaTime;
-        baseTransform.rotation = Quaternion.RotateTowards(baseTransform.rotation, desiredRotation, speed);
-
         // Get the y position of each leg
         float legDistance = walkTime / Type.legStepDistance * 0.5f;
 
@@ -136,6 +131,10 @@ public class MechUnit : Unit {
         Vector2 position = transform.position;
         if (!MapManager.Map.InBounds(position)) return null;
         return MapManager.Map.GetMapTileTypeAt(Map.MapLayer.Ground, position);
+    }
+
+    public void RotateTurretTowards(Quaternion rotation, float speed) {
+        spriteHolder.rotation = Quaternion.RotateTowards(spriteHolder.rotation, rotation, speed);
     }
 
     public override void HandleHeight() {

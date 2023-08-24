@@ -1510,7 +1510,7 @@ namespace Frontiers.Content {
 
     public class MechUnitType : UnitType {
         public Sprite legSprite, baseSprite;
-        public float baseRotationSpeed = 90f, legStepDistance = 0.2f, sideSway = 0.075f, frontSway = 0.01f;
+        public float turretRotationSpeed = 90f, legStepDistance = 0.2f, sideSway = 0.075f, frontSway = 0.01f;
 
         public MechUnitType(string name, Type type, int tier = 1) : base(name, type, tier) {
             legSprite = AssetLoader.GetSprite(name + "-leg");
@@ -1520,12 +1520,20 @@ namespace Frontiers.Content {
         public override void Rotate(Unit unit, Vector2 position) {
             if (!unit.CanRotate()) return;
 
-            // Quirky quaternion stuff to make the unit rotate slowly -DO NOT TOUCH-
+            // Get the desired rotation of the base
             Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, (position - unit.GetPosition()).normalized);
             desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
 
+            // Rotate the base transform
             float speed = rotationSpeed * Time.fixedDeltaTime;
             unit.transform.rotation = Quaternion.RotateTowards(unit.transform.rotation, desiredRotation, speed);
+
+            // Quirky quaternion stuff to make the unit rotate slowly -DO NOT TOUCH-
+            desiredRotation = Quaternion.LookRotation(Vector3.forward, (unit.GetTargetPosition() - unit.GetPosition()).normalized);
+            desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
+
+            speed = turretRotationSpeed * Time.fixedDeltaTime;
+            ((MechUnit)unit).RotateTurretTowards(desiredRotation, speed);
         }
 
         public override void Move(Unit unit, Vector2 position) {
@@ -1541,58 +1549,17 @@ namespace Frontiers.Content {
             float enginePower = unit.GetEnginePower();
 
             // Set velocity
-            unit.SetVelocity(similarity * enginePower * maxVelocity * targetDirection);
+            unit.SetVelocity(similarity * enginePower * maxVelocity * unit.transform.up);
         }
 
         public override void UpdateBehaviour(Unit unit, Vector2 position) {
             // Consume fuel based on fuelConsumption x enginePower
             unit.ConsumeFuel(fuelConsumption * unit.GetEnginePower() * Time.fixedDeltaTime);
 
-            int rayCount = 9;
-            int midRayIndex = Mathf.FloorToInt(rayCount / 2f);
-            float fov = 270f;
+            Vector2 direction = (Vector2)unit.transform.position + TerrainAdvoidance.GetDirection(unit, unit.transform);
 
-            // The distances at which the unit should start to rotate
-            float advoidanceDistance = 5;
-
-            float[] rays = MapRaycaster.FovSolid(unit.transform.position, unit.transform.eulerAngles.z, fov, rayCount, advoidanceDistance * 1.5f);
-
-            float moveAngle = 0;
-            float leftAvg = 0, rightAvg = 0;
-
-            if (rays[midRayIndex] < advoidanceDistance) {
-
-                for (int i = 0; i < rayCount; i++) {
-                    if (i == midRayIndex) return;
-
-                    // Get the ray's value
-                    float mult = i / (float)midRayIndex - 1;
-
-                    if (i > midRayIndex) {
-                        rightAvg += rays[i] * mult;
-                    } else  {
-                        // Reverse
-                        mult = 1 - mult;
-                        leftAvg += rays[i] * mult;
-                    }
-                }
-
-                leftAvg /= midRayIndex;
-                rightAvg /= midRayIndex;
-
-                if (leftAvg > rays[midRayIndex] || rightAvg > rays[midRayIndex]) {
-                    if (leftAvg > rightAvg) moveAngle = -leftAvg;
-                    else moveAngle = rightAvg;
-                }
-
-                float rot = moveAngle * Mathf.Deg2Rad;
-                position = unit.transform.position + new Vector3(Mathf.Cos(rot), Mathf.Sin(rot));
-            }
-
-            Debug.DrawLine(unit.transform.position, unit.transform.position + ((Vector3)(position - unit.GetPosition()).normalized * 5), Color.green);
-
-            Move(unit, position);      
-            Rotate(unit, unit.GetTargetPosition());        
+            Move(unit, direction);      
+            Rotate(unit, /*unit.GetTargetPosition()*/ direction);        
         }
     }
 
@@ -1940,12 +1907,12 @@ namespace Frontiers.Content {
                 size = 1.5f,
                 maxVelocity = 3.75f,
 
-                baseRotationSpeed = 90f,
+                turretRotationSpeed = 180f,
                 legStepDistance = 0.6f,
                 sideSway = 0.075f,
                 frontSway = 0.01f,
 
-                rotationSpeed = 80f,
+                rotationSpeed = 120f,
 
                 range = 15f,
                 searchRange = 20f,
@@ -1973,7 +1940,7 @@ namespace Frontiers.Content {
                 size = 3.125f,
                 maxVelocity = 3.22f,
 
-                baseRotationSpeed = 50f,
+                turretRotationSpeed = 50f,
                 legStepDistance = 1.25f,
                 sideSway = 0.075f,
                 frontSway = 0.01f,
