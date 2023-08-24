@@ -7,7 +7,7 @@ using Frontiers.Assets;
 public class FireController : MonoBehaviour {
     public static GameObject FirePrefab {
         get {
-            if (firePrefab == null) firePrefab = AssetLoader.GetPrefab("Fire Prefab");
+            if (firePrefab == null) firePrefab = AssetLoader.GetPrefab("FirePrefab");
             return firePrefab;
         }
         set => firePrefab = value;

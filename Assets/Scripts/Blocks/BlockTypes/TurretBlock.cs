@@ -16,7 +16,7 @@ public class TurretBlock : ItemBlock, IArmed {
         Transform turretTransform = transform.Find("Empty");
 
         //Get weapon prefab
-        GameObject weaponPrefab = AssetLoader.GetPrefab("weaponPrefab");
+        GameObject weaponPrefab = AssetLoader.GetPrefab("WeaponPrefab");
         WeaponMount weaponMount = Type.weapon;
 
         //Create and initialize new weapon

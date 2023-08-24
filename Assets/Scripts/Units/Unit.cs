@@ -301,7 +301,7 @@ public abstract class Unit : Entity, IArmed {
 
     private void SetWeapon(WeaponMount weaponMount, bool mirrored = false) {
         //Get weapon prefab
-        GameObject weaponPrefab = AssetLoader.GetPrefab("weaponPrefab");
+        GameObject weaponPrefab = AssetLoader.GetPrefab("WeaponPrefab");
         Vector3 offsetPos = mirrored ? new Vector3(-weaponMount.position.x, weaponMount.position.y, 0) : weaponMount.position;
 
         //Create and initialize new weapon
@@ -820,7 +820,7 @@ public abstract class Unit : Entity, IArmed {
 
         EffectPlayer.PlayEffect(Type.deathFX, transform.position, size);
 
-        GameObject explosionBlastGameObject = Instantiate(AssetLoader.GetPrefab("explosion-blast"), GetPosition(), Quaternion.Euler(0f, 0f, UnityEngine.Random.Range(0f, 360f)));
+        GameObject explosionBlastGameObject = Instantiate(AssetLoader.GetPrefab("ExplosionBlastPrefab"), GetPosition(), Quaternion.Euler(0f, 0f, UnityEngine.Random.Range(0f, 360f)));
         Destroy(explosionBlastGameObject, 10f);
 
         MapManager.Map.RemoveUnit(this);

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8844133769871477814}
   - component: {fileID: 4662056956961222831}
   m_Layer: 0
-  m_Name: SpaceRocketFlameEffect
+  m_Name: spaceRocketFlameEffect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

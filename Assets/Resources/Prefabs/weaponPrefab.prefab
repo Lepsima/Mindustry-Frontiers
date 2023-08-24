@@ -9849,7 +9849,7 @@ GameObject:
   - component: {fileID: 6398074980078521087}
   - component: {fileID: 6398074980078521086}
   m_Layer: 0
-  m_Name: weaponPrefab
+  m_Name: WeaponPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

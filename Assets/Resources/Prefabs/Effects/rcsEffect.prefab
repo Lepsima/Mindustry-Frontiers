@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5712519656562529611}
   - component: {fileID: 8146037256838589134}
   m_Layer: 0
-  m_Name: RCSExhaustEffect
+  m_Name: rcsEffect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

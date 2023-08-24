@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6131533216807861727}
   - component: {fileID: 1954591193720557204}
   m_Layer: 0
-  m_Name: AtmosphericPlasmaEffect
+  m_Name: atmosphericPlasmaEffect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

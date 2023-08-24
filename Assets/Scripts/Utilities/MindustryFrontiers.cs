@@ -477,7 +477,7 @@ namespace Frontiers.Content {
         }
 
         public static void InitializeObjectPools() {
-            ConveyorBlock.conveyorItemPool = PoolManager.NewPool(Assets.AssetLoader.GetPrefab("conveyorItem"), 100);
+            ConveyorBlock.conveyorItemPool = PoolManager.NewPool(AssetLoader.GetPrefab("ItemPrefab"), 100);
         }
 
         public static void HandleContent(Content content) {
