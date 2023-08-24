@@ -1547,6 +1547,50 @@ namespace Frontiers.Content {
         public override void UpdateBehaviour(Unit unit, Vector2 position) {
             // Consume fuel based on fuelConsumption x enginePower
             unit.ConsumeFuel(fuelConsumption * unit.GetEnginePower() * Time.fixedDeltaTime);
+
+            int rayCount = 9;
+            int midRayIndex = Mathf.FloorToInt(rayCount / 2f);
+            float fov = 270f;
+
+            // The distances at which the unit should start to rotate
+            float advoidanceDistance = 5;
+
+            float[] rays = MapRaycaster.FovSolid(unit.transform.position, unit.transform.eulerAngles.z, fov, rayCount, advoidanceDistance * 1.5f);
+
+            float moveAngle = 0;
+            float leftAvg = 0, rightAvg = 0;
+
+            if (rays[midRayIndex] < advoidanceDistance) {
+
+                for (int i = 0; i < rayCount; i++) {
+                    if (i == midRayIndex) return;
+
+                    // Get the ray's value
+                    float mult = i / (float)midRayIndex - 1;
+
+                    if (i > midRayIndex) {
+                        rightAvg += rays[i] * mult;
+                    } else  {
+                        // Reverse
+                        mult = 1 - mult;
+                        leftAvg += rays[i] * mult;
+                    }
+                }
+
+                leftAvg /= midRayIndex;
+                rightAvg /= midRayIndex;
+
+                if (leftAvg > rays[midRayIndex] || rightAvg > rays[midRayIndex]) {
+                    if (leftAvg > rightAvg) moveAngle = -leftAvg;
+                    else moveAngle = rightAvg;
+                }
+
+                float rot = moveAngle * Mathf.Deg2Rad;
+                position = unit.transform.position + new Vector3(Mathf.Cos(rot), Mathf.Sin(rot));
+            }
+
+            Debug.DrawLine(unit.transform.position, unit.transform.position + ((Vector3)(position - unit.GetPosition()).normalized * 5), Color.green);
+
             Move(unit, position);      
             Rotate(unit, unit.GetTargetPosition());        
         }

@@ -116,7 +116,7 @@ namespace Frontiers.Content.Maps {
                 // Create all the tiles
                 for (int x = 0; x < size.x; x++) {
                     for (int y = 0; y < size.y; y++) {
-                        tilemap[x, y] = new Tile(new Vector2Int(x, y));
+                        tilemap[x, y] = new Tile(new Vector2Int(x, y) + offset);
                     }
                 }
 
@@ -194,14 +194,16 @@ namespace Frontiers.Content.Maps {
         class CollisionNode {
             public CollisionNode next;
             public Vector2Int position;
+            public int depth;
 
-            public CollisionNode(Vector2Int position) {
+            public CollisionNode(Vector2Int position, CollisionNode next = null) {
                 this.position = position;
+                Next(next);
             }
 
-            public CollisionNode(CollisionNode next, Vector2Int position) {
+            public void Next(CollisionNode next) {
                 this.next = next;
-                this.position = position;
+                depth = next == null ? 0 : next.depth + 1;
             }
         }
 
@@ -220,8 +222,10 @@ namespace Frontiers.Content.Maps {
         }
 
         private List<Vector2[]> GetWallOutlines() {
-            List<Tile> tiles = GetAllSolidTiles();
+            List<Tile> tiles = GetAllSolidPositions();
             Vector2Int[] nearOffsets = new Vector2Int[8] { new(0, 1), new(1, 0), new(0, -1), new(-1, 0), new(1, 1), new(-1, -1), new(-1, 1), new(1, -1) };
+
+            Debug.Log(tiles.Count);
 
             // First iteration to discard blocked tiles
             for (int i = tiles.Count - 1; i >= 0; i--) {
@@ -232,28 +236,74 @@ namespace Frontiers.Content.Maps {
 
                 for (int j = 0; j < 4; j++) {
                     // Add an offset to the current tile position
-                    Vector2Int pos = nearOffsets[j] + tile.position;
+                    Vector2Int pos = tile.position + nearOffsets[j];
 
                     // If is out of bounds or blocked by another wall, shouldnt need collider
-                    if (!InBounds(pos) || GetTile(pos).IsWall())
-                        continue;
-
-                    // If this tile is not blocked, immediately aprove of it as an outline
-                    isBlocked = false;
-                    break;
+                    if (InBounds(pos) && !GetTile(pos).IsWall()) {
+                        isBlocked = false;
+                        break;
+                    }
                 }
 
                 // If is blocked, remove from list
-                if (isBlocked)
-                    tiles.Remove(tile);
+                if (isBlocked) tiles.Remove(tile);                  
             }
+            Debug.Log(tiles.Count);
+
+            List<CollisionNode> allNodes = new();
+
+            foreach(Tile tile in tiles) {
+                allNodes.AddRange(GetTileNodes(tile));
+            }
+
+            List<CollisionNode> toRemoveList = new();
+
+            foreach(CollisionNode node in allNodes) {
+                CollisionNode next = node.next;
+
+                if (next != null && next.next == null) {
+                    node.Next(allNodes.Find(x => x.position == node.next.position && x != next));
+                    toRemoveList.Add(next);
+                }
+            }
+
+            foreach(CollisionNode node in toRemoveList) {
+                allNodes.Remove(node);
+            }
+
+            allNodes = allNodes.OrderBy(x => x.depth).ToList();
+            Debug.Log(allNodes[0].depth);
 
             // A list of all the outline paths
             List<Vector2[]> paths = new();
 
+            while (allNodes.Count > 0) {
+                CollisionNode node = allNodes[0];
+                allNodes.Remove(node);
+
+                List<Vector2> outline = new() { node.position };
+                CollisionNode next = node.next;
+
+                while (true) {
+                    if (next == null || !allNodes.Contains(next)) break;
+
+                    outline.Add(next.position);
+                    allNodes.Remove(next);
+
+                    next = next.next;
+                }
+
+                if (outline.Count <= 1) continue;
+                paths.Add(outline.ToArray());
+            }
+
+            return paths;
+
+            /*
+
             while (tiles.Count > 0) {
                 // Init tile list
-                Tile tile = tiles[0];
+                Tile tile = tiles[^1];
                 List<Tile> path = new() { tile };
 
                 // Search for a path
@@ -263,10 +313,12 @@ namespace Frontiers.Content.Maps {
                 Vector2[] pathPositions = new Vector2[path.Count];
 
                 // Loop thru path and add offset to each position to be in the middle of the tile
-                for (int i = 0; i < path.Count; i++) pathPositions[i] = path[i].position + new Vector2(0.5f, 0.5f);
+                for (int i = 0; i < path.Count; i++) pathPositions[i] = path[i].position;
 
                 // Add to path list
                 paths.Add(pathPositions);
+
+                Debug.Log(pathPositions.Length);
             }
 
             // Return found paths
@@ -280,10 +332,10 @@ namespace Frontiers.Content.Maps {
 
                 for (int i = 0; i < 8; i++) {
                     // Add an offset to the current tile position
-                    Vector2Int pos = nearOffsets[i] + tile.position;
+                    Vector2Int pos = tile.position + nearOffsets[i];
 
                     // Add to near tiles
-                    Tile nearTile = tiles.Find(x => x.position == pos);
+                    Tile nearTile = TryFind(pos);
                     nearTiles[i] = nearTile;
 
                     // If there is no tile, is going back, is already on the path or is used, skip
@@ -291,8 +343,7 @@ namespace Frontiers.Content.Maps {
                         continue;
 
                     // If line is going in the same direction, remove last
-                    //if (lastDir == i && path.Count > 0)
-                    //    path.Remove(last);
+                    //if (lastDir == i && path.Count > 0) path.Remove(last);
 
                     // Add tile to the path and remove from main list
                     path.Add(nearTile);
@@ -303,7 +354,6 @@ namespace Frontiers.Content.Maps {
                     return;
                 }
 
-                return;
 
                 // If there is no last tile, this is a single block path
                 if (last == null)
@@ -329,6 +379,45 @@ namespace Frontiers.Content.Maps {
                     return;
                 }
             }
+            */
+
+            bool MissingWallAt(Vector2Int pos) {
+                return InBounds(pos) && !GetTile(pos).IsWall();
+            }
+            
+
+            List<CollisionNode> GetTileNodes(Tile tile) {
+                bool
+                    nearA = MissingWallAt(tile.position + new Vector2Int(0, 1)),
+                    nearB = MissingWallAt(tile.position + new Vector2Int(1, 0)),
+                    nearC = MissingWallAt(tile.position + new Vector2Int(0, -1)),
+                    nearD = MissingWallAt(tile.position + new Vector2Int(-1, 0));
+
+                List<CollisionNode> nodes = new();
+
+                if (nearD || nearA) { 
+                    nodes.Add(new CollisionNode(tile.position + new Vector2Int(0, 1))); 
+                }
+
+                if (nearA || nearB) {
+                    CollisionNode prev = nearA ? nodes[^1] : null;
+                    nodes.Add(new CollisionNode(tile.position + new Vector2Int(1, 1), prev));
+                }
+
+                if (nearB || nearC) {
+                    CollisionNode prev = nearB ? nodes[^1] : null;
+                    nodes.Add(new CollisionNode(tile.position + new Vector2Int(1, 0), prev));
+                }
+
+                if (nearC || nearD) {
+                    CollisionNode prev = nearC ? nodes[^1] : null;
+                    nodes.Add(new CollisionNode(tile.position, prev));
+                }
+
+                if (nearD && nearA) nodes[0].Next(nodes[^1]);
+
+                return nodes;
+            }
         }
 
         public void HoldMeshUpdate(bool state) {
@@ -340,17 +429,17 @@ namespace Frontiers.Content.Maps {
             }
         }
 
-        public List<Tile> GetAllSolidTiles() {
-            List<Tile> solidTiles = new();
+        public List<Tile> GetAllSolidPositions() {
+            List<Tile> solidPoses = new();
 
             for (int x = 0; x < size.x; x++) {
                 for (int y = 0; y < size.y; y++) {
                     Tile tile = GetTile(new(x, y));
-                    if (tile.IsWall()) solidTiles.Add(tile);
+                    if (tile.IsWall()) solidPoses.Add(tile);
                 }
             }
 
-            return solidTiles;
+            return solidPoses;
         }
 
         public Tile GetTile(Vector2Int position) {

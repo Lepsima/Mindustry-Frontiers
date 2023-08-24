@@ -402,11 +402,15 @@ public abstract class Unit : Entity, IArmed {
     public virtual void HandlePhysics() {
         // Calculate velocity and position
         velocity = Vector2.ClampMagnitude(acceleration * Time.fixedDeltaTime + velocity, maxVelocity);
-        transform.position += (Vector3)velocity * Time.fixedDeltaTime;
+        MoveTo(transform.position + (Vector3)velocity * Time.fixedDeltaTime);
 
         // Calculate g-force and reset acceleration
         gForce = (acceleration * Time.fixedDeltaTime).magnitude;
         acceleration = Vector2.zero;
+    }
+
+    public virtual void MoveTo(Vector2 position) {
+        transform.position = position;
     }
 
     public abstract void HandleHeight();

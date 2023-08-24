@@ -53,13 +53,15 @@ namespace Frontiers.Content.Maps {
             // End loading
             loaded = true;
 
+            MapRaycaster.map = this;
+
             /*for (int x = 0; x < size.x; x++) {
                 for (int y = 0; y < size.y; y++) {
                     Debug.Log(GetMapTileTypeAt(MapLayer.Ground, new Vector2(x, y)));
                 }
             }
             */
-            tilemap.GenerateColliders();
+            //tilemap.GenerateColliders();
         }
 
         public void LoadTilemapData(string[,,] tileNameArray) {

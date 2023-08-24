@@ -36,6 +36,11 @@ public class MechUnit : Unit {
         HandleMech();
     }
 
+    public override void MoveTo(Vector2 position) {
+        Vector2 direction = position - (Vector2)transform.position;
+        transform.position = MapRaycaster.Solid(transform.position, direction, direction.magnitude);
+    }
+
     protected override void ApplyUpgrageMultiplier(UpgradeType upgrade) {
         base.ApplyUpgrageMultiplier(upgrade);
 
