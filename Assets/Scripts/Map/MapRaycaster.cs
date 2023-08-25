@@ -76,7 +76,7 @@ public static class MapRaycaster {
         rotation += 90;
 
         float halfFov = fov / 2f;
-        float degOffset = fov / rays;
+        float degOffset = fov / (rays - 1);
 
         float[] rayArray = new float[rays];
 

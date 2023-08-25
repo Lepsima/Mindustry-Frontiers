@@ -15,12 +15,12 @@ public class TerrainAdvoidance {
             if (frontRays[i] > collisionDistance)
                 continue;
 
-            float[] rightRays = MapRaycaster.FovSolid(transform.position, rotation + 90f, 90f, 6, collisionDistance);
-            float[] leftRays = MapRaycaster.FovSolid(transform.position, rotation - 90f, 90f, 6, collisionDistance);
+            float rightClosest = Mathf.Min(MapRaycaster.FovSolid(transform.position, rotation + 67.5f, 90f, 6, collisionDistance));
+            float leftClosest = Mathf.Min(MapRaycaster.FovSolid(transform.position, rotation - 67.5f, 90f, 6, collisionDistance));
 
             // Averages from 0 to 1, 0 = near wall, 1 = max distance
-            float rightAvg = 1 - Mathf.Clamp01(Average(rightRays) / 2f);
-            float leftAvg = 1 - Mathf.Clamp01(Average(leftRays) / 2f);
+            float rightAvg = 1 - Mathf.Clamp01(rightClosest / 5f);
+            float leftAvg = 1 - Mathf.Clamp01(leftClosest / 5f);
 
             float diff = (leftAvg - rightAvg) * 135f;
 
@@ -28,13 +28,8 @@ public class TerrainAdvoidance {
             break;
         }
 
-        rotation = (rotation + 90) * Mathf.Deg2Rad;
-        Vector3 dir = new Vector2(Mathf.Cos(rotation), Mathf.Sin(rotation));
-
-        Debug.DrawLine(transform.position, transform.position + dir, Color.green);
-        Debug.DrawLine(transform.position, transform.position + transform.up, Color.red);
-
-        return dir;
+        rotation = (rotation + 90) * Mathf.Deg2Rad; 
+        return new Vector2(Mathf.Cos(rotation), Mathf.Sin(rotation));
     }
 
     private static float Average(float[] values) {
