@@ -4,19 +4,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class TerrainAdvoidance {
-    public static Vector2 GetDirection(Unit unit, Transform transform) {
+public class TerrainAvoidance {
+    public static Vector2 GetDirection(Unit unit, Vector2 position, Vector2 target) {
         float collisionDistance = 5f;
 
-        float rotation = transform.eulerAngles.z;
-        float[] frontRays = MapRaycaster.FovSolid(transform.position, rotation, 45f, 3, collisionDistance * 1.2f);
+        float rotation = Quaternion.LookRotation(target - position, Vector2.up).eulerAngles.z;
+        float[] frontRays = MapRaycaster.FovSolid(position, rotation, 45f, 3, collisionDistance * 1.2f);
 
         for (int i = 0; i < frontRays.Length; i++) {
             if (frontRays[i] > collisionDistance)
                 continue;
 
-            float rightClosest = Mathf.Min(MapRaycaster.FovSolid(transform.position, rotation + 67.5f, 90f, 6, collisionDistance));
-            float leftClosest = Mathf.Min(MapRaycaster.FovSolid(transform.position, rotation - 67.5f, 90f, 6, collisionDistance));
+            float rightClosest = Mathf.Min(MapRaycaster.FovSolid(position, rotation + 90f, 170f, 6, collisionDistance));
+            float leftClosest = Mathf.Min(MapRaycaster.FovSolid(position, rotation - 90f, 170f, 6, collisionDistance));
 
             // Averages from 0 to 1, 0 = near wall, 1 = max distance
             float rightAvg = 1 - Mathf.Clamp01(rightClosest / 5f);

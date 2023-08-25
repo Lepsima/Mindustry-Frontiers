@@ -1556,7 +1556,7 @@ namespace Frontiers.Content {
             // Consume fuel based on fuelConsumption x enginePower
             unit.ConsumeFuel(fuelConsumption * unit.GetEnginePower() * Time.fixedDeltaTime);
 
-            Vector2 direction = (Vector2)unit.transform.position + TerrainAdvoidance.GetDirection(unit, unit.transform);
+            Vector2 direction = (Vector2)unit.transform.position + TerrainAvoidance.GetDirection(unit, unit.transform);
 
             Move(unit, direction);      
             Rotate(unit, /*unit.GetTargetPosition()*/ direction);        
