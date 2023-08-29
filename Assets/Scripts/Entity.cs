@@ -13,6 +13,8 @@ using Frontiers.Teams;
 
 public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
     public event EventHandler<EntityArg> OnDestroyed;
+    public event EventHandler<EventArgs> OnDamaged;
+
     public class EntityArg { public Entity other; }
 
     private GameObject[] fires;
@@ -154,6 +156,8 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
             if (this is Unit unit) Client.DestroyUnit(unit, true);
             else if (this is Block block) Client.DestroyBlock(block, true);
         }
+
+        OnDamaged?.Invoke(this, EventArgs.Empty);
 
         if (!Type.canGetOnFire) return;
         fireCount = Mathf.CeilToInt(Type.maximumFires * Mathf.Clamp(0.5f - GetHealthPercent(), 0, 0.5f) * 2);

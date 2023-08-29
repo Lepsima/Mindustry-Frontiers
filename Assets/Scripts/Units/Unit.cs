@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 using Frontiers.Content.Upgrades;
+using Frontiers.Squadrons;
 
 public abstract class Unit : Entity, IArmed {
 
@@ -18,6 +19,9 @@ public abstract class Unit : Entity, IArmed {
 
     readonly List<Weapon> weapons = new();
     public bool unarmed = true;
+
+    public string squadronName;
+    public Squadron squadron;
 
     #endregion
 

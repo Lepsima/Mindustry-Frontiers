@@ -6,7 +6,6 @@ using Photon.Realtime;
 using TMPro;
 
 public class PlayerListItem : MonoBehaviourPunCallbacks {
-
     [SerializeField] TMP_Text text;
     Player player;
 

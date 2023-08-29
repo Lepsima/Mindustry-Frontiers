@@ -15,6 +15,7 @@ public class MechUnit : Unit {
     protected SpriteRenderer leftLegSpriteRenderer, rightLegSpriteRenderer;
     protected float walkTime = 0f;
     protected Vector2 lastPosition;
+    protected Vector2 _avoidDir;
 
     #region - Upgradable Stats -
 
@@ -40,8 +41,18 @@ public class MechUnit : Unit {
     }
 
     public override void MoveTo(Vector2 position) {
+        Vector2 lastPosition = transform.position;
+
         Vector2 direction = position - (Vector2)transform.position;
         transform.position = MapRaycaster.Solid(transform.position, direction, direction.magnitude);
+
+        if (lastPosition != (Vector2)transform.position) {
+            _avoidDir = TerrainAvoidance.ClosestDir(transform.position, _avoidDir, GetBehaviourPosition() - (Vector2)transform.position, 12, 4);
+        }
+    }
+
+    public Vector2 GetDirection() {
+        return _avoidDir;
     }
 
     protected override void ApplyUpgrageMultiplier(UpgradeType upgrade) {

@@ -2,6 +2,7 @@ using CI.QuickSave;
 using Frontiers.Assets;
 using System;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 namespace Frontiers.Content.Maps {
@@ -12,6 +13,19 @@ namespace Frontiers.Content.Maps {
         public static event EventHandler<MapLoadedEventArgs> OnMapLoaded;
         public class MapLoadedEventArgs {
             public Map loadedMap;
+        }
+
+        public static void GenerateDefaultMaps() {
+            MapFile[] maps = GetMaps();
+
+            if (Contains("Default Map 02")) {
+
+            }
+            
+            bool Contains(string name) {
+                foreach(MapFile map in maps) if (map.name == name) return true;
+                return false;
+            }
         }
 
         public static MapFile[] GetMaps() {

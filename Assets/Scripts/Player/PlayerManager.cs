@@ -13,6 +13,7 @@ using System;
 using Cinemachine;
 using UnitMode = Unit.UnitMode;
 using Frontiers.FluidSystem;
+using Frontiers.Squadrons;
 
 public class PlayerManager : MonoBehaviour {
     [SerializeField] float moveSpeed = 2f;
@@ -25,6 +26,8 @@ public class PlayerManager : MonoBehaviour {
     public static PlayerManager Instance;
     public Entity selectedEntity;
 
+    public event EventHandler<Entity.EntityArg> OnEntitySelected;
+
     private CinemachineVirtualCamera virtualCamera;
     private Transform playerTransform;
 
@@ -33,13 +36,16 @@ public class PlayerManager : MonoBehaviour {
 
     public static Vector3 mousePos;
 
+    private void Awake() {
+        Instance = this;
+    }
+
     private void Start() {
         track = new(new Vector2[2] { Vector2.zero, Vector2.zero });
 
         tool.Init();
         tool.editingTrack = track;
 
-        Instance = this;
         PlayerContentSelector.OnSelectedContentChanged += Instance.OnSelectedContentChanged;
 
         playerTransform = transform.GetChild(0);
@@ -70,9 +76,9 @@ public class PlayerManager : MonoBehaviour {
             ChangeFollowingUnit(1);
         }
 
-        if (Input.GetKeyDown(KeyCode.F)) {
-            FireController.CreateFire(MapManager.mouseGridPos);
-        }
+        //if (Input.GetKeyDown(KeyCode.F)) {
+        //    FireController.CreateFire(MapManager.mouseGridPos);
+        //}
 
         if (Input.GetKeyDown(KeyCode.Alpha1)) {
             foreach (Unit unit in MapManager.Map.units) Client.UnitChangeMode(unit, (int)UnitMode.Attack);
@@ -116,6 +122,7 @@ public class PlayerManager : MonoBehaviour {
                 foreach (Collider2D collider in allColliders) {
                     if (collider.transform.TryGetComponent(out Entity content)) {
                         selectedEntity = content;
+                        OnEntitySelected?.Invoke(this, new Entity.EntityArg() { other = selectedEntity });
                         break;
                     }
                 }
@@ -138,6 +145,11 @@ public class PlayerManager : MonoBehaviour {
                     Client.CreateUnit(mousePos, 0f, Units.turretTrain, TeamUtilities.GetLocalTeam());
                 }
             }
+
+            if (Input.GetKeyDown(KeyCode.N)) {
+                SquadronHandler.CreateSquadron("Squadron " + SquadronHandler.squadrons.Count);
+            }
+
 
             tool.Update();
 

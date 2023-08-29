@@ -65,11 +65,11 @@ public static class MapRaycaster {
             bool yChange = oldY != y;
 
             if ((xChange || yChange) && (!map.InBounds(point) || map.tilemap.GetTile(new Vector2Int(x, y)).IsSolid())) {
-                break;
+                return distance;
             }
         }
 
-        return distance;
+        return maxDistance;
     }
 
     public static float[] FovSolid(Vector2 point, float rotation, float fov, int rays, float maxDistance = 20) {

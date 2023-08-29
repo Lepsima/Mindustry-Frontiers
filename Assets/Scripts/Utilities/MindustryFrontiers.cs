@@ -1548,15 +1548,16 @@ namespace Frontiers.Content {
             float similarity = unit.GetSimilarity(unit.transform.up, targetDirection);
             float enginePower = unit.GetEnginePower();
 
-            // Set velocity
-            unit.SetVelocity(similarity * enginePower * maxVelocity * unit.transform.up);
+            if (similarity < 0.9f) unit.SetVelocity(Vector2.zero);
+            else unit.SetVelocity(enginePower * maxVelocity * (position - (Vector2)unit.transform.position));
         }
 
         public override void UpdateBehaviour(Unit unit, Vector2 position) {
             // Consume fuel based on fuelConsumption x enginePower
             unit.ConsumeFuel(fuelConsumption * unit.GetEnginePower() * Time.fixedDeltaTime);
 
-            Vector2 direction = (Vector2)unit.transform.position + TerrainAvoidance.GetDirection(unit, unit.transform);
+            // + TerrainAvoidance.GetDirection(unit, unit.transform)
+            Vector2 direction = ((MechUnit)unit).GetDirection();
 
             Move(unit, direction);      
             Rotate(unit, /*unit.GetTargetPosition()*/ direction);        
