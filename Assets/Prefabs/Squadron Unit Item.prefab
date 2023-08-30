@@ -261,6 +261,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   healthBarPreview: {fileID: 8386513312771728440}
+  unitIcon: {fileID: 8627155439368445684}
   unitName: {fileID: 7446305432782257549}
   unit: {fileID: 0}
   squadronItem: {fileID: 0}

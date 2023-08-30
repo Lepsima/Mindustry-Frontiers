@@ -61,7 +61,7 @@ public abstract class Unit : Entity, IArmed {
     protected event EventHandler<EntityArg> OnTargetChanged;
     protected Shadow shadow;
 
-    protected UnitMode _mode = UnitMode.Return, lastUnitMode;
+    protected UnitMode _mode = UnitMode.Return;
     protected AssistSubState subStateMode = AssistSubState.Waiting;
 
     protected float gForce, angularGForce;
@@ -138,6 +138,7 @@ public abstract class Unit : Entity, IArmed {
 
     public void SetAction(Action action) {
         this.action = action;
+        Mode = action.ToMode();
     }
 
     public void EnterTemporalMode(UnitMode mode) {
@@ -492,8 +493,10 @@ public abstract class Unit : Entity, IArmed {
         } 
         
         if (Vector2.Distance(patrolPosition, GetPosition()) < 5f || patrolPosition == Vector2.zero) {
+            Vector2 patrolPos = action == null ? homePosition : action.position;
+
             // If no target or close to previous patrol point, create new one
-            Client.UnitChangePatrolPoint(this, UnityEngine.Random.insideUnitCircle * searchRange + action.position);
+            Client.UnitChangePatrolPoint(this, UnityEngine.Random.insideUnitCircle * searchRange + patrolPos);
         } else {
             // Then move to the patrol point
             SetBehaviourPosition(patrolPosition);

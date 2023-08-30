@@ -28,6 +28,9 @@ public class SquadronUIItem : MonoBehaviour {
 
     public void OnClick() {
         SquadronUI.Instance.SelectSquadron(squadron);
+    }
+
+    public void OnSelect() {
         selectedIndicator.SetActive(true);
     }
 

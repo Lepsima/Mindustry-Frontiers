@@ -9,12 +9,14 @@ namespace Frontiers.Squadrons {
         public float radius;
         public Vector2 position;
 
-        public Unit.UnitMode ToMode() {
-            return (Unit.UnitMode)action;
+        public Action(int action, float radius, Vector2 position) {
+            this.action = action;
+            this.radius = radius;
+            this.position = position;
         }
 
-        public bool Equals(Action other) {
-            return other.action == action && other.position == position && other.radius == radius;
+        public Unit.UnitMode ToMode() {
+            return (Unit.UnitMode)action;
         }
     }
 
@@ -43,13 +45,20 @@ namespace Frontiers.Squadrons {
             uiItem.Remove(unit);
         }
 
-        public void ChangeAction(Action action) {
-            if (action.Equals(this.action)) return;
+        public void SetAction(Action action) {
             this.action = action;
 
             foreach(Unit unit in members) {
-
+                unit.SetAction(action);
             }
+        }
+
+        public void OnSelected() {
+            uiItem.OnSelect();
+        }
+
+        public void OnDeselected() {
+            uiItem.OnDeselect();
         }
 
         public void OnMemberDestroyed(object sender, Entity.EntityArg e) {
