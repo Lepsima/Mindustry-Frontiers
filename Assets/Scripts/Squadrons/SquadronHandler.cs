@@ -3,8 +3,25 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Frontiers.Squadrons {
+
+    public class Action {
+        public int action;
+        public float radius;
+        public Vector2 position;
+
+        public Unit.UnitMode ToMode() {
+            return (Unit.UnitMode)action;
+        }
+
+        public bool Equals(Action other) {
+            return other.action == action && other.position == position && other.radius == radius;
+        }
+    }
+
     public class Squadron {
         public string name;
+        public Action action;
+
         public List<Unit> members = new();
         public SquadronUIItem uiItem;
 
@@ -24,6 +41,15 @@ namespace Frontiers.Squadrons {
         public void Remove(Unit unit) {
             members.Remove(unit);
             uiItem.Remove(unit);
+        }
+
+        public void ChangeAction(Action action) {
+            if (action.Equals(this.action)) return;
+            this.action = action;
+
+            foreach(Unit unit in members) {
+
+            }
         }
 
         public void OnMemberDestroyed(object sender, Entity.EntityArg e) {

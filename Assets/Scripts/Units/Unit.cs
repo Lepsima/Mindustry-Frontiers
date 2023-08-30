@@ -8,6 +8,7 @@ using System;
 using UnityEngine;
 using Frontiers.Content.Upgrades;
 using Frontiers.Squadrons;
+using Action = Frontiers.Squadrons.Action;
 
 public abstract class Unit : Entity, IArmed {
 
@@ -27,6 +28,9 @@ public abstract class Unit : Entity, IArmed {
 
 
     #region - Current Status Vars -
+
+    public Action action;
+
     protected Entity Target { 
         get { 
             return _target; 
@@ -132,11 +136,16 @@ public abstract class Unit : Entity, IArmed {
         _target = syncObject ? syncObject as Entity : null;
     }
 
-    public virtual void ChangeMode(int mode, bool registerPrev) {
-        if ((UnitMode)mode == UnitMode.Attack && unarmed) mode = (int)UnitMode.Patrol;
-     
-        lastUnitMode = registerPrev ? Mode : (UnitMode)mode;
-        Mode = (UnitMode)mode;
+    public void SetAction(Action action) {
+        this.action = action;
+    }
+
+    public void EnterTemporalMode(UnitMode mode) {
+        Mode = mode;
+    }
+
+    public void ExitTemporalMode() {
+        Mode = action.ToMode();
     }
 
     [PunRPC]
@@ -203,7 +212,7 @@ public abstract class Unit : Entity, IArmed {
                 // When fuel is completely refilled, continue the previous mode
                 if (fuel > fuelCapacity) {
                     fuel = fuelCapacity;
-                    Client.UnitChangeMode(this, (int)lastUnitMode);
+                    ExitTemporalMode();
                 }
             }
         }
@@ -456,19 +465,15 @@ public abstract class Unit : Entity, IArmed {
 
     #region - Behaviours -
     protected virtual void AttackBehaviour() {
+        if (unarmed) EnterTemporalMode(UnitMode.Return);
         HandleTargeting();
+       
+        if (!Target) {
+            if (action.ToMode() != UnitMode.Attack) ExitTemporalMode();
+            else SetBehaviourPosition(action.position);
+            return;
+        } 
 
-        if (!Target || unarmed) {
-            if (lastUnitMode != UnitMode.Attack || unarmed) {
-                Client.UnitChangeMode(this, (int)lastUnitMode);
-                return;
-            } else {
-                Target = TeamUtilities.GetClosestCoreBlock(GetPosition(), TeamUtilities.GetEnemyTeam(teamCode));
-                if (!Target) Client.UnitChangeMode(this, (int)UnitMode.Return);
-            }
-        }
-
-        if (!Target) return;
         SetBehaviourPosition(Target.GetPosition());
 
         if (InRange(_position) && StopsToShoot()) _move = false;
@@ -478,18 +483,17 @@ public abstract class Unit : Entity, IArmed {
     }
 
     protected virtual void PatrolBehaviour() {
-        // Default target search
         HandleTargeting();
 
         // If target found, switch to attack
-        if (Target) {     
-            Client.UnitChangeMode(this, (int)UnitMode.Attack, true);
+        if (Target) {
+            EnterTemporalMode(UnitMode.Attack);
             return;
         } 
         
         if (Vector2.Distance(patrolPosition, GetPosition()) < 5f || patrolPosition == Vector2.zero) {
             // If no target or close to previous patrol point, create new one
-            Client.UnitChangePatrolPoint(this, UnityEngine.Random.insideUnitCircle * searchRange + homePosition);
+            Client.UnitChangePatrolPoint(this, UnityEngine.Random.insideUnitCircle * searchRange + action.position);
         } else {
             // Then move to the patrol point
             SetBehaviourPosition(patrolPosition);
@@ -530,7 +534,7 @@ public abstract class Unit : Entity, IArmed {
 
     protected virtual void AssistBehaviour() {   
         if (!isCoreUnit) {
-            Client.UnitChangeMode(this, (int)UnitMode.Return);
+            EnterTemporalMode(UnitMode.Return);
             return;
         }
 
@@ -550,7 +554,7 @@ public abstract class Unit : Entity, IArmed {
         // If there's nothing to do, go back to core and deposit all items
         if (subStateMode == AssistSubState.Waiting) {
             if (!Target) {
-                Client.UnitChangeMode(this, (int)UnitMode.Idling, true);
+                IdlingBehaviour();
                 return;
             }
 
@@ -570,7 +574,7 @@ public abstract class Unit : Entity, IArmed {
         // If needs items to build block, go to core and pickup items
         if (subStateMode == AssistSubState.Collect) {
             if (!Target) {
-                Client.UnitChangeMode(this, (int)UnitMode.Idling, true);
+                IdlingBehaviour();
                 return;
             }
 
@@ -661,7 +665,7 @@ public abstract class Unit : Entity, IArmed {
     ///  - Optional default target enemy core
     /// </summary>
     /// <param name="useEnemyCoreAsDefault">Enables the default target</param>
-    protected void HandleTargeting(bool useEnemyCoreAsDefault = false) {
+    protected void HandleTargeting() {
         if (Target) {
             // Check if target is still valid
             bool inRange = (Target as Unit) == null ? InSearchRange(Target.GetPosition()) : InShootRange(Target.GetPosition(), fov);
@@ -673,10 +677,8 @@ public abstract class Unit : Entity, IArmed {
             targetSearchTimer = Time.time + 1.5f;
             targetLostTimer = 0f;
 
-            // Find target or get closest
-            Entity tempTarget = GetTarget(Type.priorityList);
-            if (!tempTarget && useEnemyCoreAsDefault) tempTarget = TeamUtilities.GetClosestCoreBlock(GetPosition(), TeamUtilities.GetEnemyTeam(teamCode));     
-            Target = tempTarget;
+            // Find target or get closest 
+            Target = GetTarget(Type.priorityList);
         }
     }
 
@@ -760,7 +762,7 @@ public abstract class Unit : Entity, IArmed {
         UpdateCurrentMass();
 
         // If only 10s of fuel left, enable return mode
-        if (fuel / fuelConsumption < Type.fuelLeftToReturn) Client.UnitChangeMode(this, (int)UnitMode.Return, true);
+        if (fuel / fuelConsumption < Type.fuelLeftToReturn) EnterTemporalMode(UnitMode.Return);
     }
 
     public virtual void UpdateCurrentMass() {

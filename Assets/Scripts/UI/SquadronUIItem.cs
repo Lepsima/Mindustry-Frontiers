@@ -11,6 +11,7 @@ public class SquadronUIItem : MonoBehaviour {
     public TMP_Text squadronNameText;
 
     public Image leaderIcon;
+    public GameObject selectedIndicator;
 
     public Transform unitUIItemParent;
     public GameObject unitUIItemPrefab;
@@ -27,6 +28,11 @@ public class SquadronUIItem : MonoBehaviour {
 
     public void OnClick() {
         SquadronUI.Instance.SelectSquadron(squadron);
+        selectedIndicator.SetActive(true);
+    }
+
+    public void OnDeselect() {
+        selectedIndicator.SetActive(false);
     }
 
     public void Add(Unit unit) {

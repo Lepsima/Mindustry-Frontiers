@@ -154,19 +154,6 @@ public class Client : MonoBehaviourPunCallbacks {
         unit.OnTakeOff();
     }
 
-    public static void UnitChangeMode(Unit unit, int mode, bool registerPrev = false) {
-        if (!PhotonNetwork.IsMasterClient || (int)unit.Mode == mode || !unit.CanRequest()) return;
-        unit.AddToRequestTimer();
-        local.photonView.RPC(nameof(RPC_UnitChangeMode), RpcTarget.All, unit.SyncID, mode, registerPrev);
-    }
-
-    [PunRPC]
-    public void RPC_UnitChangeMode(int syncID, int mode, bool registerPrev) {
-        if (isRecivingMap) return;
-        Unit unit = (Unit)syncObjects[syncID];
-        unit.ChangeMode(mode, registerPrev);
-    }
-
     public static void UnitChangePatrolPoint(Unit unit, Vector2 point) {
         if (!PhotonNetwork.IsMasterClient) return;
         local.photonView.RPC(nameof(RPC_UnitChangePatrolPoint), RpcTarget.All, unit.SyncID, point);

@@ -20,6 +20,7 @@ public class SquadronUI : MonoBehaviour {
     }
 
     public void SelectSquadron(Squadron squadron) {
+        selected.uiItem.OnDeselect();
         selected = squadron;
     }
 

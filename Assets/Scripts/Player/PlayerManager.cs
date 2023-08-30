@@ -75,30 +75,6 @@ public class PlayerManager : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.E)) {
             ChangeFollowingUnit(1);
         }
-
-        //if (Input.GetKeyDown(KeyCode.F)) {
-        //    FireController.CreateFire(MapManager.mouseGridPos);
-        //}
-
-        if (Input.GetKeyDown(KeyCode.Alpha1)) {
-            foreach (Unit unit in MapManager.Map.units) Client.UnitChangeMode(unit, (int)UnitMode.Attack);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha2)) {
-            foreach (Unit unit in MapManager.Map.units) Client.UnitChangeMode(unit, (int)UnitMode.Patrol);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha3)) {
-            foreach (Unit unit in MapManager.Map.units) Client.UnitChangeMode(unit, (int)UnitMode.Return);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha4)) {
-            foreach (Unit unit in MapManager.Map.units) Client.UnitChangeMode(unit, (int)UnitMode.Assist);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha5)) {
-            foreach (Unit unit in MapManager.Map.units) Client.UnitChangeMode(unit, (int)UnitMode.Idling);
-        }
     }
 
     private void HandleBuildMode() {

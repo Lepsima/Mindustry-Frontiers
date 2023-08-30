@@ -55,11 +55,6 @@ public class AircraftUnit : Unit {
         SetDragTrailLenght(gForce * 0.3f);
     }
 
-    public override void ChangeMode(int mode, bool registerPrev) {
-        base.ChangeMode(mode, registerPrev);
-        isFleeing = false;
-    }
-
     public override void HandlePhysics() {
         Vector2 dragDir = velocity - (Vector2)Vector3.Project(velocity, transform.up);
         acceleration -= (1 - drag * Time.fixedDeltaTime) * dragDir;

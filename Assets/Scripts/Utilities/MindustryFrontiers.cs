@@ -196,58 +196,6 @@ namespace Frontiers.Settings {
     }
 }
 
-namespace Frontiers.Squadrons {
-    public enum Action {
-        Idle,
-        Attack,
-        Move,
-        Land,
-        TakeOff
-    }
-
-    public struct Order {
-        public Action action;
-
-        public Vector2 actionPosition;
-        public Transform actionTarget;
-
-        public Order(Action action, Vector2 actionPosition, Transform actionTarget = null) {
-            this.action = action;
-            this.actionPosition = actionPosition;
-            this.actionTarget = actionTarget;
-        }
-
-        public Vector2 GetActionPosition() => actionPosition == Vector2.zero && actionTarget ? (Vector2)actionTarget.position : actionPosition;
-    }
-
-    public struct OrderSeq {
-        public List<Order> orderList;
-
-        public OrderSeq(List<Order> orderList) {
-            this.orderList = orderList;
-        }
-
-        public void OrderComplete() {
-            if (orderList.Count == 0) return;
-            orderList.RemoveAt(0);
-        }
-
-        public Order GetOrder() => orderList.Count == 0 ? new Order(Action.Idle, Vector2.zero) : orderList[0];
-    }
-
-    public class DemoOrderSeq {
-        public static OrderSeq takeOffAndLand;
-
-        public static void Load() {
-            takeOffAndLand = new OrderSeq(new List<Order>() {
-                new Order(Action.TakeOff, Vector2.zero),
-                new Order(Action.Move, new Vector2(10f, 50f)),
-                new Order(Action.Land, Vector2.zero)
-            }); 
-        }
-    }
-}
-
 namespace Frontiers.Teams {
     public static class TeamUtilities {
         public static readonly Color LocalTeamColor = new(1f, 0.827451f, 0.4980392f);
