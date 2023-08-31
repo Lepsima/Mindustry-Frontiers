@@ -47,14 +47,6 @@ public class DamageHandler : MonoBehaviour {
         }
     }
 
-    public static void BulletHit(Bullet bullet, Entity entity) {
-        BulletHit(bullet.Type, entity);
-    }
-
-    public static void BulletDespawn(Bullet bullet) {
-        if (bullet.Type.HasBlastDamage()) BulletExplode(bullet.Type, bullet.GetPosition(), bullet.GetTeam());
-    }
-
     public static void BulletHit(BulletType bulletType, Entity entity) {
         if (bulletType.HasBlastDamage()) {
             BulletExplode(bulletType, entity.GetPosition(), entity.GetTeam());
@@ -64,8 +56,8 @@ public class DamageHandler : MonoBehaviour {
         }
     }
 
-    public static void BulletExplode(BulletType bulletType, Vector2 position, byte team) {
-        AreaDamage(bulletType.Area(), position, team);
+    public static void BulletExplode(BulletType bulletType, Vector2 position, int mask) {
+        AreaDamage(bulletType, position, mask);
     }
 
     public static void Damage(Hit hit, IDamageable damageable) {
@@ -73,10 +65,23 @@ public class DamageHandler : MonoBehaviour {
         damageable.Damage(hit.Value(damageable));
     }
 
-    public static void AreaDamage(Area area, Vector2 position, byte team) {
+    public static void AreaDamage(BulletType bulletType, Vector2 position, int mask) {
+        if (!bulletType.IsValid()) return;
+
+        foreach (Collider2D collider in Physics2D.OverlapCircleAll(position, bulletType.blastRadius, mask)) {
+
+            if (collider.transform.TryGetComponent(out IDamageable damageable)) {
+
+                float distance = Vector2.Distance(position, collider.transform.position);
+                damageable.Damage(bulletType.Value(damageable, distance));
+            }
+        }
+    }
+
+    public static void AreaDamage(Area area, Vector2 position, int mask) {
         if (!area.IsValid()) return;
 
-        foreach (Collider2D collider in Physics2D.OverlapCircleAll(position, area.maxRange, TeamUtilities.GetTeamMask(team))) {
+        foreach (Collider2D collider in Physics2D.OverlapCircleAll(position, area.maxRange, mask)) {
 
             if (collider.transform.TryGetComponent(out IDamageable damageable)) {
 

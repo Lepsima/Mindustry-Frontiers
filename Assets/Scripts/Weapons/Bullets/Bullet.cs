@@ -109,7 +109,7 @@ public class MissileBullet : Bullet {
         // Check for collision
         if (Physics2D.OverlapCircle(transform.position, Type.size, mask)) BulletCollision();
         else if (ShouldDespawn()) {
-            if ((Type as MissileBulletType).explodeOnDespawn) Client.Explosion(Type, GetPosition(), GetTeam());
+            if ((Type as MissileBulletType).explodeOnDespawn) Client.Explosion(Type, GetPosition(), mask);
             Despawn();
         }
     }
@@ -125,7 +125,7 @@ public class BombBullet : Bullet {
     readonly Transform shadow;
 
     public BombBullet(Weapon weapon, Transform transform) : base(weapon, transform) {
-        shadow = transform.GetChild(1);
+        shadow = transform.GetChild(0);
 
         // Bomb bullets won't work on block weapons so no need to check for that
         height = ((Unit)weapon.parentEntity).GetHeight();
@@ -138,7 +138,7 @@ public class BombBullet : Bullet {
         shadow.position = -Vector3.one * (height * 0.2f) + transform.position;
 
         if (ShouldDespawn()) {
-            Client.Explosion(Type, GetPosition(), GetTeam());
+            Client.Explosion(Type, GetPosition(), mask);
             Despawn();
         }
     }

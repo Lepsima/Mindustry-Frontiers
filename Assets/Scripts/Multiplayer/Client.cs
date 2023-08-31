@@ -175,7 +175,7 @@ public class Client : MonoBehaviourPunCallbacks {
     public void RPC_BulletHit(int syncID, short bulletID) {
         if (isRecivingMap) return;
         Entity entity = (Entity)syncObjects[syncID];
-        BulletType bulletType = (BulletType)ContentLoader.GetContentById(bulletID);
+        BulletType bulletType = BulletLoader.loadedBullets[bulletID];
         DamageHandler.BulletHit(bulletType, entity);     
     }
 
@@ -195,15 +195,15 @@ public class Client : MonoBehaviourPunCallbacks {
 
 
 
-    public static void Explosion(BulletType bulletType, Vector2 position, byte team) {
+    public static void Explosion(BulletType bulletType, Vector2 position, int mask) {
         if (!PhotonNetwork.IsMasterClient) return;
-        local.photonView.RPC(nameof(RPC_Explosion), RpcTarget.All, bulletType.id, position, team);
+        local.photonView.RPC(nameof(RPC_Explosion), RpcTarget.All, bulletType.id, position, mask);
     }
 
     [PunRPC]
-    public void RPC_Explosion(short bulletID, Vector2 position, byte team) {
+    public void RPC_Explosion(short bulletID, Vector2 position, int mask) {
         if (isRecivingMap) return;
-        DamageHandler.BulletExplode((BulletType)ContentLoader.GetContentById(bulletID), position, team);
+        DamageHandler.BulletExplode(BulletLoader.loadedBullets[bulletID], position, mask);
     }
 
 

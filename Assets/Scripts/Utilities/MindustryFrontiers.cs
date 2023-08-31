@@ -113,6 +113,7 @@ namespace Frontiers.Animations {
 }
 
 namespace Frontiers.Pooling {
+
     public class PoolManager : MonoBehaviour {
         public static Dictionary<string, GameObjectPool> allPools = new();
 
@@ -382,6 +383,15 @@ namespace Frontiers.Assets {
 }
 
 namespace Frontiers.Content {
+
+    public static class BulletLoader {
+        public static List<BulletType> loadedBullets = new();
+
+        public static void HandleBullet(BulletType bullet) {
+            bullet.id = (short)loadedBullets.Count;
+            loadedBullets.Add(bullet);
+        }
+    }
 
     public static class ContentLoader {
         public static Dictionary<string, Content> loadedContents;
@@ -2167,31 +2177,33 @@ namespace Frontiers.Content {
         }
     }
 
-    public class BulletType : Content {
-        public Sprite backSprite;
-
+    public class BulletType {
         public GameObjectPool pool;
-        public string bulletName;
+
+        public string name;
+
+        public short id;
+        public Sprite sprite;
 
         public float damage = 10f, buildingDamageMultiplier = 1f, velocity = 100f, lifeTime = 1f, size = 0.05f;
         public float blastRadius = -1f, blastRadiusFalloff = -1f, minBlastDamage = 0f;
 
         public float Range { get => velocity * lifeTime; }
-        public bool hasSprites;
 
         public Effect hitFX = Effects.bulletHit, despawnFX = Effects.despawn;
 
-        public BulletType(string name = null, string bulletName = "tracer") : base(name) {
-            pool = PoolManager.GetOrCreatePool(AssetLoader.GetPrefab(bulletName + "-prefab", "tracer-prefab"), 100);
-            this.bulletName = bulletName;
+        public BulletType(string name = null) {
+            this.name = name;
+            BulletLoader.HandleBullet(this);
 
-            sprite = AssetLoader.GetSprite(bulletName, true);
-            backSprite = AssetLoader.GetSprite(bulletName + "-back", true);
+            sprite = AssetLoader.GetSprite(name, true);
 
-            // Check if is a sprite bullet or just a tracer bullet
-            hasSprites = sprite != null;
+            pool = GetPool();
+            pool.OnGameObjectCreated += OnPoolObjectCreated;        
+        }
 
-            pool.OnGameObjectCreated += OnPoolObjectCreated;
+        public virtual GameObjectPool GetPool() {
+            return PoolManager.GetOrCreatePool(AssetLoader.GetPrefab("tracer-prefab"), 100);
         }
 
         public virtual Bullet NewBullet(Weapon weapon, Transform transform) {
@@ -2211,24 +2223,20 @@ namespace Frontiers.Content {
             return blastRadius > 0;
         }
 
-        public DamageHandler.Area Area() {
-            return new DamageHandler.Area(damage, minBlastDamage, blastRadius, buildingDamageMultiplier, blastRadiusFalloff);
+        public float Value(IDamageable damageable, float distance) {
+            float percent = (distance - blastRadiusFalloff) / (blastRadius - blastRadiusFalloff);
+            float raw = distance > blastRadiusFalloff ? Mathf.Lerp(damage, minBlastDamage, percent) : damage;
+
+            float mult = damageable.IsBuilding() ? buildingDamageMultiplier : 1f;
+            return raw * mult;
+        }
+
+        public bool IsValid() {
+            return blastRadius > 0f;
         }
 
         public virtual void OnPoolObjectCreated(object sender, GameObjectPool.PoolEventArgs e) {
-            if (!e.target || !hasSprites) return;
-
-            Transform transform = e.target.transform;
-            Transform back = transform.GetChild(0);
-
-            SpriteRenderer renderer;
-            renderer = transform.GetComponent<SpriteRenderer>();
-            renderer.sprite = sprite;
-            renderer.color = new Color(1f, 1f, 1f);
-
-            renderer = back.GetComponent<SpriteRenderer>();
-            renderer.sprite = backSprite;
-            renderer.color = new Color(0.7f, 0.7f, 0.7f);
+            if (e.target && sprite != null) e.target.transform.GetComponent<SpriteRenderer>().sprite = sprite;
         }
     }
 
@@ -2236,25 +2244,33 @@ namespace Frontiers.Content {
         public float homingStrength = 30f;
         public bool canUpdateTarget = true, explodeOnDespawn = true;
         
-        public MissileBulletType(string name = null, string bulletName = "missile") : base(name, bulletName) {
+        public MissileBulletType(string name = null) : base(name) {
             despawnFX = Effects.smallExplosion;
         }
 
         public override Bullet NewBullet(Weapon weapon, Transform transform) {
             return new MissileBullet(weapon, transform);
         }
+
+        public override GameObjectPool GetPool() {
+            return PoolManager.GetOrCreatePool(AssetLoader.GetPrefab("missile-prefab"), 100);
+        }
     }
 
     public class BombBulletType : BulletType {
         public float fallVelocity = 3f, initialSize = 1f, finalSize = 0.5f;
 
-        public BombBulletType(string name = null, string bulletName = "bomb") : base(name, bulletName) {
+        public BombBulletType(string name = null) : base(name) {
             hitFX = Effects.explosion;
             despawnFX = Effects.explosion;
         }
 
         public override Bullet NewBullet(Weapon weapon, Transform transform) {
             return new BombBullet(weapon, transform);
+        }
+
+        public override GameObjectPool GetPool() {
+            return PoolManager.GetOrCreatePool(AssetLoader.GetPrefab("bomb-prefab"), 100);
         }
 
         public override void OnPoolObjectCreated(object sender, GameObjectPool.PoolEventArgs e) {
@@ -2264,7 +2280,7 @@ namespace Frontiers.Content {
             Transform shadow = e.target.transform.GetChild(0);
 
             SpriteRenderer renderer = shadow.GetComponent<SpriteRenderer>();
-            renderer.sprite = backSprite;
+            renderer.sprite = sprite;
             renderer.color = new Color(0, 0, 0, 0.5f);
         }
     }
@@ -2288,7 +2304,7 @@ namespace Frontiers.Content {
                 velocity = 70f
             };
 
-            bombBullet = new BombBulletType() {
+            bombBullet = new BombBulletType("bomb") {
                 damage = 25f,
                 minBlastDamage = 5f,
                 blastRadius = 3f,
@@ -2296,7 +2312,7 @@ namespace Frontiers.Content {
                 fallVelocity = 4f
             };
 
-            missileBullet = new MissileBulletType() {
+            missileBullet = new MissileBulletType("homing-missile") {
                 damage = 20f,
                 minBlastDamage = 5f,
                 blastRadius = 1.25f,

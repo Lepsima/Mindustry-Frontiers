@@ -4956,8 +4956,8 @@ ParticleSystem:
       maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
-        key0: {r: 0.98866767, g: 0.9861302, b: 0.9946726, a: 0.43137255}
-        key1: {r: 0.35783616, g: 0.21404415, b: 0.6981132, a: 1}
+        key0: {r: 0.9622642, g: 0.8831197, b: 0.8033998, a: 0.43137255}
+        key1: {r: 0.9433962, g: 0.8001032, b: 0.37824848, a: 1}
         key2: {r: 0.35783616, g: 0.21404415, b: 0.6981132, a: 0.2627451}
         key3: {r: 0, g: 0, b: 0, a: 0.27450982}
         key4: {r: 0, g: 0, b: 0, a: 0}
@@ -9461,7 +9461,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_Sprite: {fileID: 21300000, guid: 9ba5f64278ee90e4090be88df4dcf90e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a0cae9d30c57897408ef036ad08d84c3, type: 3}
   m_Color: {r: 0.4509804, g: 0.4509804, b: 0.4509804, a: 1}
   m_FlipX: 1
   m_FlipY: 0
@@ -11947,7 +11947,7 @@ MonoBehaviour:
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 1
-  m_Antialiasing: 0
+  m_Antialiasing: 1
   m_AntialiasingQuality: 2
   m_StopNaN: 0
   m_Dithering: 0
@@ -16115,7 +16115,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: c77e44309784a8243851f875a78db05c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 007b1902e644bb940aa3477acea01b6c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -16134,14 +16134,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1425970045}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 20.3, y: 4.13, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0.5071976, w: 0.8618298}
+  m_LocalPosition: {x: 24.01, y: 0.37, z: 0}
   m_LocalScale: {x: 2.25, y: 2.25, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 536291788}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -420.95502}
 --- !u!1 &1453429937
 GameObject:
   m_ObjectHideFlags: 0
@@ -20060,7 +20060,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_Sprite: {fileID: 21300000, guid: 9ba5f64278ee90e4090be88df4dcf90e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a0cae9d30c57897408ef036ad08d84c3, type: 3}
   m_Color: {r: 0.4509804, g: 0.4509804, b: 0.4509804, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -21603,8 +21603,8 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 0.6
-      minScalar: 0.5
+      scalar: 0.3
+      minScalar: 0.2
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -21656,7 +21656,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 5
+      scalar: 15
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -25621,7 +25621,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.5873248, g: 0.34825563, b: 0.8113208, a: 1}
+      maxColor: {r: 0.7830189, g: 0.6718229, b: 0.46907264, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 0.98866767, g: 0.9861302, b: 0.9946726, a: 0.43137255}
