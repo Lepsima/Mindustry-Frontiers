@@ -78,8 +78,8 @@ public class Bullet {
 
 public class MissileBullet : Bullet {
     Transform target;
-    byte enemyTeam;
-    float lifeTime;
+    readonly byte enemyTeam;
+    readonly float lifeTime;
 
     public MissileBullet(Weapon weapon, Transform transform) : base(weapon, transform) {
         lifeTime = Time.time + Type.lifeTime;
@@ -120,8 +120,9 @@ public class MissileBullet : Bullet {
 }
 
 public class BombBullet : Bullet {
-    float height, maxHeight;
-    Transform shadow;
+    float height;
+    readonly float maxHeight;
+    readonly Transform shadow;
 
     public BombBullet(Weapon weapon, Transform transform) : base(weapon, transform) {
         shadow = transform.GetChild(1);
@@ -138,7 +139,7 @@ public class BombBullet : Bullet {
 
         if (ShouldDespawn()) {
             Client.Explosion(Type, GetPosition(), GetTeam());
-            Return();
+            Despawn();
         }
     }
 
