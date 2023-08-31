@@ -9678,7 +9678,7 @@ GameObject:
   - component: {fileID: 4396036306195249056}
   - component: {fileID: 5724980973045112628}
   m_Layer: 0
-  m_Name: rocketFlameEffect
+  m_Name: rocketFlameFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

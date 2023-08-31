@@ -2050,21 +2050,19 @@ namespace Frontiers.Content {
             };
 
             zenithMissiles = new WeaponType("zenith-missiles") {
-                bulletType = new BulletType() {
-                    damage = 7.5f,
-                    lifeTime = 0.5f,
-                    velocity = 100f
-                },
+                bulletType = Bullets.missileBullet,
 
                 shootOffset = new Vector2(0, 0.25f),
 
                 isIndependent = true,
                 recoil = 0.05f,
                 returnSpeed = 2f,
-                clipSize = 10,
-                shootTime = 0.2f,
-                reloadTime = 3.5f,
-                rotateSpeed = 115f
+                clipSize = 2,
+                shootTime = 0.5f,
+                reloadTime = 1.5f,
+                rotateSpeed = 115f,
+
+                shootFX = Effects.rcs
             };
 
             tempestWeapon = new WeaponType("tempest-weapon") {
@@ -2176,7 +2174,7 @@ namespace Frontiers.Content {
         public string bulletName;
 
         public float damage = 10f, buildingDamageMultiplier = 1f, velocity = 100f, lifeTime = 1f, size = 0.05f;
-        public float blastRadius = -1f, blastRadiusFalloff = -1f, minimumBlastDamage = 0f;
+        public float blastRadius = -1f, blastRadiusFalloff = -1f, minBlastDamage = 0f;
 
         public float Range { get => velocity * lifeTime; }
         public bool hasSprites;
@@ -2206,7 +2204,7 @@ namespace Frontiers.Content {
 
         public float Damage(IDamageable damageable, float distance) {
             float mult = Multiplier(damageable);
-            return HasBlastDamage() ? Mathf.Lerp(damage * mult, minimumBlastDamage * mult, distance / blastRadius) : damage * mult;
+            return HasBlastDamage() ? Mathf.Lerp(damage * mult, minBlastDamage * mult, distance / blastRadius) : damage * mult;
         }
 
         public bool HasBlastDamage() {
@@ -2214,7 +2212,7 @@ namespace Frontiers.Content {
         }
 
         public DamageHandler.Area Area() {
-            return new DamageHandler.Area(damage, minimumBlastDamage, blastRadius, buildingDamageMultiplier, blastRadiusFalloff);
+            return new DamageHandler.Area(damage, minBlastDamage, blastRadius, buildingDamageMultiplier, blastRadiusFalloff);
         }
 
         public virtual void OnPoolObjectCreated(object sender, GameObjectPool.PoolEventArgs e) {
@@ -2230,7 +2228,7 @@ namespace Frontiers.Content {
 
             renderer = back.GetComponent<SpriteRenderer>();
             renderer.sprite = backSprite;
-            renderer.color = new Color(0.8f, 0.8f, 0.8f);
+            renderer.color = new Color(0.7f, 0.7f, 0.7f);
         }
     }
 
@@ -2263,7 +2261,7 @@ namespace Frontiers.Content {
             base.OnPoolObjectCreated(sender, e);
             if (!e.target) return;
 
-            Transform shadow = e.target.transform.GetChild(1);
+            Transform shadow = e.target.transform.GetChild(0);
 
             SpriteRenderer renderer = shadow.GetComponent<SpriteRenderer>();
             renderer.sprite = backSprite;
@@ -2292,20 +2290,20 @@ namespace Frontiers.Content {
 
             bombBullet = new BombBulletType() {
                 damage = 25f,
-                minimumBlastDamage = 5f,
+                minBlastDamage = 5f,
                 blastRadius = 3f,
                 buildingDamageMultiplier = 5f,
                 fallVelocity = 4f
             };
 
             missileBullet = new MissileBulletType() {
-                damage = 100f,
-                minimumBlastDamage = 25f,
-                blastRadius = 1f,
+                damage = 20f,
+                minBlastDamage = 5f,
+                blastRadius = 1.25f,
                 buildingDamageMultiplier = 2f,
-                velocity = 15f,
-                lifeTime = 5f,
-                homingStrength = 120f,
+                velocity = 30f,
+                lifeTime = 2.5f,
+                homingStrength = 75f,
             };
         }
     }

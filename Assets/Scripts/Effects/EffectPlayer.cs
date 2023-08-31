@@ -30,7 +30,7 @@ namespace Frontiers.Content.VisualEffects {
     }
 
     public static class Effects {
-        public static Effect build, bulletHit, casing, despawn, explosion, hitSmoke, muzzle, smallExplosion, takeoff, waterDeviation;
+        public static Effect build, bulletHit, casing, despawn, explosion, hitSmoke, muzzle, smallExplosion, takeoff, waterDeviation, rcs;
 
         public static void Load() {
             build = new("buildFX");
@@ -43,6 +43,7 @@ namespace Frontiers.Content.VisualEffects {
             smallExplosion = new("smallExplosionFX");
             takeoff = new("takeoffFX");
             waterDeviation = new("waterDeviationFX");
+            rcs = new("rcsFX");
         }
     }
 }

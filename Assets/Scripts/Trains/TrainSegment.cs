@@ -70,8 +70,6 @@ public class TrainSegment : Unit {
 
         FrontTrain = BackTrain = null;
 
-        track = PlayerManager.track;
-
         foreach(TrainSegment train in unconnectedTrains) {
             if (train == this) continue;
 

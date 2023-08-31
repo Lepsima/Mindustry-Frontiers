@@ -61,7 +61,7 @@ public abstract class Unit : Entity, IArmed {
     protected event EventHandler<EntityArg> OnTargetChanged;
     protected Shadow shadow;
 
-    protected UnitMode _mode = UnitMode.Return;
+    protected UnitMode _mode;
     protected AssistSubState subStateMode = AssistSubState.Waiting;
 
     protected float gForce, angularGForce;
@@ -290,6 +290,8 @@ public abstract class Unit : Entity, IArmed {
 
         MapManager.Map.AddUnit(this);
         Client.syncObjects.Add(SyncID, this);
+
+        SetAction(new(3, 0, Vector2.zero));
     }
 
     protected override void SetSprites() {

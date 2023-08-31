@@ -41,11 +41,6 @@ public class PlayerManager : MonoBehaviour {
     }
 
     private void Start() {
-        track = new(new Vector2[2] { Vector2.zero, Vector2.zero });
-
-        tool.Init();
-        tool.editingTrack = track;
-
         PlayerContentSelector.OnSelectedContentChanged += Instance.OnSelectedContentChanged;
 
         playerTransform = transform.GetChild(0);
@@ -84,55 +79,34 @@ public class PlayerManager : MonoBehaviour {
         PlayerContentSelector.ChangeSelectedContentOrientation(Input.mouseScrollDelta.y);
     }
 
-    public static TrainTrack track;
-    List<Vector2> trackPoints = new() { Vector2.zero };
-    TrackPlacerTool tool = new();
-
     private void HandleMainMode() {
         if (!EventSystem.current.IsPointerOverGameObject()) {
             if (Input.GetMouseButtonDown(0)) {
-                selectedEntity = null;
-
-                Collider2D[] allColliders = Physics2D.OverlapCircleAll(mousePos, 0.05f);
-
-                foreach (Collider2D collider in allColliders) {
-                    if (collider.transform.TryGetComponent(out Entity content)) {
-                        selectedEntity = content;
-                        OnEntitySelected?.Invoke(this, new Entity.EntityArg() { other = selectedEntity });
-                        break;
-                    }
-                }
-
-                InventoryViewer.Instance.SetInventory(selectedEntity ? selectedEntity.GetInventory() : null);
-            }
-
-            if (Input.GetMouseButtonDown(1)) {
-                tool.Place();
-            }
-
-            if (Input.GetKeyDown(KeyCode.T)) {
-                if (track != null) {
-                    Client.CreateUnit(mousePos, 0f, Units.train, TeamUtilities.GetLocalTeam());
-                }
-            }
-
-            if (Input.GetKeyDown(KeyCode.H)) {
-                if (track != null) {
-                    Client.CreateUnit(mousePos, 0f, Units.turretTrain, TeamUtilities.GetLocalTeam());
-                }
+                SelectEntity(GetEntityInPos(mousePos));
             }
 
             if (Input.GetKeyDown(KeyCode.N)) {
                 SquadronHandler.CreateSquadron("Squadron " + SquadronHandler.squadrons.Count);
             }
 
-
-            tool.Update();
-
             float delta = Input.mouseScrollDelta.y;
             float change = delta * zoomSpeed * ( delta < 0f ? zoomOutMultiplier : zoomInMultiplier) * Time.deltaTime;
             if (!forceFollow) virtualCamera.m_Lens.OrthographicSize = Mathf.Clamp(virtualCamera.m_Lens.OrthographicSize - change, zoomClampMin, zoomClampMax);
         }
+    }
+
+    private void SelectEntity(Entity entity) {
+        selectedEntity = entity;
+        OnEntitySelected?.Invoke(this, new Entity.EntityArg() { other = selectedEntity });
+        InventoryViewer.Instance.SetInventory(selectedEntity ? selectedEntity.GetInventory() : null);
+    }
+
+    private Entity GetEntityInPos(Vector2 pos) {
+        Collider2D[] allColliders = Physics2D.OverlapCircleAll(pos, 0.05f);
+        Entity selected = null;
+
+        foreach (Collider2D collider in allColliders) if (collider.transform.TryGetComponent(out Entity entity) && (selected == null || entity is Unit)) selected = entity;
+        return selected;
     }
 
     public void AddItems(int amount) {
