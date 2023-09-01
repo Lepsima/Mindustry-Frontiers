@@ -15,7 +15,6 @@ public class ArmAnimator : MonoBehaviour {
     [Space]
 
     public float idleAngle = 0;
-    public float endAngleOffset = 180f;
     public float minBaseAngle = -90, maxBaseAngle = 90;
     public float minTime = 1f, maxTime = 3f;
 
@@ -43,38 +42,58 @@ public class ArmAnimator : MonoBehaviour {
         }
     }
 
-    public ArmState state, previousState;
-    public float progress;
+    ArmState state, previousState;
+    float progress;
+    bool stopOnEnd = false;
 
-    private void Start() {
+    public void StartAnimation() {
         state = IdleState();
         previousState = IdleState();
         progress = 0;
+
+        Pause(false);
+    }
+
+    public void Pause(bool state) {
+        enabled = !state;
+    }
+
+    public void StopAnimation() {
+        SetState(IdleState());
+        stopOnEnd = true;
     }
 
     private void Update() {
         progress = Mathf.Clamp01(progress + Time.deltaTime / state.length);
 
+        (Vector2, Vector2, float) lerpState = state.Lerp(previousState, progress);
+
+        // Set base position and rotation
+        armBase.localPosition = lerpState.Item1;
+        armBase.eulerAngles = new Vector3(0, 0, lerpState.Item3);
+
+        // Set others rotations
+        armMiddle.eulerAngles = new Vector3(0, 0, -lerpState.Item3);
+        armEnd.transform.up = EndArmDirectionTo(lerpState.Item2);
+
         if (progress >= 1) {
-            previousState = state;
-            state = GenerateState();
-            progress = 0;
-        } else {
-            (Vector2, Vector2, float) lerpState = state.Lerp(previousState, progress);
-
-            // Set base position and rotation
-            armBase.localPosition = lerpState.Item1;
-            armBase.eulerAngles = new Vector3(0, 0, lerpState.Item3);
-
-            // Set others rotations
-            armMiddle.eulerAngles = new Vector3(0, 0, -lerpState.Item3);
-            armEnd.transform.up = EndArmDirectionTo(lerpState.Item2);
-            armEnd.eulerAngles += new Vector3(0, 0, endAngleOffset);
+            if (stopOnEnd) {
+                Pause(true);
+                stopOnEnd = false;
+            } else {
+                SetState(GenerateState());
+            }
         }
     }
 
+    public void SetState(ArmState newState) {
+        previousState = state;
+        state = newState;
+        progress = 0f;
+    }
+
     public Vector2 EndArmDirectionTo(Vector3 position) {
-        return (transform.parent.position + position) - armEnd.transform.position;
+        return transform.parent.position + position - armEnd.transform.position;
     }
 
     public ArmState IdleState() {
