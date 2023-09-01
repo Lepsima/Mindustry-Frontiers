@@ -84,6 +84,11 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
         syncValues = 2;
     }
 
+    protected void ShowSprites(bool state) {
+        SpriteRenderer[] allRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+        foreach (SpriteRenderer spriteRenderer in allRenderers) spriteRenderer.enabled = state;
+    }
+
     protected Color CellColor() {
         float hp = GetHealthPercent();
         float sin = Mathf.Sin(5f * Time.time * (2f - hp));

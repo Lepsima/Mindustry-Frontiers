@@ -24,7 +24,7 @@ public class CoreBlock : StorageBlock {
             GameObject instance = Instantiate(animationPrefab, GetPosition(), Quaternion.identity);
 
             // Subscribe to event
-            instance.GetComponentInChildren<CoreLandController>().OnAnimationEnd += OnCoreAnimationEnd;
+            instance.GetComponentInChildren<ThrusterAnimationTrigger>().OnAnimationEnd += OnCoreAnimationEnd;
 
             // Disable loading screen
             PlayerUI.Instance.EnableLoadingScreen(false);
@@ -37,11 +37,6 @@ public class CoreBlock : StorageBlock {
     public void OnCoreAnimationEnd(object sender, System.EventArgs e) {
         ShowSprites(true);
         PlayerManager.Instance.UnFollow(GetPosition());
-    }
-
-    private void ShowSprites(bool state) {
-        SpriteRenderer[] allRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
-        foreach (SpriteRenderer spriteRenderer in allRenderers) spriteRenderer.enabled = state;
     }
 
     public override void OnDestroy() {

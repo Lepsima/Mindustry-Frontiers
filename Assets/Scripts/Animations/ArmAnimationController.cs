@@ -3,19 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
+using Frontiers.Content;
 
-public class ArmAnimationController : MonoBehaviour {
+public class ArmAnimationController {
     public ArmAnimator[] armAnimators;
-    public bool StartAnim = true;
-    private bool prev = false;
 
-    private void Update() {
-        if (prev == StartAnim) return;
-
-        if (StartAnim) StartArmAnimations();
-        else StopArmAnimations();
-
-        prev = StartAnim;
+    public ArmAnimationController(ArmData[] arms) {
+        foreach (ArmData arm in arms) {
+            Transform baseArm;
+            Transform middleArm;
+            Transform endArm;
+        }
     }
 
     public void StartArmAnimations() {

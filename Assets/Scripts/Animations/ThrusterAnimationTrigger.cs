@@ -1,12 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using System;
+using UnityEngine;
 
-[ExecuteInEditMode]
-public class CoreLandController : MonoBehaviour {
-    public GameObject parent;
-
+public class ThrusterAnimationTrigger : MonoBehaviour {
     public ParticleSystem thruster1;
     public ParticleSystem thruster2;
     public ParticleSystem thruster3;
@@ -17,6 +12,14 @@ public class CoreLandController : MonoBehaviour {
     public EventHandler OnAnimationEnd;
 
     public float duration = 4.8f;
+
+    public void SetBlockSize(int size) {
+        float halfSize = size * 0.5f;
+        thruster1.transform.SetLocalPositionAndRotation(new Vector3(halfSize, 0), Quaternion.Euler(0, 0, -90));
+        thruster2.transform.SetLocalPositionAndRotation(new Vector3(0, -halfSize), Quaternion.Euler(0, 0, 180));
+        thruster3.transform.SetLocalPositionAndRotation(new Vector3(-halfSize, 0), Quaternion.Euler(0, 0, 90));
+        thruster4.transform.SetLocalPositionAndRotation(new Vector3(0, halfSize), Quaternion.Euler(0, 0, 0));
+    }
 
     public void OnEnable() {
         thruster1.Play();
@@ -29,7 +32,6 @@ public class CoreLandController : MonoBehaviour {
     public void PlayCrashEffect() {
         crashEffect.Play();
         OnAnimationEnd?.Invoke(this, EventArgs.Empty);
-        //Destroy(parent, 5f);
     }
 
     public void OnDisable() {

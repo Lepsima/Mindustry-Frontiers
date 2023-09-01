@@ -3,26 +3,28 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using Random = UnityEngine.Random;
+using Frontiers.Content;
+using Frontiers.Content.VisualEffects;
 
 public class ArmAnimator : MonoBehaviour {
-    public Vector2 idlePosition, minPosition, maxPosition;
+    Vector2 idlePosition, minPosition, maxPosition;
 
-    [Space]
+    Vector2 minTargetOffset = new(-0.2f, -0.2f);
+    Vector2 maxTargetOffset = new(0.2f, 0.2f);
 
-    public Vector2 minTargetOffset = new(-0.2f, -0.2f);
-    public Vector2 maxTargetOffset = new(0.2f, 0.2f);
+    float idleAngle = 0;
+    float minBaseAngle = -90, maxBaseAngle = 90;
+    float minTime = 1f, maxTime = 3f;
 
-    [Space]
+    Transform armBase;
+    Transform armMiddle;
+    Transform armEnd;
 
-    public float idleAngle = 0;
-    public float minBaseAngle = -90, maxBaseAngle = 90;
-    public float minTime = 1f, maxTime = 3f;
+    ParticleSystem weldParticleSystem;
 
-    [Space]
-
-    public Transform armBase;
-    public Transform armMiddle;
-    public Transform armEnd;
+    ArmState state, previousState;
+    float progress;
+    bool stopOnEnd = false;
 
     public struct ArmState {
         public Vector2 position;
@@ -42,9 +44,12 @@ public class ArmAnimator : MonoBehaviour {
         }
     }
 
-    ArmState state, previousState;
-    float progress;
-    bool stopOnEnd = false;
+    public void Init(ArmData armData) {
+        armBase = transform;
+        armMiddle = armBase.GetChild(0);
+        armEnd = armMiddle.GetChild(0);
+        weldParticleSystem = armEnd.CreateEffect(armData.effect, Vector2.zero, Quaternion.identity, 1f);
+    }
 
     public void StartAnimation() {
         state = IdleState();
