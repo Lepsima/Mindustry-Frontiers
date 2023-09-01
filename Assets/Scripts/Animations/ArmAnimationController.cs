@@ -10,9 +10,21 @@ public class ArmAnimationController {
 
     public ArmAnimationController(ArmData[] arms) {
         foreach (ArmData arm in arms) {
-            Transform baseArm;
-            Transform middleArm;
-            Transform endArm;
+            Transform baseArm = new GameObject("base-arm", typeof(SpriteRenderer), typeof(ArmAnimator)).transform;
+            Transform middleArm = new GameObject("middle-arm", typeof(SpriteRenderer)).transform;
+            Transform endArm = new GameObject("end-arm", typeof(SpriteRenderer)).transform;
+
+            // Set middle arm transform
+            middleArm.parent = baseArm;
+            middleArm.SetLocalPositionAndRotation(arm.middleArmOffset, Quaternion.identity);
+
+            // Set end arm transform
+            endArm.parent = middleArm;
+            endArm.SetLocalPositionAndRotation(arm.middleArmOffset, Quaternion.identity);
+
+            // Instantiate animator component
+            ArmAnimator armAnimator = baseArm.GetComponent<ArmAnimator>();
+            armAnimator.Init(arm);
         }
     }
 

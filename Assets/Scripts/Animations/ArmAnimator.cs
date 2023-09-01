@@ -7,14 +7,7 @@ using Frontiers.Content;
 using Frontiers.Content.VisualEffects;
 
 public class ArmAnimator : MonoBehaviour {
-    Vector2 idlePosition, minPosition, maxPosition;
-
-    Vector2 minTargetOffset = new(-0.2f, -0.2f);
-    Vector2 maxTargetOffset = new(0.2f, 0.2f);
-
-    float idleAngle = 0;
-    float minBaseAngle = -90, maxBaseAngle = 90;
-    float minTime = 1f, maxTime = 3f;
+    ArmData armData;
 
     Transform armBase;
     Transform armMiddle;
@@ -39,15 +32,18 @@ public class ArmAnimator : MonoBehaviour {
             this.length = length;
         }
 
-        public (Vector2, Vector2, float) Lerp(ArmState other, float progress) {
+        public readonly (Vector2, Vector2, float) Lerp(ArmState other, float progress) {
             return (Vector2.Lerp(other.position, position, progress), Vector2.Lerp(other.endTarget, endTarget, progress), Mathf.Lerp(other.angle, angle, progress));
         }
     }
 
     public void Init(ArmData armData) {
+        this.armData = armData;
+
         armBase = transform;
         armMiddle = armBase.GetChild(0);
         armEnd = armMiddle.GetChild(0);
+
         weldParticleSystem = armEnd.CreateEffect(armData.effect, Vector2.zero, Quaternion.identity, 1f);
     }
 
@@ -56,15 +52,13 @@ public class ArmAnimator : MonoBehaviour {
         previousState = IdleState();
         progress = 0;
 
-        Pause(false);
-    }
-
-    public void Pause(bool state) {
-        enabled = !state;
+        enabled = true;
+        weldParticleSystem.Play();
     }
 
     public void StopAnimation() {
         SetState(IdleState());
+        weldParticleSystem.Stop();
         stopOnEnd = true;
     }
 
@@ -82,12 +76,8 @@ public class ArmAnimator : MonoBehaviour {
         armEnd.transform.up = EndArmDirectionTo(lerpState.Item2);
 
         if (progress >= 1) {
-            if (stopOnEnd) {
-                Pause(true);
-                stopOnEnd = false;
-            } else {
-                SetState(GenerateState());
-            }
+            if (stopOnEnd) enabled = stopOnEnd = false;
+            else SetState(GenerateState());
         }
     }
 
@@ -102,12 +92,17 @@ public class ArmAnimator : MonoBehaviour {
     }
 
     public ArmState IdleState() {
-        return new ArmState(idlePosition, transform.parent.position, idleAngle, 1f);
+        return new ArmState(armData.idlePosition, transform.parent.position, armData.idleAngle, 1f);
     }
 
     public ArmState GenerateState() {
-        Vector2 position = Vector2.Lerp(minPosition, maxPosition, Random.Range(0f, 1f));
-        Vector2 target = new(Random.Range(minTargetOffset.x, maxTargetOffset.x), Random.Range(minTargetOffset.y, maxTargetOffset.y));
-        return new ArmState(position, target, Random.Range(minBaseAngle, maxBaseAngle), Random.Range(minTime, maxTime));
+        // The position the arm should move at
+        Vector2 position = Vector2.Lerp(armData.minPosition, armData.maxPosition, Random.Range(0f, 1f));
+
+        // The position the welder should look at
+        Vector2 target = new(Random.Range(armData.minTargetOffset.x, armData.maxTargetOffset.x), Random.Range(armData.minTargetOffset.y, armData.maxTargetOffset.y));
+        
+        // Generate new state
+        return new ArmState(position, target, Random.Range(armData.minBaseAngle, armData.maxBaseAngle), Random.Range(armData.minTime, armData.maxTime));
     }
 }
