@@ -946,6 +946,8 @@ namespace Frontiers.Content {
             // Drills
             mechanicalDrill, pneumaticDrill,
 
+            blockAssembler,
+
             // Fluid distribution
             lowPressurePipe, highPressurePipe, liquidContainer, fluidFilter, fluidExhaust,
             
@@ -1428,6 +1430,51 @@ namespace Frontiers.Content {
                 fixedSpace = true,
 
                 loopSound = Sounds.smelter,
+            };
+
+            blockAssembler = new AssemblerBlockType("assembler", typeof(AssemblerBlock), 1) {
+                buildCost = ItemStack.With(Items.copper, 24),
+
+                health = 600,
+                size = 2,
+
+                maxBuildSize = 1,
+                minBuildSize = 1,
+
+                arms = new ArmData[2] {
+                    new ArmData("assembler") {
+                        idlePosition = new Vector2(0.34375f, 0),
+                        minPosition = new Vector2(0.34375f, -0.34375f),
+                        maxPosition = new Vector2(0.34375f, 0.34375f),
+
+                        middleArmOffset = new Vector2(0.4f, 0f),
+                        maxTargetOffset = new Vector2(0.25f, 0.25f),
+
+                        idleAngle = 0f,
+                        minBaseAngle = -90f,
+                        maxBaseAngle = 90f,
+                        minTime = 1.5f,
+                        maxTime = 3.5f,
+
+                        effect = Effects.weldSparks
+                    },
+                    new ArmData("assembler") {
+                        idlePosition = new Vector2(-0.34375f, 0),
+                        minPosition = new Vector2(-0.34375f, -0.34375f),
+                        maxPosition = new Vector2(-0.34375f, 0.34375f),
+
+                        middleArmOffset = new Vector2(0.4f, 0f),
+                        maxTargetOffset = new Vector2(0.25f, 0.25f),
+
+                        idleAngle = 180f,
+                        minBaseAngle = 90f,
+                        maxBaseAngle = 270f,
+                        minTime = 1.5f,
+                        maxTime = 3.5f,
+
+                        effect = Effects.weldSparks
+                    }
+                },
             };
         }
     }

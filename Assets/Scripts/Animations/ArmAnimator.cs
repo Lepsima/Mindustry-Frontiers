@@ -100,7 +100,7 @@ public class ArmAnimator : MonoBehaviour {
         Vector2 position = Vector2.Lerp(armData.minPosition, armData.maxPosition, Random.Range(0f, 1f));
 
         // The position the welder should look at
-        Vector2 target = new(Random.Range(armData.minTargetOffset.x, armData.maxTargetOffset.x), Random.Range(armData.minTargetOffset.y, armData.maxTargetOffset.y));
+        Vector2 target = new(Random.Range(-armData.maxTargetOffset.x, armData.maxTargetOffset.x), Random.Range(-armData.maxTargetOffset.y, armData.maxTargetOffset.y));
         
         // Generate new state
         return new ArmState(position, target, Random.Range(armData.minBaseAngle, armData.maxBaseAngle), Random.Range(armData.minTime, armData.maxTime));

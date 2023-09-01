@@ -22,8 +22,14 @@ namespace Frontiers.Content {
         public Sprite baseSprite, middleSprite, endSprite;
         public Effect effect = Effects.weldSparks;
 
-        public Vector2 idlePosition, middleArmOffset, minPosition, maxPosition, minTargetOffset, maxTargetOffset;
+        public Vector2 idlePosition, middleArmOffset, minPosition, maxPosition, maxTargetOffset;
         public float idleAngle, minBaseAngle, maxBaseAngle, minTime, maxTime;
+
+        public ArmData(string name) {
+            baseSprite = AssetLoader.GetSprite(name + "-arm-base");
+            middleSprite = AssetLoader.GetSprite(name + "-arm-middle");
+            endSprite = AssetLoader.GetSprite(name + "-arm-end");
+        }
     }
 }
 
@@ -36,7 +42,7 @@ public class AssemblerBlock : Block {
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
         HandleLandAnimation();
-        armAnimationController = new(Type.arms);
+        armAnimationController = new(transform, Type.arms);
     }
 
     private void HandleLandAnimation() {
@@ -66,6 +72,5 @@ public class AssemblerBlock : Block {
 
     public void OnAnimationEnd(object sender, System.EventArgs e) {
         ShowSprites(true);
-        PlayerManager.Instance.UnFollow(GetPosition());
     }
 }
