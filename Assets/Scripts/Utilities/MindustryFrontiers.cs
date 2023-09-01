@@ -812,6 +812,15 @@ namespace Frontiers.Content {
         }
     }
 
+    public class BridgeBlockType : DistributionBlockType {
+        public Sprite bridgeSprite;
+        public int connectionRange = 4; // 3 empty tile + the other's block tile
+
+        public BridgeBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
+            bridgeSprite = AssetLoader.GetSprite(name + "-bridge");
+        }
+    }
+
     public class SorterBlockType : DistributionBlockType {
         public SorterBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
