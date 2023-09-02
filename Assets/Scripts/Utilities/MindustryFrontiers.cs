@@ -1489,6 +1489,7 @@ namespace Frontiers.Content {
         public float size = 1.5f;
         public float maxVelocity = 2f, rotationSpeed = 90f;
 
+        public float engineSize = 0.2f, engineOffset = -0.35f;
         public float itemPickupDistance = 3f, buildSpeedMultiplier = 1f;
 
         public float range = 10f, searchRange = 15f, fov = 95;
@@ -1508,18 +1509,6 @@ namespace Frontiers.Content {
             canGetOnFire = true;
             maximumFires = 2;
         }
-
-        public virtual void Rotate(Unit unit, Vector2 position) {
-
-        }
-
-        public virtual void Move(Unit unit, Vector2 position) {
-
-        }
-
-        public virtual void UpdateBehaviour(Unit unit, Vector2 position) {
-
-        }
     }
 
     public class MechUnitType : UnitType {
@@ -1529,52 +1518,6 @@ namespace Frontiers.Content {
         public MechUnitType(string name, Type type, int tier = 1) : base(name, type, tier) {
             legSprite = AssetLoader.GetSprite(name + "-leg");
             baseSprite = AssetLoader.GetSprite(name + "-base");
-        }
-
-        public override void Rotate(Unit unit, Vector2 position) {
-            if (!unit.CanRotate()) return;
-
-            // Get the desired rotation of the base
-            Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, (position - unit.GetPosition()).normalized);
-            desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
-
-            // Rotate the base transform
-            float speed = rotationSpeed * Time.fixedDeltaTime;
-            unit.transform.rotation = Quaternion.RotateTowards(unit.transform.rotation, desiredRotation, speed);
-
-            // Quirky quaternion stuff to make the unit rotate slowly -DO NOT TOUCH-
-            desiredRotation = Quaternion.LookRotation(Vector3.forward, (unit.GetTargetPosition() - unit.GetPosition()).normalized);
-            desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
-
-            speed = turretRotationSpeed * Time.fixedDeltaTime;
-            ((MechUnit)unit).RotateTurretTowards(desiredRotation, speed);
-        }
-
-        public override void Move(Unit unit, Vector2 position) {
-            if (!unit.CanMove()) {
-                unit.SetVelocity(Vector2.zero);
-                return;
-            }
-
-            // Get the direction
-            Vector2 targetDirection = (position - unit.GetPosition()).normalized;
-
-            float similarity = unit.GetSimilarity(unit.transform.up, targetDirection);
-            float enginePower = unit.GetEnginePower();
-
-            if (similarity < 0.9f) unit.SetVelocity(Vector2.zero);
-            else unit.SetVelocity(enginePower * maxVelocity * (position - (Vector2)unit.transform.position));
-        }
-
-        public override void UpdateBehaviour(Unit unit, Vector2 position) {
-            // Consume fuel based on fuelConsumption x enginePower
-            unit.ConsumeFuel(fuelConsumption * unit.GetEnginePower() * Time.fixedDeltaTime);
-
-            // + TerrainAvoidance.GetDirection(unit, unit.transform)
-            Vector2 direction = ((MechUnit)unit).GetDirection();
-
-            Move(unit, direction);      
-            Rotate(unit, /*unit.GetTargetPosition()*/ direction);        
         }
     }
 
@@ -1594,60 +1537,6 @@ namespace Frontiers.Content {
         public AircraftUnitType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
         }
-
-        public override void Rotate(Unit unit, Vector2 position) {
-            if (!unit.CanRotate()) return;
-
-            // Power is reduced if: g-forces are high, is close to the target or if the behavoiur is fleeing
-            float rotationPower = unit.GetRotationPower();
-
-            // Quirky quaternion stuff to make the unit rotate slowly -DO NOT TOUCH-
-            Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, (position - unit.GetPosition()).normalized);
-            desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
-
-            float speed = rotationSpeed * rotationPower * Time.fixedDeltaTime;
-            float prevRotation = unit.transform.eulerAngles.z;
-
-            unit.transform.rotation = Quaternion.RotateTowards(unit.transform.rotation, desiredRotation, speed);
-            float gForce = (unit.transform.eulerAngles.z - prevRotation) * Time.fixedDeltaTime * 10f;
-            unit.Tilt(gForce * bankAmount);
-        }
-
-        public override void Move(Unit unit, Vector2 position) {
-            if (!unit.CanMove()) return;
-
-            // A value from 0 to 1 that indicates the power output percent of the engines
-            float enginePower = unit.GetEnginePower();
-
-            // Get the direction
-            Vector2 direction = unit.GetDirection(position);
-
-            if (unit.Mode == Unit.UnitMode.Attack && !unit.IsFleeing()) {
-                Vector2 targetDirection = (position - unit.GetPosition()).normalized;
-
-                // Get acceleration and drag values based on direction
-                float similarity = unit.GetSimilarity(unit.transform.up, targetDirection);
-                enginePower *= Mathf.Clamp01(similarity * 2f);
-            }
-            
-            // Accelerate
-            unit.Accelerate(enginePower * force * direction.normalized);
-        }
-
-        public virtual void WreckBehaviour(Unit unit) {
-            
-        }
-
-        public override void UpdateBehaviour(Unit unit, Vector2 position) {
-            if (unit.IsWreck()) {
-                WreckBehaviour(unit);
-            } else {
-                // Consume fuel based on fuelConsumption x enginePower
-                unit.ConsumeFuel(fuelConsumption * unit.GetEnginePower() * Time.fixedDeltaTime);
-                Move(unit, position);
-                Rotate(unit, position);
-            }
-        }
     }
 
     public class CopterUnitType : AircraftUnitType {
@@ -1659,12 +1548,6 @@ namespace Frontiers.Content {
 
         public CopterUnitType(string name, Type type, int tier = 1) : base(name, type, tier) {
             useAerodynamics = hasDragTrails = false; // Copters don't do that
-        }
-
-        public override void WreckBehaviour(Unit unit) {
-            CopterUnit copter = (CopterUnit)unit;
-            copter.wreckSpinVelocity = Mathf.Clamp(wreckSpinAccel * Time.deltaTime + copter.wreckSpinVelocity, 0, wreckSpinMax);
-            copter.transform.eulerAngles += new Vector3(0, 0, copter.wreckSpinVelocity * Time.deltaTime);
         }
     }
 
@@ -1720,7 +1603,7 @@ namespace Frontiers.Content {
                 fuelConsumption = 1.25f,
                 fuelRefillRate = 8.25f,
 
-                force = 500f,
+                force = 350f,
                 emptyMass = 10f,
                 itemMass = 3f,
             };

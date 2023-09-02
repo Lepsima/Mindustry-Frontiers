@@ -93,6 +93,52 @@ public class MechUnit : Unit {
         leftLegSpriteRenderer = leftLegTransform.GetComponent<SpriteRenderer>();
     }
 
+    public override void UpdateBehaviour(Vector2 position) {
+        // Consume fuel based on fuelConsumption x enginePower
+        ConsumeFuel(fuelConsumption * GetEnginePower() * Time.fixedDeltaTime);
+
+        // + TerrainAvoidance.GetDirection(unit, unit.transform)
+        Vector2 direction = GetDirection();
+
+        Move(direction);
+        Rotate(/*unit.GetTargetPosition()*/ direction);
+
+        void Move(Vector2 position) {
+            if (!CanMove()) {
+                SetVelocity(Vector2.zero);
+                return;
+            }
+
+            // Get the direction
+            Vector2 targetDirection = (position - GetPosition()).normalized;
+
+            float similarity = GetSimilarity(transform.up, targetDirection);
+            float enginePower = GetEnginePower();
+
+            if (similarity < 0.9f) SetVelocity(Vector2.zero);
+            else SetVelocity(enginePower * maxVelocity * (position - (Vector2)transform.position));
+        }
+
+        void Rotate(Vector2 position) {
+            if (CanRotate()) return;
+
+            // Get the desired rotation of the base
+            Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, (position - GetPosition()).normalized);
+            desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
+
+            // Rotate the base transform
+            float speed = rotationSpeed * Time.fixedDeltaTime;
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRotation, speed);
+
+            // Quirky quaternion stuff to make the unit rotate slowly -DO NOT TOUCH-
+            desiredRotation = Quaternion.LookRotation(Vector3.forward, (GetTargetPosition() - GetPosition()).normalized);
+            desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
+
+            speed = Type.turretRotationSpeed * Time.fixedDeltaTime;
+            RotateTurretTowards(desiredRotation, speed);
+        }
+    }
+
     protected override void SetSprites() {
         base.SetSprites();
 

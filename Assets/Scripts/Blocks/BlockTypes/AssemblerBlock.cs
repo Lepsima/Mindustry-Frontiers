@@ -54,7 +54,7 @@ public class AssemblerBlock : Block {
         GameObject instance = Instantiate(animationPrefab, GetPosition(), Quaternion.identity);
 
         // Destroy the animation instance after a certain time
-        Destroy(instance, 10f);
+        Destroy(instance, 6f);
 
         // Get thruster animators
         ThrusterAnimationTrigger mainTrigger = instance.transform.Find("main-block/engine-trigger").GetComponent<ThrusterAnimationTrigger>();

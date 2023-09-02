@@ -197,7 +197,7 @@ public abstract class Unit : Entity, IArmed {
     protected virtual void Update() {
         teamSpriteRenderer.color = CellColor();
         if (shadow) shadow.SetDistance(height);
-        FloorTile = GetGroundTile(); 
+        FloorTile = GetGroundTile();
 
         if (deactivateWeaponsTimer <= Time.time) {
             if (deactivateWeaponsTimer != 0f) {
@@ -431,6 +431,10 @@ public abstract class Unit : Entity, IArmed {
 
     public abstract void HandleHeight();
 
+    public virtual void UpdateBehaviour(Vector2 position) {
+
+    }
+
     public void HandleBehaviour() {
         _move = true;
         _rotate = true;
@@ -459,7 +463,7 @@ public abstract class Unit : Entity, IArmed {
 
         if (!Target) SetWeaponsActive(false);
 
-        Type.UpdateBehaviour(this, _position);
+        UpdateBehaviour(_position);
         HandleHeight();
     }
 

@@ -130,6 +130,11 @@ public class CopterUnit : AircraftUnit {
         UpdateRotors(power, Time.deltaTime);
     }
 
+    protected override void WreckBehaviour() {
+        wreckSpinVelocity = Mathf.Clamp(Type.wreckSpinAccel * Time.deltaTime + wreckSpinVelocity, 0, Type.wreckSpinMax);
+        transform.eulerAngles += new Vector3(0, 0, wreckSpinVelocity * Time.deltaTime);
+    }
+
     public void UpdateRotors(float power, float deltaTime) {
         power = (power - 0.5f) * 2f; // Allow negative values
         float output = 0f;

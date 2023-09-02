@@ -11,10 +11,16 @@ public class AircraftUnit : Unit {
 
     TrailRenderer rTrailRenderer;
     TrailRenderer lTrailRenderer;
+    Transform engineTransform;
     [SerializeField] ParticleSystem waterDeviationEffect;
 
     protected float targetHeight, targetVelocity, liftVelocity, takeoffAccel, lowestEnginePower;
     protected bool isFleeing, isWreck;
+    protected float angularSpeed;
+
+    float targetEngineLength = 0;
+    float engineLength = 0;
+    float engineOscillationLength = 0;
 
     #region - Upgradable Stats -
 
@@ -53,6 +59,17 @@ public class AircraftUnit : Unit {
     protected override void Update() {
         base.Update();
         SetDragTrailLenght(gForce * 0.3f);
+
+        // Update length
+        float diff = targetEngineLength - (angularSpeed / rotationSpeed * 2) - engineLength;
+        float change = Time.deltaTime * Mathf.Clamp(diff, -7.5f, 7.5f);
+        engineLength += change;
+
+        // Get oscillation
+        engineOscillationLength = Mathf.Sin(Time.time * 15f) * 0.1f * engineLength;
+
+        // Set scale
+        engineTransform.localScale = new Vector2(Type.engineSize, Type.engineSize * (engineLength + engineOscillationLength));
     }
 
     public override void HandlePhysics() {
@@ -140,6 +157,9 @@ public class AircraftUnit : Unit {
             lTrailRenderer = Instantiate(prefab, transform).GetComponent<TrailRenderer>();
             lTrailRenderer.transform.localPosition = leftOffset;
         }
+
+        engineTransform = Instantiate(AssetLoader.GetPrefab("UnitEnginePrefab"), transform).transform;
+        engineTransform.SetLocalPositionAndRotation(new Vector3(0f, Type.engineOffset, 0), Quaternion.identity);
     }
 
     public override void Kill(bool destroyed) {
@@ -257,6 +277,61 @@ public class AircraftUnit : Unit {
     #endregion
 
     #region - Behaviour -
+    public override void UpdateBehaviour(Vector2 position) {
+        if (IsWreck()) {
+            WreckBehaviour();
+        } else {
+            // Consume fuel based on fuelConsumption x enginePower
+            ConsumeFuel(fuelConsumption * GetEnginePower() * Time.fixedDeltaTime);
+            Move(position);
+            Rotate(position);
+        }
+
+        void Move(Vector2 position) {
+            if (!CanMove()) return;
+
+            // A value from 0 to 1 that indicates the power output percent of the engines
+            float enginePower = GetEnginePower();
+
+            // Get the direction
+            Vector2 direction = GetDirection(position);
+
+            if (Mode == UnitMode.Attack && !IsFleeing()) {
+                Vector2 targetDirection = (position - GetPosition()).normalized;
+
+                // Get acceleration and drag values based on direction
+                float similarity = GetSimilarity(transform.up, targetDirection);
+                enginePower *= Mathf.Clamp01(similarity * 2f);
+            }
+
+            // Accelerate
+            targetEngineLength = Mathf.Clamp((enginePower - lowestEnginePower) * 20f, 1f, 3.5f);
+            Accelerate(enginePower * force * direction.normalized);
+        }
+
+        void Rotate(Vector2 position) {
+            if (!CanRotate()) return;
+
+            // Power is reduced if: g-forces are high, is close to the target or if the behavoiur is fleeing
+            float rotationPower = GetRotationPower();
+
+            // Quirky quaternion stuff to make the unit rotate slowly -DO NOT TOUCH-
+            Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, (position - GetPosition()).normalized);
+            desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
+
+            float speed = rotationSpeed * rotationPower * Time.fixedDeltaTime;
+            Quaternion prev = transform.localRotation;
+
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRotation, speed);
+
+            angularSpeed = Mathf.DeltaAngle(0, (Quaternion.Inverse(prev) * transform.localRotation).eulerAngles.z) / Time.fixedDeltaTime;
+            Tilt(angularSpeed / rotationSpeed * Type.bankAmount);
+        }
+    }
+
+    protected virtual void WreckBehaviour() {
+
+    }
 
     public void Flee(bool value) {
         isFleeing = value;
