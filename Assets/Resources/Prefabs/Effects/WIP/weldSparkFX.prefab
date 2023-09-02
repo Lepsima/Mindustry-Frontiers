@@ -50,7 +50,7 @@ ParticleSystem:
   emitterVelocityMode: 1
   looping: 1
   prewarm: 0
-  playOnAwake: 1
+  playOnAwake: 0
   useUnscaledTime: 0
   autoRandomSeed: 1
   startDelay:
@@ -4798,7 +4798,7 @@ ParticleSystemRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -461205837
   m_SortingLayer: 2
-  m_SortingOrder: 8
+  m_SortingOrder: 5
   m_RenderMode: 5
   m_MeshDistribution: 0
   m_SortMode: 0

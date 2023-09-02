@@ -9,12 +9,13 @@ using Frontiers.Content.VisualEffects;
 namespace Frontiers.Content {
     public class AssemblerBlockType : BlockType {
         public int minBuildSize = 1, maxBuildSize = 1;
-        public Sprite thrusterSprite;
+        public Sprite thrusterSprite, fairingSprite;
 
         public ArmData[] arms;
 
         public AssemblerBlockType(string name, Type type, int tier) : base(name, type, tier) {
             thrusterSprite = AssetLoader.GetSprite(name + "-thruster");
+            fairingSprite = AssetLoader.GetSprite(name + "-fairing");
         }
     }
 
@@ -42,7 +43,6 @@ public class AssemblerBlock : Block {
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
         HandleLandAnimation();
-        armAnimationController = new(transform, Type.arms);
     }
 
     private void HandleLandAnimation() {
@@ -53,6 +53,9 @@ public class AssemblerBlock : Block {
         GameObject animationPrefab = AssetLoader.GetPrefab("AssemblerLandAnimationPrefab");
         GameObject instance = Instantiate(animationPrefab, GetPosition(), Quaternion.identity);
 
+        // Destroy the animation instance after a certain time
+        Destroy(instance, 10f);
+
         // Get thruster animators
         ThrusterAnimationTrigger mainTrigger = instance.transform.Find("main-block/engine-trigger").GetComponent<ThrusterAnimationTrigger>();
         ThrusterAnimationTrigger fairingTrigger = instance.transform.Find("main-block/fairing-trigger").GetComponent<ThrusterAnimationTrigger>();
@@ -62,15 +65,17 @@ public class AssemblerBlock : Block {
         fairingTrigger.SetBlockSize((int)size);
 
         // Set sprites
-        instance.transform.Find("main-block").GetComponent<SpriteRenderer>().sprite = Type.sprite;
-        instance.transform.Find("main-block/block-fairing").GetComponent<SpriteRenderer>().sprite = Type.topSprite;
-        instance.transform.Find("main-block/block-thruster").GetComponent<SpriteRenderer>().sprite = Type.thrusterSprite;
+        instance.transform.Find("main-block").GetComponent<SpriteRenderer>().sprite = Type.sprite;       
+        instance.transform.Find("main-block/block-fairing").GetComponent<SpriteRenderer>().sprite = Type.fairingSprite;
+        instance.transform.Find("main-block/block-thruster").GetComponent<SpriteRenderer>().sprite = Type.thrusterSprite; 
 
         // Subscribe to event
         fairingTrigger.OnAnimationEnd += OnAnimationEnd;
     }
 
-    public void OnAnimationEnd(object sender, System.EventArgs e) {
+    public void OnAnimationEnd(object sender, EventArgs e) {
         ShowSprites(true);
+        armAnimationController = new(transform, Type.arms);
+        armAnimationController.StartArmAnimations();
     }
 }

@@ -62,6 +62,12 @@ public class ArmAnimator : MonoBehaviour {
         stopOnEnd = true;
     }
 
+    private void Awake() {
+        enabled = false;
+        stopOnEnd = false;
+        progress = 0;
+    }
+
     private void Update() {
         progress = Mathf.Clamp01(progress + Time.deltaTime / state.length);
 
