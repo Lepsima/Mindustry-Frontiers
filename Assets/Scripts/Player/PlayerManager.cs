@@ -50,6 +50,7 @@ public class PlayerManager : MonoBehaviour {
         Follow(playerTransform);
 
         PlayerUI.Instance.EnableLoadingScreen(true);
+        SquadronHandler.CreateSquadrons();
     }
 
     public bool IsFollowingPlayer() {

@@ -53,9 +53,6 @@ public class AssemblerBlock : Block {
         GameObject animationPrefab = AssetLoader.GetPrefab("AssemblerLandAnimationPrefab");
         GameObject instance = Instantiate(animationPrefab, GetPosition(), Quaternion.identity);
 
-        // Destroy the animation instance after a certain time
-        Destroy(instance, 6f);
-
         // Get thruster animators
         ThrusterAnimationTrigger mainTrigger = instance.transform.Find("main-block/engine-trigger").GetComponent<ThrusterAnimationTrigger>();
         ThrusterAnimationTrigger fairingTrigger = instance.transform.Find("main-block/fairing-trigger").GetComponent<ThrusterAnimationTrigger>();
@@ -74,6 +71,7 @@ public class AssemblerBlock : Block {
     }
 
     public void OnAnimationEnd(object sender, EventArgs e) {
+        Destroy(((ThrusterAnimationTrigger)sender).transform.root.gameObject);
         ShowSprites(true);
         armAnimationController = new(transform, Type.arms);
         armAnimationController.StartArmAnimations();

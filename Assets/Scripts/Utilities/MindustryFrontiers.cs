@@ -1489,7 +1489,6 @@ namespace Frontiers.Content {
         public float size = 1.5f;
         public float maxVelocity = 2f, rotationSpeed = 90f;
 
-        public float engineSize = 0.2f, engineOffset = -0.35f;
         public float itemPickupDistance = 3f, buildSpeedMultiplier = 1f;
 
         public float range = 10f, searchRange = 15f, fov = 95;
@@ -1525,6 +1524,8 @@ namespace Frontiers.Content {
         public float drag = 1f, force = 500f;
         public float bankAmount = 25f, bankSpeed = 5f;
         public bool useAerodynamics = true, hasDragTrails = true;
+
+        public float engineSize = 0.2f, engineOffset = -0.35f, engineMaxLength = 3.5f;
 
         public float takeoffTime = 3f, takeoffHeight = 0.5f; // Takeoff height is measured in a percentage of ground height
         public float maxLiftVelocity = 3f;
@@ -1592,7 +1593,7 @@ namespace Frontiers.Content {
                 drag = 0.1f,
 
                 rotationSpeed = 160f,
-                bankAmount = 30f,
+                bankAmount = 20f,
 
                 range = 10f,
                 searchRange = 15f,
@@ -1623,8 +1624,12 @@ namespace Frontiers.Content {
                 itemCapacity = 25,
                 drag = 0.2f,
 
+                engineSize = 0.2f,
+                engineOffset = -0.3f,
+                engineMaxLength = 3f,
+                
                 rotationSpeed = 100f,
-                bankAmount = 40f,
+                bankAmount = 25f,
 
                 range = 3f,
                 searchRange = 20f,
@@ -1654,6 +1659,10 @@ namespace Frontiers.Content {
                 maxVelocity = 7.5f,
                 itemCapacity = 50,
                 drag = 2f,
+
+                engineSize = 0.2f,
+                engineOffset = -0.325f,
+                engineMaxLength = 1f,
 
                 rotationSpeed = 70f,
                 bankAmount = 20f,
@@ -1731,6 +1740,8 @@ namespace Frontiers.Content {
                 itemCapacity = 35,
                 drag = 3f,
 
+                engineSize = 0f,
+
                 rotationSpeed = 80f,
                 bankAmount = 80f,
 
@@ -1774,6 +1785,8 @@ namespace Frontiers.Content {
                 maxVelocity = 9f,
                 itemCapacity = 50,
                 drag = 3.5f,
+
+                engineSize = 0f,
 
                 rotationSpeed = 60f,
                 bankAmount = 0f,

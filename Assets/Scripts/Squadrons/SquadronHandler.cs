@@ -68,8 +68,16 @@ namespace Frontiers.Squadrons {
     }
 
     public static class SquadronHandler {
+        public static string[] squadronNames = new string[] { "Red", "Blue", "Black", "Gold", "Silver", "Razor", "Echo"};
+
         public static List<Unit> nonMemberUnits = new();
         public static List<Squadron> squadrons = new();
+
+        public static void CreateSquadrons() {
+            for (int i = 0; i < squadronNames.Length; i++) {
+                CreateSquadron(squadronNames[i]);
+            }
+        }
 
         public static void RefreshNonMemberList() {
             nonMemberUnits = new();
