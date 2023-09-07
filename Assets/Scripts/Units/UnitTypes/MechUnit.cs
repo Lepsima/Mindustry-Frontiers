@@ -41,14 +41,14 @@ public class MechUnit : Unit {
     }
 
     public override void MoveTo(Vector2 position) {
-        Vector2 lastPosition = transform.position;
+        //Vector2 lastPosition = transform.position;
 
         Vector2 direction = position - (Vector2)transform.position;
-        transform.position = MapRaycaster.Solid(transform.position, direction, direction.magnitude);
+        transform.position = MapRaycaster.Position(transform.position, direction, direction.magnitude);
 
-        if (lastPosition != (Vector2)transform.position) {
-            _avoidDir = TerrainAvoidance.ClosestDir(transform.position, _avoidDir, GetBehaviourPosition() - (Vector2)transform.position, 12, 4);
-        }
+        //if (lastPosition != (Vector2)transform.position) {
+        //    _avoidDir = TerrainAvoidance.ClosestDir(transform.position, _avoidDir, GetBehaviourPosition() - (Vector2)transform.position, 12, 4);
+        //}
     }
 
     public Vector2 GetDirection() {
@@ -98,29 +98,27 @@ public class MechUnit : Unit {
         ConsumeFuel(fuelConsumption * GetEnginePower() * Time.fixedDeltaTime);
 
         // + TerrainAvoidance.GetDirection(unit, unit.transform)
-        Vector2 direction = GetDirection();
+        //Vector2 direction = GetDirection();
+        Vector2 direction = TerrainAvoidance.From(transform.position, GetBehaviourPosition());
 
         Move(direction);
-        Rotate(/*unit.GetTargetPosition()*/ direction);
+        Rotate(direction);
 
-        void Move(Vector2 position) {
+        void Move(Vector2 direction) {
             if (!CanMove()) {
                 SetVelocity(Vector2.zero);
                 return;
             }
 
-            // Get the direction
-            Vector2 targetDirection = (position - GetPosition()).normalized;
-
-            float similarity = GetSimilarity(transform.up, targetDirection);
+            float similarity = GetSimilarity(transform.up, direction);
             float enginePower = GetEnginePower();
 
             if (similarity < 0.9f) SetVelocity(Vector2.zero);
-            else SetVelocity(enginePower * maxVelocity * (position - (Vector2)transform.position));
+            else SetVelocity(enginePower * maxVelocity * direction);
         }
 
         void Rotate(Vector2 position) {
-            if (CanRotate()) return;
+            if (!CanRotate()) return;
 
             // Get the desired rotation of the base
             Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, (position - GetPosition()).normalized);
@@ -131,7 +129,7 @@ public class MechUnit : Unit {
             transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRotation, speed);
 
             // Quirky quaternion stuff to make the unit rotate slowly -DO NOT TOUCH-
-            desiredRotation = Quaternion.LookRotation(Vector3.forward, (GetTargetPosition() - GetPosition()).normalized);
+            desiredRotation = Quaternion.LookRotation(Vector3.forward, (position - GetPosition()).normalized);
             desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
 
             speed = Type.turretRotationSpeed * Time.fixedDeltaTime;

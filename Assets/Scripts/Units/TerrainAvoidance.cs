@@ -67,7 +67,7 @@ public class TerrainAvoidance {
 
         for (int i = 0; i < sectionRays; i++) {
             float rot = rotation + i * degOffset;
-            float value = MapRaycaster.Solid(position, Mathf.Deg2Rad * rot, collisionDistance + 5f);
+            float value = MapRaycaster.Distance(position, Mathf.Deg2Rad * rot, collisionDistance + 5f);
 
             Debug.DrawLine(position, new Vector2(Mathf.Cos(Mathf.Deg2Rad * rot), Mathf.Sin(Mathf.Deg2Rad * rot)) * value + position, value > collisionDistance ? Color.green : Color.red);
 
@@ -80,7 +80,7 @@ public class TerrainAvoidance {
             }
 
             rot = rotation - degOffset - i * degOffset;
-            value = MapRaycaster.Solid(position, Mathf.Deg2Rad * rot, collisionDistance + 5f);
+            value = MapRaycaster.Distance(position, Mathf.Deg2Rad * rot, collisionDistance + 5f);
 
             Debug.DrawLine(position, new Vector2(Mathf.Cos(Mathf.Deg2Rad * rot), Mathf.Sin(Mathf.Deg2Rad * rot)) * value + position, value > collisionDistance ? Color.green : Color.red);
 
@@ -96,6 +96,33 @@ public class TerrainAvoidance {
         return rotation;
     }
 
+    public static Vector2 From(Vector2 position, Vector2 target) {
+        // Fixed advoid distance
+        float advoidDistance = 4f;
+
+        // Get direction vector and angle
+        Vector2 direction = (target - position).normalized;
+
+        // If can walk straight, dont try to advoid anything
+        if (!MapRaycaster.Collides(position, direction, advoidDistance)) return direction;
+
+        // All the raycast angles that
+        float[] angles = new float[] { 30f, -30f, 45f, -45f };
+
+        for (int i = 0; i < angles.Length; i++) {
+            // Get angle and direction
+            float angle = angles[i];
+            Vector2 offsetDirection = Quaternion.Euler(0, 0, angle) * direction;
+            Debug.DrawRay(position, offsetDirection);
+
+            // If this angle has no collision, return it's direction
+            if (!MapRaycaster.Collides(position, offsetDirection, advoidDistance)) return offsetDirection;
+        }
+
+        // If all angles collide, rotate slightly to the last rotation in the array
+        return Quaternion.Euler(0, 0, angles[^1]) * direction;
+    }
+
     public static Vector2 ClosestRot2(Vector2 position, Vector2 avoidDir, Vector2 dir, int rays, float collisionDistance) {
         float rotation = Vector2.Angle(avoidDir, Vector2.up) + 90;
 
@@ -107,7 +134,7 @@ public class TerrainAvoidance {
 
         for (int i = 0; i < rays; i++) {
             float rot = rotation + i * degOffset;
-            rayValues[i] = MapRaycaster.Solid(position, Mathf.Deg2Rad * rot, collisionDistance + 5f);
+            rayValues[i] = MapRaycaster.Distance(position, Mathf.Deg2Rad * rot, collisionDistance + 5f);
             Debug.DrawLine(position, RotationToDir(rot) * rayValues[i] + position, rayValues[i] > collisionDistance ? Color.green : Color.red);
         }
 

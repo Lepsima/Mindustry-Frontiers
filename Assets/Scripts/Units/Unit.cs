@@ -815,7 +815,7 @@ public abstract class Unit : Entity, IArmed {
 
     public Entity GetTarget() => Target;
 
-    public Vector2 GetTargetPosition() => Target && !unarmed ? Target.GetPredictedPosition(transform.position, transform.up * weapons[0].Type.bulletType.velocity) : GetBehaviourPosition();
+    public Vector2 GetAimPosition() => Target && !unarmed ? Target.GetPredictedPosition(transform.position, transform.up * weapons[0].Type.bulletType.velocity) : GetBehaviourPosition();
 
     public float FuelPercent() => fuel / fuelCapacity;
 
