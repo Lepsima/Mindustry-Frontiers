@@ -156,14 +156,14 @@ public class MechUnit : Unit {
         float rCycle = GetLegPosition(legDistance + 0.5f);
 
         // Set left leg position, scale and color
-        leftLegTransform.localPosition = new Vector3(0, lCycle * Type.legStepDistance / size, 0);
+        leftLegTransform.localPosition = new Vector3(0, (2 * lCycle - Mathf.Min(lCycle, 0) - 0.15f) / size * Type.legStepDistance, 0);
         leftLegSpriteRenderer.color = Color.Lerp(Color.gray, Color.white, Mathf.Max(lCycle, 0));
         leftLegTransform.localScale = new Vector3(1, Mathf.Min(lCycle, 0) + 1f, 1);
 
         // Set right leg position, scale and color
-        rightLegTransform.localPosition = new Vector3(0, rCycle * Type.legStepDistance / size, 0);
+        rightLegTransform.localPosition = new Vector3(0, (2 * rCycle - Mathf.Min(rCycle, 0) - 0.15f) / size * Type.legStepDistance, 0);
         rightLegSpriteRenderer.color = Color.Lerp(Color.gray, Color.white, Mathf.Max(rCycle, 0));
-        rightLegTransform.localScale = new Vector3(1, Mathf.Min(rCycle, -0.2f) + 1.2f, 1);
+        rightLegTransform.localScale = new Vector3(1, Mathf.Min(rCycle, 0) + 1f, 1);
 
         // Get the current sway of the unit
         float frontSway = GetLegPosition(legDistance * 2f - 1f) * Type.frontSway;

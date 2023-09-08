@@ -1816,10 +1816,10 @@ namespace Frontiers.Content {
 
                 health = 140f,
                 size = 1.5f,
-                maxVelocity = 3.75f,
+                maxVelocity = 2f,
 
                 turretRotationSpeed = 180f,
-                legStepDistance = 0.6f,
+                legStepDistance = 0.65f,
                 sideSway = 0.075f,
                 frontSway = 0.01f,
 
@@ -1849,10 +1849,10 @@ namespace Frontiers.Content {
 
                 health = 140f,
                 size = 3.125f,
-                maxVelocity = 3.22f,
+                maxVelocity = 1.65f,
 
                 turretRotationSpeed = 50f,
-                legStepDistance = 1.25f,
+                legStepDistance = 1.1f,
                 sideSway = 0.075f,
                 frontSway = 0.01f,
 
