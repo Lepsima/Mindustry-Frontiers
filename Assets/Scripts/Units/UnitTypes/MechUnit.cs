@@ -45,10 +45,6 @@ public class MechUnit : Unit {
 
         Vector2 direction = position - (Vector2)transform.position;
         transform.position = MapRaycaster.Position(transform.position, direction, direction.magnitude);
-
-        //if (lastPosition != (Vector2)transform.position) {
-        //    _avoidDir = TerrainAvoidance.ClosestDir(transform.position, _avoidDir, GetBehaviourPosition() - (Vector2)transform.position, 12, 4);
-        //}
     }
 
     public Vector2 GetDirection() {
@@ -97,12 +93,14 @@ public class MechUnit : Unit {
         // Consume fuel based on fuelConsumption x enginePower
         ConsumeFuel(fuelConsumption * GetEnginePower() * Time.fixedDeltaTime);
 
-        // + TerrainAvoidance.GetDirection(unit, unit.transform)
-        //Vector2 direction = GetDirection();
-        Vector2 direction = TerrainAvoidance.From(transform.position, GetBehaviourPosition());
-
+        // Get the direction taking into acount terrain avoidance
+        Vector2 direction = TerrainAvoidance.From(transform.position, position, transform.up);
+        Debug.DrawRay(transform.position, direction * 2, Color.green);
         Move(direction);
-        Rotate(direction);
+        _avoidDir = direction;
+
+        Vector2 turretDirection = Target ? Target.GetPosition() - GetPosition() : direction;
+        Rotate(direction, turretDirection);
 
         void Move(Vector2 direction) {
             if (!CanMove()) {
@@ -117,11 +115,11 @@ public class MechUnit : Unit {
             else SetVelocity(enginePower * maxVelocity * direction);
         }
 
-        void Rotate(Vector2 position) {
+        void Rotate(Vector2 direction, Vector2 turretDirection) {
             if (!CanRotate()) return;
 
             // Get the desired rotation of the base
-            Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, (position - GetPosition()).normalized);
+            Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, direction);
             desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
 
             // Rotate the base transform
@@ -129,7 +127,7 @@ public class MechUnit : Unit {
             transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRotation, speed);
 
             // Quirky quaternion stuff to make the unit rotate slowly -DO NOT TOUCH-
-            desiredRotation = Quaternion.LookRotation(Vector3.forward, (position - GetPosition()).normalized);
+            desiredRotation = Quaternion.LookRotation(Vector3.forward, turretDirection);
             desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
 
             speed = Type.turretRotationSpeed * Time.fixedDeltaTime;
@@ -205,6 +203,10 @@ public class MechUnit : Unit {
     }
 
     #region - Behaviour -
+
+    public override void HandlePhysics() {
+        MoveTo(transform.position + (Vector3)velocity * Time.fixedDeltaTime);
+    }
 
     protected override void AttackBehaviour() {
         targetPower = 1f;

@@ -96,7 +96,9 @@ public class TerrainAvoidance {
         return rotation;
     }
 
-    public static Vector2 From(Vector2 position, Vector2 target) {
+    public static float[] angles = new float[] { 30f, -30f, 45f, -45f, 60f, -60f, 75f, -75f, 90f, -90f, 105f, -105f, 120f, -120f, 135f, -135f, 150f, -150f, 165f, -165f, 180f };
+
+    public static Vector2 From(Vector2 position, Vector2 target, Vector2 unitDir) {
         // Fixed advoid distance
         float advoidDistance = 4f;
 
@@ -106,14 +108,39 @@ public class TerrainAvoidance {
         // If can walk straight, dont try to advoid anything
         if (!MapRaycaster.Collides(position, direction, advoidDistance)) return direction;
 
-        // All the raycast angles that
-        float[] angles = new float[] { 30f, -30f, 45f, -45f };
+        if (direction != unitDir) {
+            float angleToDir = Vector2.SignedAngle(direction, unitDir);
+
+            for (int a = 0; a < Mathf.Abs(angleToDir); a += 15 * (int)Mathf.Sign(angleToDir)) {
+                // Get angle and direction
+                Vector2 offsetDirection = Quaternion.Euler(0, 0, a) * direction;
+                Debug.DrawRay(position, offsetDirection, Color.red);
+
+                // If this angle has no collision, return it's direction
+                if (!MapRaycaster.Collides(position, offsetDirection, advoidDistance)) return offsetDirection;
+            }
+        }
+
+        Vector2 oDir = From2(position, target);
+        return oDir;
+    }
+
+    public static Vector2 From2(Vector2 position, Vector2 target) {
+        // Fixed advoid distance
+        float advoidDistance = 4f;
+
+        // Get direction vector and angle
+        Vector2 direction = (target - position).normalized;
+
+        // If can walk straight, dont try to advoid anything
+        if (!MapRaycaster.Collides(position, direction, advoidDistance)) return direction;
 
         for (int i = 0; i < angles.Length; i++) {
             // Get angle and direction
             float angle = angles[i];
             Vector2 offsetDirection = Quaternion.Euler(0, 0, angle) * direction;
-            Debug.DrawRay(position, offsetDirection);
+
+            Debug.DrawRay(position, offsetDirection, Color.blue);
 
             // If this angle has no collision, return it's direction
             if (!MapRaycaster.Collides(position, offsetDirection, advoidDistance)) return offsetDirection;
