@@ -11,7 +11,7 @@ public class AircraftUnit : Unit {
 
     TrailRenderer rTrailRenderer;
     TrailRenderer lTrailRenderer;
-    Transform engineTransform;
+    TrailRenderer engineTrail;
     [SerializeField] ParticleSystem waterDeviationEffect;
 
     protected float targetHeight, targetVelocity, liftVelocity, takeoffAccel, lowestEnginePower;
@@ -58,18 +58,8 @@ public class AircraftUnit : Unit {
 
     protected override void Update() {
         base.Update();
-        SetDragTrailLenght(gForce * 0.3f);
-
-        // Update length
-        float diff = targetEngineLength - (angularSpeed / rotationSpeed * 2) - engineLength;
-        float change = Time.deltaTime * Mathf.Clamp(diff, -7.5f, 7.5f);
-        engineLength += change;
-
-        // Get oscillation
-        engineOscillationLength = Mathf.Sin(Time.time * 15f) * 0.1f * engineLength;
-
-        // Set scale
-        engineTransform.localScale = new Vector2(Type.engineSize, Type.engineSize * (engineLength + engineOscillationLength));
+        SetTrailLength(gForce * 0.3f);
+        SetEngineLength(targetPower * Type.engineLength);
     }
 
     public override void HandlePhysics() {
@@ -109,7 +99,7 @@ public class AircraftUnit : Unit {
 
         // Update the current height and size
         height = Mathf.Clamp(height + liftVelocity * Time.fixedDeltaTime, 0, Type.groundHeight);
-        transform.localScale = Mathf.Lerp(0.75f, 1f, height / Type.groundHeight) * Type.size * Vector3.one;
+        transform.localScale = Mathf.Lerp(0.75f, 1f, height / Type.groundHeight) * Vector3.one;
 
         // If is touching and moving towards the ground, crash
         if (height == 0f && liftVelocity < 0f) {
@@ -125,7 +115,7 @@ public class AircraftUnit : Unit {
         lowestEnginePower = 9.81f * currentMass / force;
     }
 
-    protected void SetDragTrailLenght(float time) {
+    protected void SetTrailLength(float time) {
         if (!Type.hasDragTrails) return;
 
         // Set drag trail time
@@ -134,11 +124,15 @@ public class AircraftUnit : Unit {
         lTrailRenderer.time = time;
     }
 
+    protected void SetEngineLength(float length) {
+        engineTrail.time = length / velocity.magnitude;
+    }
+
     protected override void CreateTransforms() {
         base.CreateTransforms();
 
         if (Type.useAerodynamics) {
-            waterDeviationEffect = shadow.transform.CreateEffect(Effects.waterDeviation, Vector2.zero, Quaternion.identity);
+            waterDeviationEffect = transform.CreateEffect(Effects.waterDeviation, Vector2.zero, Quaternion.identity);
         }
 
         if (Type.hasDragTrails) {
@@ -151,15 +145,25 @@ public class AircraftUnit : Unit {
 
             // Instantiate the right sided trail
             rTrailRenderer = Instantiate(prefab, transform).GetComponent<TrailRenderer>();
+            rTrailRenderer.transform.localScale = Vector3.one * Type.trailSize;
             rTrailRenderer.transform.localPosition = Type.trailOffset;
 
             // Instantiate the left sided trail
             lTrailRenderer = Instantiate(prefab, transform).GetComponent<TrailRenderer>();
+            lTrailRenderer.transform.localScale = Vector3.one * Type.trailSize;
             lTrailRenderer.transform.localPosition = leftOffset;
         }
 
-        engineTransform = Instantiate(AssetLoader.GetPrefab("UnitEnginePrefab"), transform).transform;
-        engineTransform.SetLocalPositionAndRotation(new Vector3(0f, Type.engineOffset, 0), Quaternion.identity);
+        if (Type.engineSize != -1f) {
+            // Create engine prefab
+            Transform engineTransform = Instantiate(AssetLoader.GetPrefab("UnitEngineTrail"), transform).transform;
+            engineTransform.SetLocalPositionAndRotation(new Vector3(0f, Type.engineOffset, 0), Quaternion.identity);
+            engineTransform.localScale = Vector3.one * Type.engineSize;
+
+            // Set engine size, multiply trail by .99 to be sure that displays correctly when short length
+            engineTrail = engineTransform.GetComponent<TrailRenderer>();
+            engineTrail.widthCurve = AnimationCurve.Linear(0f, Type.engineSize * 0.99f, 1f, 0f);
+        }
     }
 
     public override void Kill(bool destroyed) {
@@ -256,7 +260,7 @@ public class AircraftUnit : Unit {
 
         height = 0f;
         liftVelocity = 0f;
-        SetDragTrailLenght(0);
+        SetTrailLength(0);
     }
 
     #endregion

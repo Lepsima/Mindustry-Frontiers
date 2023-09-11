@@ -15,7 +15,6 @@ public class MechUnit : Unit {
     protected SpriteRenderer leftLegSpriteRenderer, rightLegSpriteRenderer;
     protected float walkTime = 0f;
     protected Vector2 lastPosition;
-    protected Vector2 _avoidDir;
 
     #region - Upgradable Stats -
 
@@ -33,7 +32,7 @@ public class MechUnit : Unit {
 
         // Get the amount of walked distance since the last frame, used for the leg visuals
         float walkedDistance = Vector2.Distance(lastPosition, transform.position);
-        this.walkTime += walkedDistance;
+        walkTime += walkedDistance;
         lastPosition = transform.position;
 
         // Update the mech things
@@ -44,11 +43,7 @@ public class MechUnit : Unit {
         //Vector2 lastPosition = transform.position;
 
         Vector2 direction = position - (Vector2)transform.position;
-        transform.position = MapRaycaster.Position(transform.position, direction, direction.magnitude);
-    }
-
-    public Vector2 GetDirection() {
-        return _avoidDir;
+        transform.position = MapRaycaster.Position(transform.position, direction);
     }
 
     protected override void ApplyUpgrageMultiplier(UpgradeType upgrade) {
@@ -95,9 +90,7 @@ public class MechUnit : Unit {
 
         // Get the direction taking into acount terrain avoidance
         Vector2 direction = TerrainAvoidance.From(transform.position, position, transform.up);
-        Debug.DrawRay(transform.position, direction * 2, Color.green);
         Move(direction);
-        _avoidDir = direction;
 
         Vector2 turretDirection = Target ? Target.GetPosition() - GetPosition() : direction;
         Rotate(direction, turretDirection);
@@ -156,12 +149,12 @@ public class MechUnit : Unit {
         float rCycle = GetLegPosition(legDistance + 0.5f);
 
         // Set left leg position, scale and color
-        leftLegTransform.localPosition = new Vector3(0, (2 * lCycle - Mathf.Min(lCycle, 0) - 0.15f) / size * Type.legStepDistance, 0);
+        leftLegTransform.localPosition = new Vector3(0, (2 * lCycle - Mathf.Min(lCycle, 0) - 0.15f) * Type.legStepDistance, 0);
         leftLegSpriteRenderer.color = Color.Lerp(Color.gray, Color.white, Mathf.Max(lCycle, 0));
         leftLegTransform.localScale = new Vector3(1, Mathf.Min(lCycle, 0) + 1f, 1);
 
         // Set right leg position, scale and color
-        rightLegTransform.localPosition = new Vector3(0, (2 * rCycle - Mathf.Min(rCycle, 0) - 0.15f) / size * Type.legStepDistance, 0);
+        rightLegTransform.localPosition = new Vector3(0, (2 * rCycle - Mathf.Min(rCycle, 0) - 0.15f) * Type.legStepDistance, 0);
         rightLegSpriteRenderer.color = Color.Lerp(Color.gray, Color.white, Mathf.Max(rCycle, 0));
         rightLegTransform.localScale = new Vector3(1, Mathf.Min(rCycle, 0) + 1f, 1);
 
@@ -174,9 +167,7 @@ public class MechUnit : Unit {
     }
 
     private float GetLegPosition(float time) {
-        float a = time % 1;
-        float b = Mathf.Sign(time % 2 - 1);
-        return b * (a - 0.5f);
+        return Mathf.Sign(time % 2 - 1) * (time % 1 - 0.5f);
     }
 
     public override TileType GetGroundTile() {

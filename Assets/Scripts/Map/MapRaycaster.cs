@@ -4,17 +4,19 @@ using UnityEngine;
 public static class MapRaycaster {
     public static Map map;
 
-    public static Vector2 Position(Vector2 point, Vector2 direction, float maxDistance) {
+    public static Vector2 Position(Vector2 point, Vector2 direction) {
         int x = -1;
         int y = -1;
 
         float distance = 0;
         float step = 0.1f;
-        direction = direction.normalized * step;
+        Vector2 dir = direction.normalized * step;
+
+        float maxDistance = direction.magnitude;
 
         while (distance < maxDistance) {
             distance += step;
-            point += direction;
+            point += dir;
 
             int oldX = x;
             int oldY = y;
@@ -31,28 +33,30 @@ public static class MapRaycaster {
                 }
 
                 if (map.tilemap.GetTile(new Vector2Int(x, y)).IsSolid()) {
-                    if (xChange) point.x -= direction.x;
-                    if (yChange) point.y -= direction.y;
+                    if (xChange) point.x -= dir.x;
+                    if (yChange) point.y -= dir.y;
 
                     return point;
                 }
             }
         }
 
-        return point + direction.normalized * maxDistance;
+        return point + direction;
     }
 
-    public static float Distance(Vector2 point, Vector2 direction, float maxDistance) {
+    public static float Distance(Vector2 point, Vector2 direction) {
         int x = -1;
         int y = -1;
 
         float distance = 0;
         float step = 0.1f;
-        direction = direction.normalized * step;
+        Vector2 dir = direction.normalized * step;
+
+        float maxDistance = direction.magnitude;
 
         while (distance < maxDistance) {
             distance += step;
-            point += direction;
+            point += dir;
 
             int oldX = x;
             int oldY = y;
@@ -64,24 +68,26 @@ public static class MapRaycaster {
             bool yChange = oldY != y;
 
             if ((xChange || yChange) && (!map.InBounds(point) || map.tilemap.GetTile(new Vector2Int(x, y)).IsSolid())) {
-                return distance;
+                return distance - step;
             }
         }
 
         return maxDistance;
     }
 
-    public static bool Collides(Vector2 point, Vector2 direction, float maxDistance) {
+    public static bool Collides(Vector2 point, Vector2 direction) {
         int x = -1;
         int y = -1;
 
         float distance = 0;
         float step = 0.1f;
-        direction = direction.normalized * step;
+        Vector2 dir = direction.normalized * step;
+
+        float maxDistance = direction.magnitude;
 
         while (distance < maxDistance) {
             distance += step;
-            point += direction;
+            point += dir;
 
             int oldX = x;
             int oldY = y;
@@ -101,15 +107,15 @@ public static class MapRaycaster {
     }
 
     public static Vector2 Position(Vector2 point, float rotation, float maxDistance) {
-        return Position(point, new Vector2(Mathf.Cos(rotation), Mathf.Sin(rotation)), maxDistance);
+        return Position(point, new Vector2(Mathf.Cos(rotation), Mathf.Sin(rotation)) * maxDistance);
     }
 
     public static float Distance(Vector2 point, float rotation, float maxDistance) {
-        return Distance(point, new Vector2(Mathf.Cos(rotation), Mathf.Sin(rotation)), maxDistance);
+        return Distance(point, new Vector2(Mathf.Cos(rotation), Mathf.Sin(rotation)) * maxDistance);
     }
 
     public static bool Collides(Vector2 point, float rotation, float maxDistance) {
-        return Collides(point, new Vector2(Mathf.Cos(rotation), Mathf.Sin(rotation)), maxDistance);
+        return Collides(point, new Vector2(Mathf.Cos(rotation), Mathf.Sin(rotation)) * maxDistance);
     }
 
     public static float[] FovSolid(Vector2 point, float rotation, float fov, int rays, float maxDistance = 20) {

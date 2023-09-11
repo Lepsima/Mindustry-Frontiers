@@ -259,7 +259,6 @@ public abstract class Unit : Entity, IArmed {
 
         base.Set(position, rotation, type, id, teamCode);
 
-        transform.localScale = Vector3.one * Type.size;
         size = Type.size;
         hasItemInventory = true;
 

@@ -11,7 +11,7 @@ public class CursorIndicator : MonoBehaviour {
     public GameObject blockArrowGameObject;
 
     float rotation, size;
-    bool rotates, resizes, clampToGrid;
+    bool rotates, clampToGrid;
 
     private void Awake() {
         Instance = this;
@@ -22,7 +22,7 @@ public class CursorIndicator : MonoBehaviour {
         Vector2 mousePos = clampToGrid ? MapManager.mouseGridPos : PlayerManager.mousePos;
 
         transform.position = mousePos + (clampToGrid ? halfSize : Vector2.zero);
-        transform.localScale = resizes ? Vector2.one * size : Vector2.one;
+        transform.localScale = Vector2.one;
     }
 
     public void ChangeRotation(float newRotation) {
@@ -43,17 +43,6 @@ public class CursorIndicator : MonoBehaviour {
         contentRenderer.sprite = content?.spriteFull;
 
         clampToGrid = entityType is BlockType;
-        resizes = true;
-
-        if (entityType != null) {
-            if (entityType is BlockType block) {
-                resizes = false;
-                size = block.size;
-            } else if (entityType is UnitType unit) { 
-                size = unit.size; 
-            }
-        } else {
-            size = 0;
-        }
+        if (clampToGrid) size = (entityType as BlockType).size;
     }
 }

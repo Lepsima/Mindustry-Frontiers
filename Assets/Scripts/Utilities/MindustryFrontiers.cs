@@ -932,7 +932,7 @@ namespace Frontiers.Content {
             landingPad, landingPadLarge,
 
             // Turrets
-            tempest, windstorm, stinger, path, spread,
+            tempest, windstorm, stinger, path, spread, cyclone,
 
             // Unit factories
             airFactory,
@@ -1093,6 +1093,16 @@ namespace Frontiers.Content {
 
                 health = 245f,
                 size = 2,
+
+                canGetOnFire = true,
+            };
+
+            cyclone = new TurretBlockType("cyclone", typeof(TurretBlock), 3) {
+                buildCost = ItemStack.With(Items.copper, 125, Items.graphite, 55, Items.silicon, 35),
+                weapon = new WeaponMount(Weapons.cycloneWeapon, Vector2.zero),
+
+                health = 512f,
+                size = 3,
 
                 canGetOnFire = true,
             };
@@ -1525,7 +1535,7 @@ namespace Frontiers.Content {
         public float bankAmount = 25f, bankSpeed = 5f;
         public bool useAerodynamics = true, hasDragTrails = true;
 
-        public float engineSize = 0.2f, engineOffset = -0.35f, engineMaxLength = 3.5f;
+        public float engineSize = 0.2f, engineOffset = -0.35f, engineLength = 3.5f;
 
         public float takeoffTime = 3f, takeoffHeight = 0.5f; // Takeoff height is measured in a percentage of ground height
         public float maxLiftVelocity = 3f;
@@ -1534,6 +1544,7 @@ namespace Frontiers.Content {
         public float wreckHealth = 0f;
 
         public Vector2 trailOffset = Vector2.zero;
+        public float trailSize = 1f;
 
         public AircraftUnitType(string name, Type type, int tier = 1) : base(name, type, tier) {
 
@@ -1578,19 +1589,23 @@ namespace Frontiers.Content {
 
             flare = new AircraftUnitType("flare", typeof(AircraftUnit), 1) {
                 weapons = new WeaponMount[1] {
-                    new WeaponMount(Weapons.flareWeapon, new(-0.25f, 0.3f), true),
+                    new WeaponMount(Weapons.flareWeapon, new(-0.375f, 0.45f), true),
                 },
 
                 flags = new Flag[] { FlagTypes.aircraft, FlagTypes.fighter, FlagTypes.light, FlagTypes.fast, FlagTypes.lightArmored },
                 priorityList = new Type[5] { typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(ItemBlock), typeof(Block) },
                 useAerodynamics = true,
 
-                trailOffset = new(0.375f, -0.45f),
+                trailOffset = new(0.5625f, -0.675f),
 
                 health = 75f,
                 size = 1.5f,
                 maxVelocity = 20f,
                 drag = 0.1f,
+
+                engineSize = 0.4f,
+                engineOffset = -0.6f,
+                engineLength = 1.2f,
 
                 rotationSpeed = 160f,
                 bankAmount = 20f,
@@ -1618,15 +1633,18 @@ namespace Frontiers.Content {
                 priorityList = new Type[4] { typeof(TurretBlock), typeof(ItemBlock), typeof(CoreBlock), typeof(Block) },
                 useAerodynamics = true,
 
+                trailOffset = new(0.8f, -0.7f),
+                trailSize = 1.75f,
+
                 health = 215f,
                 size = 2.25f,
                 maxVelocity = 10f,
                 itemCapacity = 25,
                 drag = 0.2f,
 
-                engineSize = 0.2f,
-                engineOffset = -0.3f,
-                engineMaxLength = 3f,
+                engineSize = 0.4f,
+                engineOffset = -0.8f,
+                engineLength = 1f,
                 
                 rotationSpeed = 100f,
                 bankAmount = 25f,
@@ -1647,7 +1665,7 @@ namespace Frontiers.Content {
 
             zenith = new AircraftUnitType("zenith", typeof(AircraftUnit), 3) {
                 weapons = new WeaponMount[1] {
-                    new WeaponMount(Weapons.zenithMissiles, new(0.25f, 0f), true, true),
+                    new WeaponMount(Weapons.zenithMissiles, new(0.875f, 0f), true, true),
                 },
 
                 flags = new Flag[] { FlagTypes.aircraft, FlagTypes.slow, FlagTypes.heavy, FlagTypes.heavyArmored },
@@ -1660,9 +1678,9 @@ namespace Frontiers.Content {
                 itemCapacity = 50,
                 drag = 2f,
 
-                engineSize = 0.2f,
-                engineOffset = -0.325f,
-                engineMaxLength = 1f,
+                engineSize = 0.8f,
+                engineOffset = -1.3f,
+                engineLength = 0.8f,
 
                 rotationSpeed = 70f,
                 bankAmount = 20f,
@@ -1717,11 +1735,11 @@ namespace Frontiers.Content {
 
             sonar = new CopterUnitType("sonar", typeof(CopterUnit), 2) {
                 rotors = new UnitRotor[1] {
-                    new UnitRotor("sonar-rotor", new(0f, 0.14f), 3f, 0.5f, 0.667f, 1f),
+                    new UnitRotor("sonar-rotor", new(0f, 0.2f), 3f, 0.5f, 0.667f, 1f),
                 },
 
                 weapons = new WeaponMount[1] {
-                    new WeaponMount(Weapons.zenithMissiles, new Vector2(0.4f, 0.1562f), true),
+                    new WeaponMount(Weapons.zenithMissiles, new Vector2(0.9f, 0.35145f), true),
                 },
 
                 flags = new Flag[] { FlagTypes.copter, FlagTypes.slow, FlagTypes.heavyArmored },
@@ -1743,7 +1761,7 @@ namespace Frontiers.Content {
                 engineSize = 0f,
 
                 rotationSpeed = 80f,
-                bankAmount = 80f,
+                bankAmount = 0f,
 
                 range = 12f,
                 searchRange = 17.5f,
@@ -1762,14 +1780,14 @@ namespace Frontiers.Content {
 
             foton = new CopterUnitType("foton", typeof(CopterUnit), 3) {
                 rotors = new UnitRotor[] {
-                    new UnitRotor("foton-rotor", new(0f, 0.15f), 6f, 1.5f, 1.5f, 2.25f, new UnitRotorBlade[2] {
+                    new UnitRotor("foton-rotor", new(0f, 0.5625f), 6f, 1.5f, 1.5f, 2.25f, new UnitRotorBlade[2] {
                         new UnitRotorBlade(0f, false),
                         new UnitRotorBlade(0f, true)
                     }),
                 },
 
                 weapons = new WeaponMount[1] {
-                    new WeaponMount(Weapons.fotonWeapon, new Vector2(0.26f, 0.145f), true),
+                    new WeaponMount(Weapons.fotonWeapon, new Vector2(0.975f, 0.54375f), true),
                 },
 
                 flags = new Flag[] { FlagTypes.copter, FlagTypes.slow, FlagTypes.heavy, FlagTypes.heavyArmored },
@@ -1808,7 +1826,7 @@ namespace Frontiers.Content {
 
             dagger = new MechUnitType("dagger", typeof(MechUnit), 1) {
                 weapons = new WeaponMount[1] {
-                    new WeaponMount(Weapons.daggerWeapon, new Vector2(0.29187f, 0.1562f), true, true),
+                    new WeaponMount(Weapons.daggerWeapon, new Vector2(0.437805f, 0.2343f), true, false),
                 },
 
                 flags = new Flag[] { FlagTypes.mech, FlagTypes.slow, FlagTypes.light, FlagTypes.moderateArmored },
@@ -1816,7 +1834,7 @@ namespace Frontiers.Content {
 
                 health = 140f,
                 size = 1.5f,
-                maxVelocity = 2f,
+                maxVelocity = 1f,
 
                 turretRotationSpeed = 180f,
                 legStepDistance = 0.65f,
@@ -1841,7 +1859,7 @@ namespace Frontiers.Content {
 
             fortress = new MechUnitType("fortress", typeof(MechUnit), 3) {
                 weapons = new WeaponMount[1] {
-                    new WeaponMount(Weapons.fortressWeapon, new Vector2(0.32f, 0.04f), true, true),
+                    new WeaponMount(Weapons.fortressWeapon, new Vector2(1f, 0.125f), true, false),
                 },
 
                 flags = new Flag[] { FlagTypes.mech, FlagTypes.slow, FlagTypes.heavy, FlagTypes.heavyArmored },
@@ -1849,7 +1867,7 @@ namespace Frontiers.Content {
 
                 health = 140f,
                 size = 3.125f,
-                maxVelocity = 1.65f,
+                maxVelocity = 0.8f,
 
                 turretRotationSpeed = 50f,
                 legStepDistance = 1.1f,
@@ -1914,7 +1932,7 @@ namespace Frontiers.Content {
         public const Weapon none = null;
 
         // Base weapons
-        public static WeaponType smallAutoWeapon, tempestWeapon, windstormWeapon, stingerWeapon, pathWeapon, spreadWeapon;
+        public static WeaponType smallAutoWeapon, tempestWeapon, windstormWeapon, stingerWeapon, pathWeapon, spreadWeapon, cycloneWeapon;
 
         //Unit weapons
         public static WeaponType 
@@ -2112,6 +2130,29 @@ namespace Frontiers.Content {
                 shootTime = 0.085f,
                 reloadTime = 6f,
                 rotateSpeed = 100f,
+            };
+
+            cycloneWeapon = new WeaponType("cyclone-weapon") {
+                bulletType = new BulletType() {
+                    damage = 15f,
+                    lifeTime = 1f,
+                    velocity = 150f
+                },
+
+                shootOffset = Vector2.zero,
+                barrels = new WeaponBarrel[2] {
+                    new WeaponBarrel("cyclone-weapon", 1, new Vector2(-0.3125f, 1.375f)),
+                    new WeaponBarrel("cyclone-weapon", 2, new Vector2(0.3125f, 1.375f)),
+                },
+
+                isIndependent = true,
+                animations = new Animation[1] { new Animation("-belt", 3, Animation.Case.Shoot) },
+
+                recoil = 0.1f,
+                clipSize = 24,
+                shootTime = 0.35f,
+                reloadTime = 4f,
+                rotateSpeed = 80f,
             };
 
             missileRack = new WeaponType("missileRack", Items.basicAmmo) {
