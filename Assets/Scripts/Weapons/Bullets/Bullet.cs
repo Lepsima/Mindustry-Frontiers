@@ -35,34 +35,30 @@ public class Bullet {
     }
 
     public virtual void Update() {
-        if (!active) Return();
-
         transform.position = Vector2.Lerp(startPosition, hitPosition, 1 - (distance / startingDistance));
         distance -= Time.deltaTime * Type.velocity;
 
-        if (Physics2D.OverlapCircle(transform.position, Type.size, mask)) BulletCollision();
-        else if (ShouldDespawn()) Despawn();
-    }
+        Collider2D collider2D = Physics2D.OverlapCircle(transform.position, Type.size, mask);
 
-    public void BulletCollision() {
-        EffectPlayer.PlayEffect(Type.hitFX, transform.position, 1f);
-
-        Collider2D collider = Physics2D.OverlapCircle(transform.position, Type.size, mask);
-        if (collider.transform.TryGetComponent(out Entity entity)) Client.BulletHit(entity, Type);
-
-        Return();
-    }
-
-    public virtual void Despawn() {
-        EffectPlayer.PlayEffect(Type.despawnFX, transform.position, 1f);
-        Return();
+        if (collider2D) Return(collider2D.GetComponent<Entity>());
+        else if (ShouldDespawn()) Return(null);
     }
 
     protected virtual bool ShouldDespawn() {
         return distance <= 0;
     }
 
-    public void Return() {
+    public virtual void Return(Entity entity) {
+        if (entity) {
+            EffectPlayer.PlayEffect(Type.hitFX, transform.position, 1f);
+            Client.BulletHit(entity, Type);
+        } else {
+            EffectPlayer.PlayEffect(Type.despawnFX, transform.position, 1f);
+        }
+
+        // If explodes on despawn or hit something, explode
+        if ((Type.explodeOnDespawn || entity) && Type.Explodes()) Client.Explosion(Type, GetPosition(), mask);
+
         active = false;
         BulletManager.ReturnBullet(this);
     }
@@ -90,28 +86,20 @@ public class MissileBullet : Bullet {
     }
 
     public override void Update() {
-        // Try to update target
-        if (!target && (Type as MissileBulletType).canUpdateTarget) {
+        if (target) {
+            // If has target rotate towards it
+            Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, target.position - transform.position);
+            desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRotation, ((MissileBulletType)Type).homingStrength * Time.fixedDeltaTime);
+
+        } else if ((Type as MissileBulletType).canUpdateTarget) {
+            // Try to update target
             Entity newTarget = MapManager.Map.GetClosestEntity(transform.position, enemyTeam);
             if (newTarget) target = newTarget.transform;
         }
 
         // Move forward
         transform.position += Time.deltaTime * Type.velocity * transform.up;
-
-        // If has target rotate towards it
-        if (target) {
-            Quaternion desiredRotation = Quaternion.LookRotation(Vector3.forward, target.position - transform.position);
-            desiredRotation = Quaternion.Euler(0, 0, desiredRotation.eulerAngles.z);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRotation, ((MissileBulletType)Type).homingStrength * Time.fixedDeltaTime);
-        }
-
-        // Check for collision
-        if (Physics2D.OverlapCircle(transform.position, Type.size, mask)) BulletCollision();
-        else if (ShouldDespawn()) {
-            if ((Type as MissileBulletType).explodeOnDespawn) Client.Explosion(Type, GetPosition(), mask);
-            Despawn();
-        }
     }
 
     protected override bool ShouldDespawn() {
@@ -138,8 +126,8 @@ public class BombBullet : Bullet {
         shadow.position = -Vector3.one * (height * 0.2f) + transform.position;
 
         if (ShouldDespawn()) {
-            Client.Explosion(Type, GetPosition(), mask);
-            Despawn();
+   
+            Return(null);
         }
     }
 
@@ -166,6 +154,11 @@ public static class BulletManager {
     }
 
     public static void UpdateBullets() {
-        for (int i = allBullets.Count - 1; i >= 0; i--) allBullets[i].Update();
+        for (int i = allBullets.Count - 1; i >= 0; i--) {
+            Bullet bullet = allBullets[i];
+
+            if (bullet.active) allBullets[i].Update();
+            else bullet.Return(null);
+        }
     }
 }

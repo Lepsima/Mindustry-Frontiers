@@ -48,7 +48,7 @@ public class DamageHandler : MonoBehaviour {
     }
 
     public static void BulletHit(BulletType bulletType, Entity entity) {
-        if (bulletType.HasBlastDamage()) {
+        if (bulletType.Explodes()) {
             BulletExplode(bulletType, entity.GetPosition(), entity.GetTeam());
 
         } else if (entity.TryGetComponent(out IDamageable damageable)) {

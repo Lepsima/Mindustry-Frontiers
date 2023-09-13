@@ -1909,9 +1909,13 @@ namespace Frontiers.Content {
 
         public float shootFXSize = 1f, casingFXSize = 1f, casingFXOffset = -0.5f;
 
-        public bool isIndependent = false;
+        public bool independent = false;
         public bool consumesItems = false;
         public bool predictTarget = true;
+        public bool chargesUp = false;
+
+        public float chargedShootTime = 1f, chargeShotCooldown = 1f;
+        public int shotsToChargeUp = 1;
 
         public int clipSize = 10;
         public float maxTargetDeviation = 15f, spread = 5f, recoil = 0.75f, returnSpeed = 1f, shootTime = 1f, reloadTime = 1f, rotateSpeed = 90f;
@@ -1951,7 +1955,7 @@ namespace Frontiers.Content {
                 bulletType = Bullets.basicBullet,
                 shootOffset = new Vector2(0, 0.37f),
 
-                isIndependent = true,
+                independent = true,
                 rotateSpeed = 90f,
 
                 recoil = 0f,
@@ -2034,7 +2038,7 @@ namespace Frontiers.Content {
 
                 shootOffset = new Vector2(0, 0.25f),
 
-                isIndependent = true,
+                independent = true,
                 recoil = 0.05f,
                 returnSpeed = 2f,
                 clipSize = 2,
@@ -2049,7 +2053,7 @@ namespace Frontiers.Content {
                 bulletType = Bullets.basicBullet,
                 shootOffset = new Vector2(0, 0.5f),
 
-                isIndependent = true,
+                independent = true,
                 recoil = 0.1f,
                 returnSpeed = 2f,
                 clipSize = 12,
@@ -2072,7 +2076,7 @@ namespace Frontiers.Content {
                 shootFXSize = 2f,
                 casingFXSize = 2f,
 
-                isIndependent = true,
+                independent = true,
                 recoil = 0.4f,
                 clipSize = 2,
                 shootTime = 0.25f,
@@ -2088,7 +2092,7 @@ namespace Frontiers.Content {
                 },
                 shootOffset = new Vector2(0, 0.5f),
 
-                isIndependent = true,
+                independent = true,
                 recoil = 0.2f,
                 clipSize = 5,
                 shootTime = 0.3f,
@@ -2104,7 +2108,7 @@ namespace Frontiers.Content {
                 },
                 shootOffset = new Vector2(0, 0.75f),
 
-                isIndependent = true,
+                independent = true,
                 animations = new Animation[1] { new Animation("-belt", 3, Animation.Case.Shoot) },
                 recoil = 0.02f,
                 clipSize = 50,
@@ -2124,7 +2128,7 @@ namespace Frontiers.Content {
                     new WeaponBarrel("spread-weapon", 3, new Vector2(0.4f, 0.55f)),
                 },
 
-                isIndependent = true,
+                independent = true,
                 recoil = 0.1f,
                 clipSize = 20,
                 shootTime = 0.085f,
@@ -2135,8 +2139,8 @@ namespace Frontiers.Content {
             cycloneWeapon = new WeaponType("cyclone-weapon") {
                 bulletType = new BulletType() {
                     damage = 15f,
-                    lifeTime = 1f,
-                    velocity = 150f
+                    lifeTime = 1.5f,
+                    velocity = 100f
                 },
 
                 shootOffset = Vector2.zero,
@@ -2145,21 +2149,28 @@ namespace Frontiers.Content {
                     new WeaponBarrel("cyclone-weapon", 2, new Vector2(0.3125f, 1.375f)),
                 },
 
-                isIndependent = true,
+                independent = true,
                 animations = new Animation[1] { new Animation("-belt", 3, Animation.Case.Shoot) },
 
                 recoil = 0.1f,
                 clipSize = 24,
-                shootTime = 0.35f,
+                shootTime = 0.55f,
                 reloadTime = 4f,
                 rotateSpeed = 80f,
+
+                chargesUp = true,
+                shotsToChargeUp = 8,
+                chargedShootTime = 0.25f,
+                chargeShotCooldown = 0.25f,
+
+                casingFXOffset = -1.5f,
             };
 
             missileRack = new WeaponType("missileRack", Items.basicAmmo) {
                 bulletType = Bullets.missileBullet,
                 shootOffset = new Vector2(0, 0.5f),
 
-                isIndependent = true,
+                independent = true,
                 consumesItems = true,
                 maxTargetDeviation = 360f,
 
@@ -2180,6 +2191,8 @@ namespace Frontiers.Content {
 
         public float damage = 10f, buildingDamageMultiplier = 1f, velocity = 100f, lifeTime = 1f, size = 0.05f;
         public float blastRadius = -1f, blastRadiusFalloff = -1f, minBlastDamage = 0f;
+
+        public bool explodeOnDespawn = false;
 
         public float Range { get => velocity * lifeTime; }
 
@@ -2209,10 +2222,10 @@ namespace Frontiers.Content {
 
         public float Damage(IDamageable damageable, float distance) {
             float mult = Multiplier(damageable);
-            return HasBlastDamage() ? Mathf.Lerp(damage * mult, minBlastDamage * mult, distance / blastRadius) : damage * mult;
+            return Explodes() ? Mathf.Lerp(damage * mult, minBlastDamage * mult, distance / blastRadius) : damage * mult;
         }
 
-        public bool HasBlastDamage() {
+        public bool Explodes() {
             return blastRadius > 0;
         }
 
@@ -2235,10 +2248,11 @@ namespace Frontiers.Content {
 
     public class MissileBulletType : BulletType {
         public float homingStrength = 30f;
-        public bool canUpdateTarget = true, explodeOnDespawn = true;
+        public bool canUpdateTarget = true;
         
         public MissileBulletType(string name = null) : base(name) {
             despawnFX = Effects.smallExplosion;
+            explodeOnDespawn = true;
         }
 
         public override Bullet NewBullet(Weapon weapon, Transform transform) {

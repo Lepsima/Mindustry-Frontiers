@@ -26,22 +26,39 @@ public class Weapon : MonoBehaviour {
     private bool hasAnimations;
 
     // Timers
-    private float targetSearchTimer = 0f, avilableShootTimer = 0f;
+    private float targetSearchTimer = 0f, avilableShootTimer = 0f, chargeShotCooldownTimer = -1f;
 
     private bool isReloading = false, isActive = false, mirrored = false, hasMultiBarrel = false;
-    private int currentRounds, barrelIndex;
+    private int currentRounds, barrelIndex, chargeUpProgress;
 
     private void Update() {
         if (isReloading && hasAnimations) {
             animator.NextFrame(Animation.Case.Reload); 
         }
 
-        if (Type.isIndependent) {
+        if (Type.independent) {
             HandleTargeting(); 
         }
 
         if (isActive && IsAvilable()) {
             Client.WeaponShoot(this);
+        }
+
+        // If is charged and can but not shooting, start to lose charge progress
+        if (chargeUpProgress > 0 && avilableShootTimer < Time.time) {
+            if (chargeShotCooldownTimer == -1f) {
+                // If cooldown not started, start
+                chargeShotCooldownTimer = Time.time + Type.chargeShotCooldown;
+
+            } else if (Time.time <= chargeShotCooldownTimer) {
+                // Remove progress
+                chargeUpProgress--;
+                
+                // Add time for next cooldown
+                chargeShotCooldownTimer += Type.chargeShotCooldown;
+            }
+        } else {
+            chargeShotCooldownTimer = -1f;
         }
 
         UpdateRecoil();
@@ -198,9 +215,17 @@ public class Weapon : MonoBehaviour {
         isActive = state;
     }
 
+
     public void Shoot() {
         currentRounds--;
-        avilableShootTimer = Time.time + Type.shootTime;
+        float time = Type.shootTime;
+
+        if (Type.chargesUp) {
+            if (chargeUpProgress < Type.shotsToChargeUp) chargeUpProgress++;
+            time = Mathf.Lerp(Type.shootTime, Type.chargedShootTime, (float)chargeUpProgress / Type.shotsToChargeUp);
+        }
+
+        avilableShootTimer = Time.time + time;
 
         if (hasAnimations) animator.NextFrame(Animation.Case.Shoot);
         if (Type.consumesItems) parentEntity.GetInventory().Substract(Type.ammoItem, 1);
