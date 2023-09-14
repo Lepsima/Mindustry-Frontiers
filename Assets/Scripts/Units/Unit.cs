@@ -226,6 +226,10 @@ public abstract class Unit : Entity, IArmed {
         HandlePhysics();
     }
 
+    public override string GetName() {
+        return squadronName;
+    }
+
     protected override void ApplyUpgrageMultiplier(UpgradeType upgrade) {
         base.ApplyUpgrageMultiplier(upgrade);
         UnitUpgradeMultipliers mult = upgrade.properties as UnitUpgradeMultipliers;

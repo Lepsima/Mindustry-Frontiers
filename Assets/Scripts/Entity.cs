@@ -11,7 +11,7 @@ using Frontiers.Content;
 using Frontiers.Assets;
 using Frontiers.Teams;
 
-public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
+public abstract class Entity : SyncronizableObject, IDamageable, IInventory, IMessager {
     public event EventHandler<EntityArg> OnDestroyed;
     public event EventHandler<EventArgs> OnDamaged;
 
@@ -41,6 +41,10 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory {
 
     public bool wasDestroyed = false;
     int fireCount;
+
+    public virtual string GetName() {
+        return Type.name;
+    }
 
     public override float[] GetSyncValues() {
         float[] values = base.GetSyncValues();

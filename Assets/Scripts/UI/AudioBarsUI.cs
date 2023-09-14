@@ -11,33 +11,55 @@ public class AudioBarsUI : MonoBehaviour {
     public float maxNoise = 0.05f;
     public float maxMagnitude = 3f, magnitudeChangeRate = 1f, maxOffset = 0.5f, offsetChangeRate = 0.25f;
 
-    float mChange, oChange;
-    float mChangeDir, oChangeDir;
+    float magChange, offChange;
+    float magChangeDir, offChangeDir;
     float magnitude = 1, offset = 0;
     int barCount;
 
-    private void OnEnable() {
+    float stopTimer = -1f, hideTimer = -1f;
+
+    public void Play(float time) {
+        stopTimer = Time.time + time;
+        hideTimer = Time.time + Mathf.Min(0.5f, time / 5f);
+    }
+
+    private void Start() {
         barCount = transform.childCount;
         bars = new RectTransform[barCount];
 
         for (int i = 0; i < barCount; i++) {
             bars[i] = transform.GetChild(i).GetComponent<RectTransform>();
         }
+
+        Play(5f);
     }
 
     private void Update() {
-        if (Time.time >= mChange) {
-            mChange = Time.time + Random.Range(minNoise, maxNoise);
-            mChangeDir = Random.Range(-1f, 1f);
+        // If stopped, reset values and return
+        if (stopTimer < Time.time) {
+            magnitude = 0.1f;
+            offset = -maxOffset;
+            return;
         }
 
-        if (Time.time >= oChange) {
-            oChange = Time.time + Random.Range(minNoise, maxNoise);
-            oChangeDir = Random.Range(-1f, 1f);
+        if (Time.time >= magChange) {
+            magChange = Time.time + Random.Range(minNoise, maxNoise);
+            magChangeDir = Random.Range(-1f, 1f);
         }
 
-        magnitude = Mathf.Clamp(magnitude + mChangeDir * magnitudeChangeRate * Time.deltaTime, 0.1f, maxMagnitude);
-        offset = Mathf.Clamp(offset + oChangeDir * offsetChangeRate * Time.deltaTime, -maxOffset, maxOffset);
+        if (Time.time >= offChange) {
+            offChange = Time.time + Random.Range(minNoise, maxNoise);
+            offChangeDir = Random.Range(-1f, 1f);
+        }
+
+        // If is hiding, start to lower values
+        if (hideTimer < Time.time) {
+            offChangeDir = -Mathf.Abs(offChangeDir);
+            magChangeDir = -Mathf.Abs(magChangeDir);
+        }
+
+        magnitude = Mathf.Clamp(magnitude + magChangeDir * magnitudeChangeRate * Time.deltaTime, 0.1f, maxMagnitude);
+        offset = Mathf.Clamp(offset + offChangeDir * offsetChangeRate * Time.deltaTime, -maxOffset, maxOffset);
 
         for (int i = 0; i < barCount; i++) {
             float value = GetValue(i, offset, magnitude);

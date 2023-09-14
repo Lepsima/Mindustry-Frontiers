@@ -18,3 +18,7 @@ public interface IInventory {
 public interface IArmed {
     public Weapon GetWeaponByID(int ID);
 }
+
+public interface IMessager {
+    public string GetName();
+}
