@@ -20,7 +20,7 @@ public class AudioBarsUI : MonoBehaviour {
 
     public void Play(float time) {
         stopTimer = Time.time + time;
-        hideTimer = Time.time + Mathf.Min(0.5f, time / 5f);
+        hideTimer = Time.time + time - Mathf.Min(0.5f, time / 5f);
     }
 
     private void Start() {
@@ -30,8 +30,6 @@ public class AudioBarsUI : MonoBehaviour {
         for (int i = 0; i < barCount; i++) {
             bars[i] = transform.GetChild(i).GetComponent<RectTransform>();
         }
-
-        Play(5f);
     }
 
     private void Update() {

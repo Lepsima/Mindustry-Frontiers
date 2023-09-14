@@ -53,6 +53,7 @@ public class MessageHandler : MonoBehaviour {
     }
 
     public int channels;
+    public GameObject displayerPrefab;
 
     // An array with all the avilable message displayers
     MessageDisplayerUI[] displayers;
@@ -63,10 +64,12 @@ public class MessageHandler : MonoBehaviour {
     public void Awake() {
         // Initialize array
         displayers = new MessageDisplayerUI[channels];
-        GameObject displayerPrefab = AssetLoader.GetPrefab("UnitMessageDisplayerPrefab");
 
         // Create displayers
-        for (int i = 0; i < channels; i++) displayers[i] = Instantiate(displayerPrefab, transform.parent).GetComponent<MessageDisplayerUI>();      
+        for (int i = 0; i < channels; i++) { 
+            displayers[i] = Instantiate(displayerPrefab, transform.parent).GetComponent<MessageDisplayerUI>();
+            displayers[i].gameObject.SetActive(false);
+        }
     }
 
     public void Update() {
