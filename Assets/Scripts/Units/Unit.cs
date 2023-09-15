@@ -31,17 +31,17 @@ public abstract class Unit : Entity, IArmed {
 
     public Action action;
 
-    protected Entity Target { 
-        get { 
-            return _target; 
-        }  
-        
+    protected Entity Target {
+        get {
+            return _target;
+        }
+
         set {
-            if (_target != value) { 
+            if (_target != value) {
                 _target = value;
                 OnTargetChanged?.Invoke(this, new EntityArg { other = _target });
             }
-        } 
+        }
     }
     private Entity _target;
 
@@ -72,7 +72,7 @@ public abstract class Unit : Entity, IArmed {
     protected Vector2 homePosition;
     public Vector2 patrolPosition = Vector2.zero;
 
-    protected float 
+    protected float
         targetPower, // The power percent that the engine should be at
         currentMass, // The current mass of this unit
         fuel, // The current fuel of this unit
@@ -107,7 +107,7 @@ public abstract class Unit : Entity, IArmed {
 
     #region - Upgradable Stats -
 
-    protected float 
+    protected float
         maxVelocity, rotationSpeed, itemPickupDistance, buildSpeedMultiplier, range,
         searchRange, fov, fuelCapacity, fuelConsumption, fuelRefillRate, emptyMass, fuelDensity;
 
@@ -128,7 +128,7 @@ public abstract class Unit : Entity, IArmed {
 
     public override void ApplySyncValues(float[] values) {
         base.ApplySyncValues(values);
-        
+
         transform.position = new(values[2], values[3]);
         velocity = new(values[4], values[5]);
 
@@ -173,9 +173,9 @@ public abstract class Unit : Entity, IArmed {
         Deposit = 2,
     }
 
-    public UnitMode Mode { 
+    public UnitMode Mode {
         set {
-            if(value != _mode) {
+            if (value != _mode) {
                 _mode = value;
                 Target = null;
 
@@ -187,16 +187,17 @@ public abstract class Unit : Entity, IArmed {
                 homePosition = GetPosition();
                 SetWeaponsActive(false);
             }
-        } 
+        }
 
-        get { 
-            return _mode; 
-        } 
+        get {
+            return _mode;
+        }
     }
 
     protected virtual void Update() {
         teamSpriteRenderer.color = CellColor();
-        if (shadow) shadow.SetDistance(height);
+        if (shadow)
+            shadow.SetDistance(height);
         FloorTile = GetGroundTile();
 
         if (deactivateWeaponsTimer <= Time.time) {
@@ -207,7 +208,7 @@ public abstract class Unit : Entity, IArmed {
         }
 
         if (currentLandPadBlock != null && fuel < fuelCapacity) {
-            if (fuel < fuelCapacity) { 
+            if (fuel < fuelCapacity) {
                 fuel += currentLandPadBlock.Refuel(fuelRefillRate * Time.deltaTime);
 
                 // When fuel is completely refilled, continue the previous mode
@@ -293,7 +294,7 @@ public abstract class Unit : Entity, IArmed {
 
         MapManager.Map.AddUnit(this);
         Client.syncObjects.Add(SyncID, this);
-
+        
         SetAction(new(3, 0, Vector2.zero));
     }
 
@@ -314,7 +315,8 @@ public abstract class Unit : Entity, IArmed {
             SetWeapon(weaponMount);
 
             //If mirrored, repeat previous steps
-            if (weaponMount.mirrored) SetWeapon(weaponMount, true);     
+            if (weaponMount.mirrored)
+                SetWeapon(weaponMount, true);
         }
     }
 
@@ -359,14 +361,16 @@ public abstract class Unit : Entity, IArmed {
 
     public override void OnInventoryValueChange(object sender, EventArgs e) {
         if (isCoreUnit) {
-            if (Mode != UnitMode.Assist) return;
+            if (Mode != UnitMode.Assist)
+                return;
             UpdateSubBehaviour();
         }
     }
 
     protected void OnTargetInventoryValueChange(object sender, EventArgs e) {
         if (isCoreUnit) {
-            if (Mode != UnitMode.Assist) return;
+            if (Mode != UnitMode.Assist)
+                return;
             UpdateSubBehaviour();
         }
     }
@@ -386,7 +390,8 @@ public abstract class Unit : Entity, IArmed {
 
     #region - Core Unit things - 
     public void UpdateSubBehaviour() {
-        if (!constructingBlock && ConstructionBlock.blocksInConstruction.Count == 0) subStateMode = AssistSubState.Waiting;
+        if (!constructingBlock && ConstructionBlock.blocksInConstruction.Count == 0)
+            subStateMode = AssistSubState.Waiting;
 
         // If has enough or the max amount of items to build the block, go directly to it, else go to the core to refill
         bool hasMaxItems = inventory.HasToMax(constructingBlock.GetRestantItems());
@@ -395,14 +400,16 @@ public abstract class Unit : Entity, IArmed {
     }
 
     private ConstructionBlock TryGetConstructionBlock() {
-        if (constructionSearchTimer > Time.time) return null;
+        if (constructionSearchTimer > Time.time)
+            return null;
         constructionSearchTimer = Time.time + 1f;
 
         ConstructionBlock closestBlock = null;
         float closestDistance = 100000f;
 
         foreach (ConstructionBlock block in ConstructionBlock.blocksInConstruction) {
-            if (!Target.GetInventory().Has(block.GetRestantItems())) continue;
+            if (!Target.GetInventory().Has(block.GetRestantItems()))
+                continue;
             float distance = Vector2.Distance(block.GetPosition(), GetPosition());
 
             if (distance < closestDistance) {
@@ -464,7 +471,8 @@ public abstract class Unit : Entity, IArmed {
                 break;
         }
 
-        if (!Target) SetWeaponsActive(false);
+        if (!Target)
+            SetWeaponsActive(false);
 
         UpdateBehaviour(_position);
         HandleHeight();
@@ -475,21 +483,26 @@ public abstract class Unit : Entity, IArmed {
 
     #region - Behaviours -
     protected virtual void AttackBehaviour() {
-        if (unarmed) EnterTemporalMode(UnitMode.Return);
+        if (unarmed)
+            EnterTemporalMode(UnitMode.Return);
         HandleTargeting();
-       
+
         if (!Target) {
-            if (action.ToMode() != UnitMode.Attack) ExitTemporalMode();
-            else SetBehaviourPosition(action.position);
+            if (action.ToMode() != UnitMode.Attack)
+                ExitTemporalMode();
+            else
+                SetBehaviourPosition(action.position);
             return;
-        } 
+        }
 
         SetBehaviourPosition(Target.GetPosition());
 
-        if (InRange(_position) && StopsToShoot()) _move = false;
+        if (InRange(_position) && StopsToShoot())
+            _move = false;
 
         bool canShoot = InShootRange(_position, weapons[0].Type.maxTargetDeviation);
-        if (canShoot != areWeaponsActive) SetWeaponsActive(canShoot);
+        if (canShoot != areWeaponsActive)
+            SetWeaponsActive(canShoot);
     }
 
     protected virtual void PatrolBehaviour() {
@@ -499,8 +512,8 @@ public abstract class Unit : Entity, IArmed {
         if (Target) {
             EnterTemporalMode(UnitMode.Attack);
             return;
-        } 
-        
+        }
+
         if (Vector2.Distance(patrolPosition, GetPosition()) < 5f || patrolPosition == Vector2.zero) {
             Vector2 patrolPos = action == null ? homePosition : action.position;
 
@@ -521,7 +534,8 @@ public abstract class Unit : Entity, IArmed {
             LandPadBlock targetLandPad = MapManager.Map.GetBestAvilableLandPad(this);
 
             // Confirm target change
-            if (targetLandPad) Target = targetLandPad;
+            if (targetLandPad)
+                Target = targetLandPad;
         }
 
         // If couldnt't find any landpads, continue as patrol mode
@@ -536,15 +550,17 @@ public abstract class Unit : Entity, IArmed {
             bool canLand = landPad.CanLand(this);
 
             // Try to land
-            if (isInDistance && isFlyingLow && isMovingSlow && canLand) Land();
+            if (isInDistance && isFlyingLow && isMovingSlow && canLand)
+                Land();
 
             //Move towards target
             SetBehaviourPosition(Target.GetPosition());
 
-        } else PatrolBehaviour();
+        } else
+            PatrolBehaviour();
     }
 
-    protected virtual void AssistBehaviour() {   
+    protected virtual void AssistBehaviour() {
         if (!isCoreUnit) {
             EnterTemporalMode(UnitMode.Return);
             return;
@@ -554,8 +570,10 @@ public abstract class Unit : Entity, IArmed {
         if (constructingBlock == null) {
             ConstructionBlock found = null;
 
-            if (ConstructionBlock.blocksInConstruction.Count != 0) found = TryGetConstructionBlock();
-            else subStateMode = AssistSubState.Waiting;
+            if (ConstructionBlock.blocksInConstruction.Count != 0)
+                found = TryGetConstructionBlock();
+            else
+                subStateMode = AssistSubState.Waiting;
 
             if (found != null) {
                 constructingBlock = found;
@@ -570,7 +588,8 @@ public abstract class Unit : Entity, IArmed {
                 return;
             }
 
-            if (inventory.Empty()) return;
+            if (inventory.Empty())
+                return;
             float distanceToCore = Vector2.Distance(Target.GetPosition(), GetPosition());
 
             if (distanceToCore < itemPickupDistance) {
@@ -637,7 +656,8 @@ public abstract class Unit : Entity, IArmed {
 
     protected virtual void EndTakeOff() {
         //If is landed on a landpad, takeoff from it
-        if (currentLandPadBlock) currentLandPadBlock.TakeOff(this);
+        if (currentLandPadBlock)
+            currentLandPadBlock.TakeOff(this);
         currentLandPadBlock = null;
 
         //Takeoff ended, allowing free movement
@@ -645,7 +665,8 @@ public abstract class Unit : Entity, IArmed {
     }
 
     public virtual void Land() {
-        if (!Target) Crash();
+        if (!Target)
+            Crash();
 
         LandPadBlock landpad = Target as LandPadBlock;
 
@@ -653,8 +674,10 @@ public abstract class Unit : Entity, IArmed {
         bool isNear = Vector2.Distance(Target.GetPosition(), transform.position) < Target.size * 0.65f;
         bool canDock = isLandpad && landpad.CanLand(this);
 
-        if (isNear && canDock) Dock(landpad);
-        else Crash();
+        if (isNear && canDock)
+            Dock(landpad);
+        else
+            Crash();
     }
 
     public virtual void Dock(LandPadBlock landpad) {
@@ -695,23 +718,28 @@ public abstract class Unit : Entity, IArmed {
     }
 
     protected bool ValidTarget(Entity target) {
-        if (!target) return false;
+        if (!target)
+            return false;
         return Vector2.Distance(target.GetPosition(), GetPosition()) < searchRange;
     }
 
     protected Entity GetTarget(Type[] priorityList = null) {
         //Default priority targets
-        if (priorityList == null) priorityList = new Type[4] { typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) };
+        if (priorityList == null)
+            priorityList = new Type[4] { typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) };
 
-        foreach(Type type in priorityList) {
+        foreach (Type type in priorityList) {
             //Search the next priority type
             Entity tempTarget;
 
-            if (type == typeof(Unit)) tempTarget = MapManager.Map.GetClosestEntityInView(GetPosition(), transform.up, fov, typeof(Unit), TeamUtilities.GetEnemyTeam(teamCode));
-            else tempTarget = MapManager.Map.GetClosestEntity(GetPosition(), type, TeamUtilities.GetEnemyTeam(teamCode));
+            if (type == typeof(Unit))
+                tempTarget = MapManager.Map.GetClosestEntityInView(GetPosition(), transform.up, fov, typeof(Unit), TeamUtilities.GetEnemyTeam(teamCode));
+            else
+                tempTarget = MapManager.Map.GetClosestEntity(GetPosition(), type, TeamUtilities.GetEnemyTeam(teamCode));
 
             //If target is valid, stop searching
-            if (ValidTarget(tempTarget)) return tempTarget;
+            if (ValidTarget(tempTarget))
+                return tempTarget;
         }
 
         return null;
@@ -730,7 +758,8 @@ public abstract class Unit : Entity, IArmed {
     public virtual TileType GetGroundTile() {
         // Get the map tile below the shadow (for 3d perspecive realism)
         Vector2 position = shadow.transform.position;
-        if (!MapManager.Map.InBounds(position)) return null;
+        if (!MapManager.Map.InBounds(position))
+            return null;
         return MapManager.Map.GetMapTileTypeAt(Map.MapLayer.Ground, position);
     }
 
@@ -738,7 +767,8 @@ public abstract class Unit : Entity, IArmed {
 
     float angle;
     public bool InShootRange(Vector2 target, float fov) {
-        if (!InRange(target)) return false;
+        if (!InRange(target))
+            return false;
 
         Vector2 relative = target - GetPosition();
         angle = Vector2.Angle(relative, transform.up);
@@ -774,7 +804,8 @@ public abstract class Unit : Entity, IArmed {
         UpdateCurrentMass();
 
         // If only 10s of fuel left, enable return mode
-        if (fuel / fuelConsumption < Type.fuelLeftToReturn) EnterTemporalMode(UnitMode.Return);
+        if (fuel / fuelConsumption < Type.fuelLeftToReturn)
+            EnterTemporalMode(UnitMode.Return);
     }
 
     public virtual void UpdateCurrentMass() {
@@ -834,7 +865,8 @@ public abstract class Unit : Entity, IArmed {
     #region - Shooting -    
 
     public override void OnDestroy() {
-        if (!gameObject.scene.isLoaded) return;
+        if (!gameObject.scene.isLoaded)
+            return;
 
         EffectPlayer.PlayEffect(Type.deathFX, transform.position, size);
 
@@ -852,7 +884,8 @@ public abstract class Unit : Entity, IArmed {
     }
 
     public void SetWeaponsActive(bool value) {
-        foreach (Weapon weapon in weapons) weapon.SetActive(value);
+        foreach (Weapon weapon in weapons)
+            weapon.SetActive(value);
         areWeaponsActive = value;
     }
 
