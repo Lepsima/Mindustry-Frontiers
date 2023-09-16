@@ -1,5 +1,6 @@
 using UnityEngine;
 using Discord;
+using System;
 using System.Diagnostics;
 
 public class DiscordController : MonoBehaviour {
@@ -13,7 +14,7 @@ public class DiscordController : MonoBehaviour {
         } 
 
         discord = new Discord.Discord(1139523769984110635L, (ulong)CreateFlags.NoRequireDiscord);
-        startTime = System.DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
     }
 
     void Update() {

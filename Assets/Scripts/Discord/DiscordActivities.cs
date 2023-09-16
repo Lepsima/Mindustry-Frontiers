@@ -5,6 +5,7 @@ using Discord;
 using Photon.Pun;
 using Photon.Pun.UtilityScripts;
 using Frontiers.Teams;
+using System;
 
 public class DiscordActivities {
     public enum State {
