@@ -59,3 +59,6 @@ TagManager:
   - name: Effects
     uniqueID: 2619323485
     locked: 0
+  - name: DistortionFX
+    uniqueID: 3182176625
+    locked: 0

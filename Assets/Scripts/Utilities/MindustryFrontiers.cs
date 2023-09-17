@@ -35,6 +35,156 @@ using Frontiers.Content.VisualEffects;
 using Frontiers.FluidSystem;
 
 namespace Frontiers.Animations {
+
+    public class MovementAnimator {
+        readonly MovementAnim[] animations;
+
+        public MovementAnimator(string baseName, string layerName, int layerOrder, Transform parent, MovementAnimation[] animations) {
+            this.animations = new MovementAnim[animations.Length];
+            for (int i = 0; i < animations.Length; i++) this.animations[i] = new MovementAnim(baseName, layerName, layerOrder, parent, animations[i]);
+        }
+
+        public void Update(float deltaTime) {
+            for (int i = 0; i < animations.Length; i++) animations[i].Update(deltaTime);
+        }
+    }
+
+    public class MovementAnim {
+        readonly Transform animationTransform;
+        readonly MovementAnimation animation;
+
+        float time = 0;
+        bool isGoingForward = false;
+
+        public MovementAnim(string baseName, string layerName, int layerOrder, Transform parent, MovementAnimation animation) {
+            this.animation = animation;
+
+            // Create a new gameObject to hold the animation
+            animationTransform = new GameObject("animation" + animation.name, typeof(SpriteRenderer)).transform;
+
+            // Set the position && rotation to 0
+            animationTransform.parent = parent;
+            animationTransform.localPosition = Vector3.zero;
+            animationTransform.localRotation = Quaternion.identity;
+
+            // Get the sprite renderer component
+            SpriteRenderer animationRenderer = animationTransform.GetComponent<SpriteRenderer>();
+            animationRenderer.sprite = AssetLoader.GetSprite(baseName + animation.name);
+            animationRenderer.sortingLayerName = layerName;
+            animationRenderer.sortingOrder = layerOrder;
+        }
+
+        public void Update(float deltaTime) {
+            AddTime(deltaTime);
+
+            if (time > animation.time) {
+                float extra = animation.time - time;
+
+                switch (animation.repeat) {
+                    case MovementAnimation.Repeat.DontRepeat:
+                        return;
+                    case MovementAnimation.Repeat.Loop:
+                        time = 0;
+                        break;
+                    case MovementAnimation.Repeat.PingPong:
+                        time = animation.time;
+                        isGoingForward = false;
+                        break;
+                }
+
+                AddTime(extra);
+            }
+
+            if (time < 0 && animation.repeat == MovementAnimation.Repeat.PingPong) {
+                float extra = Mathf.Abs(time);
+
+                time = 0;
+                isGoingForward = true;
+                AddTime(extra);
+            }
+
+            // Get position and rotation
+            Vector2 position = animation.Position(time);
+            float rotation = animation.Rotation(time);
+
+            // Apply to transform
+            animationTransform.SetLocalPositionAndRotation(position, Quaternion.Euler(0, 0, rotation));
+
+            void AddTime(float time) {
+                this.time += (isGoingForward ? 1f : -1f) * time;
+            }
+        }
+    }
+
+    public struct MovementAnimation {
+        public string name;
+        public float time;
+        public Repeat repeat;
+
+        public Vector2 position;
+        public float rotation;
+
+        public (Vector2, float)[] positionTimeline;
+        public (float, float)[] rotationTimeline;
+
+        public enum Repeat {
+            DontRepeat,
+            Loop,
+            PingPong
+        }
+
+        public MovementAnimation(string name, float time, Repeat repeat, Vector2 position, float rotation, (Vector2, float)[] positionTimeline = null, (float, float)[] rotationTimeline = null) {
+            this.name = name;
+            this.time = time;
+            this.repeat = repeat;
+            this.position = position;
+            this.rotation = rotation;
+            this.positionTimeline = positionTimeline;
+            this.rotationTimeline = rotationTimeline;
+        }
+
+        public Vector2 Position(float time) {
+            if (positionTimeline == null) return position;
+
+            for (int i = 0; i < positionTimeline.Length; i++) {
+                (Vector2, float) key = positionTimeline[i];
+
+                if (key.Item2 > time) continue;
+                if (key.Item2 == time || i + 1 == positionTimeline.Length) return key.Item1;
+
+
+                // Get a number from 0 to 1 that represents the progress from this key to the next key
+                (Vector2, float) nextKey = positionTimeline[i + 1];
+                float map = key.Item2 + (nextKey.Item2 - key.Item2) / this.time * time;
+
+                // Interpolate and return
+                return Vector2.Lerp(key.Item1, nextKey.Item1, map);
+            }
+
+            return position;
+        }
+
+        public float Rotation(float time) {
+            if (rotationTimeline == null) return rotation;
+
+            for (int i = 0; i < rotationTimeline.Length; i++) {
+                (float, float) key = rotationTimeline[i];
+
+                if (key.Item2 > time) continue;
+                if (key.Item2 == time || i + 1 == rotationTimeline.Length) return key.Item1;
+
+                // Get a number from 0 to 1 that represents the progress from this key to the next key
+                (float, float) nextKey = rotationTimeline[i + 1];
+                float map = key.Item2 + (nextKey.Item2 - key.Item2) / this.time * time;
+
+                // Interpolate and return
+                return Mathf.Lerp(key.Item1, nextKey.Item1, map);
+            }
+
+            return rotation;
+        }
+    }
+
     public class SpriteAnimator {
         readonly Dictionary<SpriteAnimation.Case, SpriteAnim> animations = new();
 
@@ -946,7 +1096,7 @@ namespace Frontiers.Content {
             // Drills
             mechanicalDrill, pneumaticDrill,
 
-            blockAssembler,
+            blockAssembler, geodeMiner,
 
             // Fluid distribution
             lowPressurePipe, highPressurePipe, liquidContainer, fluidFilter, fluidExhaust,
@@ -955,6 +1105,30 @@ namespace Frontiers.Content {
             oilRefinery, atmosphericCollector, rotatoryPump, fuelMixer;
 
         public static void Load() {
+            geodeMiner = new ExtractorBlockType("geode-miner", typeof(ExtractorBlock), 3) {
+                //-1.175
+                size = 4,
+                health = 750f,
+
+                drillAnimations = new MovementAnimation[] {
+                    new MovementAnimation(
+                        // Stats
+                        "hammer", 1.5f, MovementAnimation.Repeat.Loop,
+
+                        // Base position
+                        new Vector2(-1.175f, 0f),0f,
+
+                        // Animation keys
+                        new (Vector2, float)[] {
+                            new(new(-1.175f, 0f), 0f),
+                            new(new(-0.7f, 0f), 0.5f),
+                            new(new(-1.175f, 0f), 1.5f),
+                        }),
+                },
+
+                itemCapacity = 50,
+            };
+
             copperWall = new BlockType("copper-wall", typeof(Block), 1) {
                 buildCost = ItemStack.With(Items.copper, 6),
 

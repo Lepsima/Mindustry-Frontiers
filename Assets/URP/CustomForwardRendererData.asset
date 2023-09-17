@@ -15,7 +15,7 @@ MonoBehaviour:
   m_Active: 1
   settings:
     passTag: Distortion
-    Event: 450
+    Event: 300
     filterSettings:
       RenderQueueType: 1
       LayerMask:
@@ -114,12 +114,12 @@ MonoBehaviour:
   m_Active: 1
   settings:
     passTag: RenderEverything
-    Event: 450
+    Event: 500
     filterSettings:
       RenderQueueType: 1
       LayerMask:
         serializedVersion: 2
-        m_Bits: 15471
+        m_Bits: 4294967295
       PassNames: []
     overrideMaterial: {fileID: 0}
     overrideMaterialPassIndex: 0
