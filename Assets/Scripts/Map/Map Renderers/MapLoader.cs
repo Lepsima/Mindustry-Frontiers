@@ -17,7 +17,7 @@ namespace Frontiers.Content.Maps {
 
         public static void GenerateDefaultMaps() {
             MapFile[] maps = GetMaps();
-
+            
             if (Contains("Default Map 02")) {
 
             }
@@ -62,6 +62,8 @@ namespace Frontiers.Content.Maps {
             MapData mapData = mapFile.Read();
             Map map = new(mapFile.name, mapData);
             OnMapLoaded?.Invoke(null, new MapLoadedEventArgs() { loadedMap = map });
+
+            byte[] bytes = GZipCompressor.Zip(map.ToString())
         }
 
         public static void SaveMap(Map map) {
@@ -71,7 +73,9 @@ namespace Frontiers.Content.Maps {
         public static void StoreMap(string name, MapData mapData) {
             string mapName = Path.Combine("Maps", name);
             QuickSaveRaw.Delete(mapName + ".json");
-            QuickSaveWriter writer = QuickSaveWriter.Create(mapName);
+
+            QuickSaveSettings settings = new() { CompressionMode = CompressionMode.Gzip };
+            QuickSaveWriter writer = QuickSaveWriter.Create(mapName, settings);
 
             writer.Write("data", mapData);
             writer.Commit();
@@ -79,7 +83,10 @@ namespace Frontiers.Content.Maps {
 
         public static MapData ReadMap(string name) {
             name = Path.Combine("Maps", name);
-            QuickSaveReader reader = QuickSaveReader.Create(name);
+
+            QuickSaveSettings settings = new() { CompressionMode = CompressionMode.Gzip };
+            QuickSaveReader reader = QuickSaveReader.Create(name, settings);
+
             return reader.Read<MapData>("data");
         }
 

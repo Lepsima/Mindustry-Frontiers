@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Frontiers.Settings;
 using System;
+using System.Linq;
 
 namespace Frontiers.Content.Maps {
     public class Map {
@@ -64,6 +65,16 @@ namespace Frontiers.Content.Maps {
             //tilemap.GenerateColliders();
         }
 
+        public Map(byte[] tilemap, byte[] blocks, byte[] units) {
+            string tileMapData = GZipCompressor.Unzip(tilemap);
+
+
+            string blockData = GZipCompressor.Unzip(blocks);
+
+
+            string unitData = GZipCompressor.Unzip(units); 
+        }
+
         public void LoadTilemapData(string[,,] tileNameArray) {
             // Load the tilemap from an array of the names of the tiles 
 
@@ -108,6 +119,72 @@ namespace Frontiers.Content.Maps {
             return returnArray;
         }
 
+        public byte[] TilemapToBytes() {
+            // Compress tilemap data
+            string tileMapData = $"<size:{size.x},{size.y}:size>";
+
+            for (int x = 0; x < size.x; x++) {
+                for (int y = 0; y < size.y; y++) {
+                    tileMapData += tilemap.GetTile(new Vector2Int(x, y)).ToString();
+                }
+            }
+
+            return GZipCompressor.Zip(tileMapData);
+        }
+
+        public byte[] BlocksToBytes() {
+            // Compress block data
+            string blockData = "";
+
+            foreach (Block block in blocks) {
+                blockData += block.SyncDataToString() + ",";
+            }
+
+            return GZipCompressor.Zip(blockData);
+        }
+
+        public byte[] UnitsToBytes() {
+            // Compress unit data
+            string unitData = "";
+
+            foreach (Unit unit in units) {
+                unitData += unit.SyncDataToString() + ",";
+            }
+
+            return GZipCompressor.Zip(unitData);
+        }
+
+        public void TilemapFromBytes(byte[] bytes) {
+            string tilemapData = GZipCompressor.Unzip(bytes);
+
+            // Get the start and end of the size vector
+            int start = tilemapData.IndexOf("<size:") + 5;
+            int end = tilemapData.IndexOf(":size>");
+
+            // Assemble the vector
+            string[] vectorComponents = tilemapData[start..end].Split(",");
+            Vector2Int size = new(int.Parse(vectorComponents[0]), int.Parse(vectorComponents[1]));
+
+            // Create tilemap
+            tilemap = new(size, Vector2Int.one * Main.RegionSize);
+
+            // Initialize vars
+            int layers = (int)MapLayer.Total;
+
+            // Each string contains a list of all the tiles in the {index} layer
+            string[] layerDatas = (string[])tilemapData.SplitToChunks(layers);
+
+            // Load each tile
+            for (int i = 0; i < layerDatas[0].Length; i++) {
+                Vector2Int position = new(i / size.x, i % size.y);
+                string data = layerDatas[i];
+                tilemap.SetTile(position, data);
+            }
+        }
+
+        public void BlocksFromBytes(byte[] bytes) {
+            MapManager.Instance.InstantiateBlock(position, orientation, contentID, syncID, teamCode);
+        }
 
         public string[] TilemapsToStringArray() {
             // Encode the current state of the tilemap to a single string array
@@ -144,7 +221,7 @@ namespace Frontiers.Content.Maps {
                     int stringIndex = Mathf.FloorToInt(i / MapLoader.TilesPerString);
 
                     // Split the substring into smaller string that each contain a single's tile data
-                    string[] subTileData = (string[])tileData[stringIndex].Split(layers);
+                    string[] subTileData = (string[])tileData[stringIndex].SplitToChunks(layers);
 
                     // Load each data string into a tile
                     for (int z = 0; z < subTileData.Length; z++) {
@@ -258,28 +335,28 @@ namespace Frontiers.Content.Maps {
             // Store all the blocks into a string array
             // Used for network transfer
             string[] blockArray = new string[Mathf.Max(blocks.Count, 2)];
-            for (int i = 0; i < blockArray.Length; i++) blockArray[i] = blocks.Count <= i ? "null" : blocks[i].ToString();
+            for (int i = 0; i < blockArray.Length; i++) blockArray[i] = blocks.Count <= i ? "null" : blocks[i].SyncDataToString();
             return blockArray;
         }
 
-        public void SetBlocksFromStringArray(string[] blockData) {
-            // Da fuk
-            for (int i = 0; i < blockData.Length; i++) {
-                string data = blockData[i];
-                if (data == "null") continue;
+        public void SetBlockFromString(string data) {
+            if (data == "null") return;
 
-                string[] values = data.Split(':');
+            string[] values = data.Split(':');
 
-                int syncID = int.Parse(values[0]);
-                short contentID = short.Parse(values[1]);
-                byte teamCode = byte.Parse(values[2]);
-                float health = float.Parse(values[3]);
-                Vector2 position = new(float.Parse(values[4]), float.Parse(values[5]));
-                int orientation = int.Parse(values[6]);
+            int syncID = int.Parse(values[0]);
+            short contentID = short.Parse(values[1]);
+            byte teamCode = byte.Parse(values[2]);
+            float health = float.Parse(values[3]);
+            Vector2 position = new(float.Parse(values[4]), float.Parse(values[5]));
+            int orientation = int.Parse(values[6]);
 
-                Block block = MapManager.Instance.InstantiateBlock(position, orientation, contentID, syncID, teamCode);
-                block.SetHealth(health);
-            }
+            Block block = MapManager.Instance.InstantiateBlock(position, orientation, contentID, syncID, teamCode);
+            block.SetHealth(health);
+        }
+
+        public void CreateUnitFromString(string data) {
+            // Not now, please
         }
 
         #endregion

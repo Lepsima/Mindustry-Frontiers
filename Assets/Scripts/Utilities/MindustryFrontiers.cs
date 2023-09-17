@@ -47,6 +47,10 @@ namespace Frontiers.Animations {
         public void Update(float deltaTime) {
             for (int i = 0; i < animations.Length; i++) animations[i].Update(deltaTime);
         }
+
+        public void Set(float time) {
+            for (int i = 0; i < animations.Length; i++) animations[i].Set(time);
+        }
     }
 
     public class MovementAnim {
@@ -54,7 +58,7 @@ namespace Frontiers.Animations {
         readonly MovementAnimation animation;
 
         float time = 0;
-        bool isGoingForward = false;
+        bool isGoingForward = true;
 
         public MovementAnim(string baseName, string layerName, int layerOrder, Transform parent, MovementAnimation animation) {
             this.animation = animation;
@@ -69,7 +73,7 @@ namespace Frontiers.Animations {
 
             // Get the sprite renderer component
             SpriteRenderer animationRenderer = animationTransform.GetComponent<SpriteRenderer>();
-            animationRenderer.sprite = AssetLoader.GetSprite(baseName + animation.name);
+            animationRenderer.sprite = AssetLoader.GetSprite(baseName + "-" + animation.name);
             animationRenderer.sortingLayerName = layerName;
             animationRenderer.sortingOrder = layerOrder;
         }
@@ -93,26 +97,31 @@ namespace Frontiers.Animations {
                 }
 
                 AddTime(extra);
-            }
-
-            if (time < 0 && animation.repeat == MovementAnimation.Repeat.PingPong) {
-                float extra = Mathf.Abs(time);
-
+            } else if (time < 0 && animation.repeat == MovementAnimation.Repeat.PingPong) {
                 time = 0;
                 isGoingForward = true;
-                AddTime(extra);
+                AddTime(Mathf.Abs(time));
             }
 
+            UpdateTransfrom();
+
+            void AddTime(float time) {
+                this.time += (isGoingForward ? 1f : -1f) * time;
+            }
+        }
+
+        public void Set(float time) {
+            this.time = time;
+            UpdateTransfrom();
+        }
+
+        private void UpdateTransfrom() {
             // Get position and rotation
             Vector2 position = animation.Position(time);
             float rotation = animation.Rotation(time);
 
             // Apply to transform
             animationTransform.SetLocalPositionAndRotation(position, Quaternion.Euler(0, 0, rotation));
-
-            void AddTime(float time) {
-                this.time += (isGoingForward ? 1f : -1f) * time;
-            }
         }
     }
 
@@ -144,41 +153,41 @@ namespace Frontiers.Animations {
         }
 
         public Vector2 Position(float time) {
-            if (positionTimeline == null) return position;
+            //Debug.Log(time);
+            if (positionTimeline == null || time == 0f) return position;
 
-            for (int i = 0; i < positionTimeline.Length; i++) {
+            for (int i = 1; i < positionTimeline.Length; i++) {
                 (Vector2, float) key = positionTimeline[i];
 
-                if (key.Item2 > time) continue;
-                if (key.Item2 == time || i + 1 == positionTimeline.Length) return key.Item1;
-
+                if (key.Item2 < time) continue;
+                if (key.Item2 == time) return key.Item1;
 
                 // Get a number from 0 to 1 that represents the progress from this key to the next key
-                (Vector2, float) nextKey = positionTimeline[i + 1];
-                float map = key.Item2 + (nextKey.Item2 - key.Item2) / this.time * time;
+                (Vector2, float) prevKey = positionTimeline[i - 1];
+                float map = 1f / (key.Item2 - prevKey.Item2) * (time - prevKey.Item2);
 
                 // Interpolate and return
-                return Vector2.Lerp(key.Item1, nextKey.Item1, map);
+                return Vector2.Lerp(prevKey.Item1, key.Item1, map);
             }
 
             return position;
         }
 
         public float Rotation(float time) {
-            if (rotationTimeline == null) return rotation;
+            if (rotationTimeline == null || time == 0f) return rotation;
 
-            for (int i = 0; i < rotationTimeline.Length; i++) {
+            for (int i = 1; i < positionTimeline.Length; i++) {
                 (float, float) key = rotationTimeline[i];
 
-                if (key.Item2 > time) continue;
-                if (key.Item2 == time || i + 1 == rotationTimeline.Length) return key.Item1;
+                if (key.Item2 < time) continue;
+                if (key.Item2 == time) return key.Item1;
 
                 // Get a number from 0 to 1 that represents the progress from this key to the next key
-                (float, float) nextKey = rotationTimeline[i + 1];
-                float map = key.Item2 + (nextKey.Item2 - key.Item2) / this.time * time;
+                (float, float) prevKey = rotationTimeline[i - 1];
+                float map = 1f / (key.Item2 - prevKey.Item2) * (time - prevKey.Item2);
 
                 // Interpolate and return
-                return Mathf.Lerp(key.Item1, nextKey.Item1, map);
+                return Mathf.Lerp(prevKey.Item1, key.Item1, map);
             }
 
             return rotation;
@@ -1110,23 +1119,55 @@ namespace Frontiers.Content {
                 size = 4,
                 health = 750f,
 
+                drillFX = Effects.smallExplosion,
                 drillAnimations = new MovementAnimation[] {
                     new MovementAnimation(
                         // Stats
-                        "hammer", 1.5f, MovementAnimation.Repeat.Loop,
-
-                        // Base position
-                        new Vector2(-1.175f, 0f),0f,
+                        "hammer", 1f, MovementAnimation.Repeat.Loop, new Vector2(-1.175f, 0f), 0f,
 
                         // Animation keys
                         new (Vector2, float)[] {
                             new(new(-1.175f, 0f), 0f),
-                            new(new(-0.7f, 0f), 0.5f),
-                            new(new(-1.175f, 0f), 1.5f),
+                            new(new(-0.7f, 0f), 0.1f),
+                            new(new(-1.175f, 0f), 1f),
+                        }),
+
+                    new MovementAnimation(
+                        // Stats
+                        "hammer", 1f, MovementAnimation.Repeat.Loop, new Vector2(0f, -1.175f), 90f,
+
+                        // Animation keys
+                        new (Vector2, float)[] {
+                            new(new(0f, -1.175f), 0f),
+                            new(new(0f, -0.7f), 0.1f),
+                            new(new(0f, -1.175f), 1f),
+                        }),
+                    
+                    new MovementAnimation(
+                        // Stats
+                        "hammer", 1f, MovementAnimation.Repeat.Loop, new Vector2(1.175f, 0f), 180f,
+
+                        // Animation keys
+                        new (Vector2, float)[] {
+                            new(new(1.175f, 0f), 0f),
+                            new(new(0.7f, 0f), 0.1f),
+                            new(new(1.175f, 0f), 1f),
+                        }),
+
+                    new MovementAnimation(
+                        // Stats
+                        "hammer", 1f, MovementAnimation.Repeat.Loop, new Vector2(0f, 1.175f), 270f,
+
+                        // Animation keys
+                        new (Vector2, float)[] {
+                            new(new(0f, 1.175f), 0f),
+                            new(new(0f, 0.7f), 0.1f),
+                            new(new(0f, 1.175f), 1f),
                         }),
                 },
 
                 itemCapacity = 50,
+                updates = true,
             };
 
             copperWall = new BlockType("copper-wall", typeof(Block), 1) {

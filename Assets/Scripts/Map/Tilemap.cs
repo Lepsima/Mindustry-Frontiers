@@ -53,10 +53,13 @@ namespace Frontiers.Content.Maps {
             // Loads all layers of the tile from a single string
             // Used to recive map data across the network 
             for (int i = 0; i < data.Length; i++) {
-                int id = Convert.ToInt32(data[i]) - 32;
-                if (id == 0) continue;
-                Set(TileLoader.GetTileTypeById((short)id), (MapLayer)i);
+                LoadTile(data[i], i);
             }
+        }
+
+        public void LoadTile(char data, int layer) {
+            int id = Convert.ToInt32(data) - 32;
+            Set(TileLoader.GetTileTypeById((short)id), (MapLayer)layer);
         }
 
         public override string ToString() {
@@ -191,233 +194,8 @@ namespace Frontiers.Content.Maps {
             }
         }
 
-        class CollisionNode {
-            public CollisionNode next;
-            public Vector2Int position;
-            public int depth;
-
-            public CollisionNode(Vector2Int position, CollisionNode next = null) {
-                this.position = position;
-                Next(next);
-            }
-
-            public void Next(CollisionNode next) {
-                this.next = next;
-                depth = next == null ? 0 : next.depth + 1;
-            }
-        }
-
         public bool InBounds(Vector2 position) {
             return position.x >= 0 && position.x < size.x && position.y >= 0 && position.y < size.y;
-        }
-
-        public void GenerateColliders() {
-            List<Vector2[]> outlines = GetWallOutlines();
-            List<EdgeCollider2D> edgeColliders = new();
-
-            foreach(Vector2[] outline in outlines) {
-                EdgeCollider2D edgeCollider = new GameObject("Outline", typeof(EdgeCollider2D)).GetComponent<EdgeCollider2D>();
-                edgeCollider.SetPoints(outline.ToList());
-            }
-        }
-
-        private List<Vector2[]> GetWallOutlines() {
-            List<Tile> tiles = GetAllSolidPositions();
-            Vector2Int[] nearOffsets = new Vector2Int[8] { new(0, 1), new(1, 0), new(0, -1), new(-1, 0), new(1, 1), new(-1, -1), new(-1, 1), new(1, -1) };
-
-            Debug.Log(tiles.Count);
-
-            // First iteration to discard blocked tiles
-            for (int i = tiles.Count - 1; i >= 0; i--) {
-                Tile tile = tiles[i];
-
-                // Check if is surrounded by other tiles
-                bool isBlocked = true;
-
-                for (int j = 0; j < 4; j++) {
-                    // Add an offset to the current tile position
-                    Vector2Int pos = tile.position + nearOffsets[j];
-
-                    // If is out of bounds or blocked by another wall, shouldnt need collider
-                    if (InBounds(pos) && !GetTile(pos).IsWall()) {
-                        isBlocked = false;
-                        break;
-                    }
-                }
-
-                // If is blocked, remove from list
-                if (isBlocked) tiles.Remove(tile);                  
-            }
-            Debug.Log(tiles.Count);
-
-            List<CollisionNode> allNodes = new();
-
-            foreach(Tile tile in tiles) {
-                allNodes.AddRange(GetTileNodes(tile));
-            }
-
-            List<CollisionNode> toRemoveList = new();
-
-            foreach(CollisionNode node in allNodes) {
-                CollisionNode next = node.next;
-
-                if (next != null && next.next == null) {
-                    node.Next(allNodes.Find(x => x.position == node.next.position && x != next));
-                    toRemoveList.Add(next);
-                }
-            }
-
-            foreach(CollisionNode node in toRemoveList) {
-                allNodes.Remove(node);
-            }
-
-            allNodes = allNodes.OrderBy(x => x.depth).ToList();
-            Debug.Log(allNodes[0].depth);
-
-            // A list of all the outline paths
-            List<Vector2[]> paths = new();
-
-            while (allNodes.Count > 0) {
-                CollisionNode node = allNodes[0];
-                allNodes.Remove(node);
-
-                List<Vector2> outline = new() { node.position };
-                CollisionNode next = node.next;
-
-                while (true) {
-                    if (next == null || !allNodes.Contains(next)) break;
-
-                    outline.Add(next.position);
-                    allNodes.Remove(next);
-
-                    next = next.next;
-                }
-
-                if (outline.Count <= 1) continue;
-                paths.Add(outline.ToArray());
-            }
-
-            return paths;
-
-            /*
-
-            while (tiles.Count > 0) {
-                // Init tile list
-                Tile tile = tiles[^1];
-                List<Tile> path = new() { tile };
-
-                // Search for a path
-                Search(path, tile, null, -1);
-
-                // Convert path to an array of positions
-                Vector2[] pathPositions = new Vector2[path.Count];
-
-                // Loop thru path and add offset to each position to be in the middle of the tile
-                for (int i = 0; i < path.Count; i++) pathPositions[i] = path[i].position;
-
-                // Add to path list
-                paths.Add(pathPositions);
-
-                Debug.Log(pathPositions.Length);
-            }
-
-            // Return found paths
-            return paths;
-
-            void Search(List<Tile> path, Tile tile, Tile last, int lastDir) {
-                if (path.Count >= 1000)
-                    return;
-
-                Tile[] nearTiles = new Tile[8];
-
-                for (int i = 0; i < 8; i++) {
-                    // Add an offset to the current tile position
-                    Vector2Int pos = tile.position + nearOffsets[i];
-
-                    // Add to near tiles
-                    Tile nearTile = TryFind(pos);
-                    nearTiles[i] = nearTile;
-
-                    // If there is no tile, is going back, is already on the path or is used, skip
-                    if (nearTile == null || last == nearTile || path.Contains(nearTile))
-                        continue;
-
-                    // If line is going in the same direction, remove last
-                    //if (lastDir == i && path.Count > 0) path.Remove(last);
-
-                    // Add tile to the path and remove from main list
-                    path.Add(nearTile);
-                    tiles.Remove(nearTile);
-
-                    // Continue search
-                    Search(path, nearTile, tile, i);
-                    return;
-                }
-
-
-                // If there is no last tile, this is a single block path
-                if (last == null)
-                    return;
-
-                // If couldn't find any tiles, try to close loop or go backwards
-                for (int i = 0; i < 8; i++) {
-                    Tile nearTile = nearTiles[i];
-
-                    // If is invalid, skip
-                    if (nearTile == last || nearTile == null)
-                        continue;
-
-                    // If near is the start, close loop
-                    if (nearTile == path[0]) {
-                        path.Add(nearTile);
-                        break;
-                    }
-
-                    // Add tile to path, thus going backwards
-                    path.Add(nearTile);
-                    Search(path, nearTile, tile, i);
-                    return;
-                }
-            }
-            */
-
-            bool MissingWallAt(Vector2Int pos) {
-                return InBounds(pos) && !GetTile(pos).IsWall();
-            }
-            
-
-            List<CollisionNode> GetTileNodes(Tile tile) {
-                bool
-                    nearA = MissingWallAt(tile.position + new Vector2Int(0, 1)),
-                    nearB = MissingWallAt(tile.position + new Vector2Int(1, 0)),
-                    nearC = MissingWallAt(tile.position + new Vector2Int(0, -1)),
-                    nearD = MissingWallAt(tile.position + new Vector2Int(-1, 0));
-
-                List<CollisionNode> nodes = new();
-
-                if (nearD || nearA) { 
-                    nodes.Add(new CollisionNode(tile.position + new Vector2Int(0, 1))); 
-                }
-
-                if (nearA || nearB) {
-                    CollisionNode prev = nearA ? nodes[^1] : null;
-                    nodes.Add(new CollisionNode(tile.position + new Vector2Int(1, 1), prev));
-                }
-
-                if (nearB || nearC) {
-                    CollisionNode prev = nearB ? nodes[^1] : null;
-                    nodes.Add(new CollisionNode(tile.position + new Vector2Int(1, 0), prev));
-                }
-
-                if (nearC || nearD) {
-                    CollisionNode prev = nearC ? nodes[^1] : null;
-                    nodes.Add(new CollisionNode(tile.position, prev));
-                }
-
-                if (nearD && nearA) nodes[0].Next(nodes[^1]);
-
-                return nodes;
-            }
         }
 
         public void HoldMeshUpdate(bool state) {
@@ -427,19 +205,6 @@ namespace Frontiers.Content.Maps {
                     regions[x, y].HoldMeshUpdate(state);
                 }
             }
-        }
-
-        public List<Tile> GetAllSolidPositions() {
-            List<Tile> solidPoses = new();
-
-            for (int x = 0; x < size.x; x++) {
-                for (int y = 0; y < size.y; y++) {
-                    Tile tile = GetTile(new(x, y));
-                    if (tile.IsWall()) solidPoses.Add(tile);
-                }
-            }
-
-            return solidPoses;
         }
 
         public Tile GetTile(Vector2Int position) {

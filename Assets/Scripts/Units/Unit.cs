@@ -116,6 +116,16 @@ public abstract class Unit : Entity, IArmed {
 
     #region - Syncronization -
 
+    public override string SyncDataToString() {
+        string data = base.SyncDataToString();
+        return data;
+    }
+
+    public override string LoadDataToString() {
+        string data = base.LoadDataToString();
+        return data;
+    }
+
     public override float[] GetSyncValues() {
         float[] values = base.GetSyncValues();
         values[2] = GetPosition().x;

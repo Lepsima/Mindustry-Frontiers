@@ -68,7 +68,7 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory, IMe
         maxHealth += maxHealth * mult.entity_health;
         itemCapacity += Mathf.RoundToInt(itemCapacity * mult.entity_itemCapacity);
     }
-    
+
     public virtual void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) where T : EntityType {
         this.id = id;
         this.teamCode = teamCode;
@@ -190,9 +190,27 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory, IMe
         OnDestroyed?.Invoke(this, new EntityArg { other = null });
     }
 
-    public override string ToString() {
-        string data = "";
+    /// <summary>
+    /// Sent regularly to update the entities
+    /// Includes everything
+    /// </summary>
+    /// <returns>The data needed to sync this entity</returns>
+    public virtual string SyncDataToString() {
+        string data = this is Unit ? "<us>" : "<bs>"; // unit-sync, block-sync
         data += SyncID + ":";
+        data += Type.id + ":";
+        data += teamCode + ":";
+        data += health + ":";
+        return data;
+    }
+
+    /// <summary>
+    /// Used to save the entity into a file
+    /// Does not include "Sync id" and may include initialization values
+    /// </summary>
+    /// <returns>The data needed to save/load this entity on a file</returns>
+    public virtual string LoadDataToString() {
+        string data = this is Unit ? "<uf>" : "<bf>"; // unit-file, block-file
         data += Type.id + ":";
         data += teamCode + ":";
         data += health + ":";

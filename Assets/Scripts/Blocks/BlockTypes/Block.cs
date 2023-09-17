@@ -25,6 +25,30 @@ public class Block : Entity {
 
     static readonly Vector2Int[] adjacentPositions = new Vector2Int[4] { new Vector2Int(1, 0), new Vector2Int(0, 1), new Vector2Int(-1, 0), new Vector2Int(0, -1) };
 
+    public override string SyncDataToString() {
+        string data = base.SyncDataToString();
+
+        // Save position as 2d index
+        Vector2Int position = GetGridPosition();
+        data += (position.x * MapManager.Map.size.x) + position.y;
+
+        // Save orientation
+        data += orientation + ":";
+        return data;
+    }
+
+    public override string LoadDataToString() {
+        string data = base.LoadDataToString();
+
+        // Save position as 2d index
+        Vector2Int position = GetGridPosition();
+        data += (position.x * MapManager.Map.size.x) + position.y;
+
+        // Save orientation
+        data += orientation + ":";
+        return data;
+    }
+
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         Type = type as BlockType;
 
@@ -236,13 +260,5 @@ public class Block : Entity {
 
         MapManager.Map.RemoveBlock(this);
         base.OnDestroy();
-    }
-
-    public override string ToString() {
-        string data = base.ToString();
-        data += GetGridPosition().x + ":";
-        data += GetGridPosition().y + ":";
-        data += orientation + ":";
-        return data;
     }
 }
