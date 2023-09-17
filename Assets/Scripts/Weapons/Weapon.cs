@@ -6,9 +6,9 @@ using Photon.Pun;
 using Photon.Realtime;
 using Frontiers.Teams;
 using Frontiers.Animations;
-using Anim = Frontiers.Animations.Anim;
-using Animator = Frontiers.Animations.Animator;
-using Animation = Frontiers.Animations.Animation;
+using SpriteAnim = Frontiers.Animations.SpriteAnim;
+using SpriteAnimator = Frontiers.Animations.SpriteAnimator;
+using SpriteAnimation = Frontiers.Animations.SpriteAnimation;
 using System;
 using Random = UnityEngine.Random;
 
@@ -22,7 +22,7 @@ public class Weapon : MonoBehaviour {
     private Barrel[] barrels;
 
     private ParticleSystem shootFX;
-    private Animator animator;
+    private SpriteAnimator animator;
     private bool hasAnimations;
 
     // Timers
@@ -33,7 +33,7 @@ public class Weapon : MonoBehaviour {
 
     private void Update() {
         if (isReloading && hasAnimations) {
-            animator.NextFrame(Animation.Case.Reload); 
+            animator.NextFrame(SpriteAnimation.Case.Reload); 
         }
 
         if (Type.independent) {
@@ -185,12 +185,12 @@ public class Weapon : MonoBehaviour {
         outlineTransform.localScale = Vector3.one;
     }
 
-    private bool SetAnimations(Animation[] allAnimations) {
+    private bool SetAnimations(SpriteAnimation[] allAnimations) {
         if (allAnimations == null || allAnimations.Length == 0) return false;
-        animator = new Animator();
+        animator = new SpriteAnimator();
 
-        foreach(Animation animation in allAnimations) {
-            Anim anim = new(Type.name, "Blocks", 6, transform, animation);
+        foreach(SpriteAnimation animation in allAnimations) {
+            SpriteAnim anim = new(Type.name, "Blocks", 6, transform, animation);
             animator.AddAnimation(anim);
         }
 
@@ -227,7 +227,7 @@ public class Weapon : MonoBehaviour {
 
         avilableShootTimer = Time.time + time;
 
-        if (hasAnimations) animator.NextFrame(Animation.Case.Shoot);
+        if (hasAnimations) animator.NextFrame(SpriteAnimation.Case.Shoot);
         if (Type.consumesItems) parentEntity.GetInventory().Substract(Type.ammoItem, 1);
 
         if (hasMultiBarrel) {

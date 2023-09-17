@@ -27,7 +27,7 @@ using CI.QuickSave;
 using Newtonsoft.Json;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
-using Animation = Frontiers.Animations.Animation;
+using SpriteAnimation = Frontiers.Animations.SpriteAnimation;
 using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
 using Region = Frontiers.Content.Maps.Tilemap.Region;
 using UnityEditor;
@@ -35,10 +35,10 @@ using Frontiers.Content.VisualEffects;
 using Frontiers.FluidSystem;
 
 namespace Frontiers.Animations {
-    public class Animator {
-        readonly Dictionary<Animation.Case, Anim> animations = new();
+    public class SpriteAnimator {
+        readonly Dictionary<SpriteAnimation.Case, SpriteAnim> animations = new();
 
-        public void AddAnimation(Anim anim) {
+        public void AddAnimation(SpriteAnim anim) {
             if (animations.ContainsKey(anim.GetCase())) return;
             animations.Add(anim.GetCase(), anim);
         }
@@ -48,20 +48,20 @@ namespace Frontiers.Animations {
             animations[0].NextFrame();
         }
 
-        public void NextFrame(Animation.Case useCase) {
+        public void NextFrame(SpriteAnimation.Case useCase) {
             if (!animations.ContainsKey(useCase)) return;
             animations[useCase].NextFrame();
         }
     }
 
-    public class Anim {
+    public class SpriteAnim {
         readonly SpriteRenderer animationRenderer;
         readonly Sprite[] animationFrames;
 
-        Animation animation;
+        SpriteAnimation animation;
         int frame;
 
-        public Anim(string baseName, string layerName, int layerOrder, Transform parent, Animation animation) {
+        public SpriteAnim(string baseName, string layerName, int layerOrder, Transform parent, SpriteAnimation animation) {
             if (animation.frames == 0) return;
             this.animation = animation;
 
@@ -91,10 +91,10 @@ namespace Frontiers.Animations {
             animationRenderer.sprite = animationFrames[frame];
         }
 
-        public Animation.Case GetCase() => animation.useCase;
+        public SpriteAnimation.Case GetCase() => animation.useCase;
     }
 
-    public struct Animation {
+    public struct SpriteAnimation {
         public string name;
         public int frames;
         public Case useCase;
@@ -104,7 +104,7 @@ namespace Frontiers.Animations {
             Shoot
         }
 
-        public Animation(string name, int frames, Case useCase) {
+        public SpriteAnimation(string name, int frames, Case useCase) {
             this.name = name;
             this.frames = frames;
             this.useCase = useCase;
@@ -1898,7 +1898,7 @@ namespace Frontiers.Content {
     public class WeaponType : Content {
         public Item ammoItem;
         public Sprite outlineSprite;
-        public Animation[] animations;
+        public SpriteAnimation[] animations;
         public WeaponBarrel[] barrels;
 
         public Vector2 shootOffset = Vector2.zero;
@@ -2109,7 +2109,7 @@ namespace Frontiers.Content {
                 shootOffset = new Vector2(0, 0.75f),
 
                 independent = true,
-                animations = new Animation[1] { new Animation("-belt", 3, Animation.Case.Shoot) },
+                animations = new SpriteAnimation[1] { new SpriteAnimation("-belt", 3, SpriteAnimation.Case.Shoot) },
                 recoil = 0.02f,
                 clipSize = 50,
                 shootTime = 0.03f,
@@ -2150,7 +2150,7 @@ namespace Frontiers.Content {
                 },
 
                 independent = true,
-                animations = new Animation[1] { new Animation("-belt", 3, Animation.Case.Shoot) },
+                animations = new SpriteAnimation[1] { new SpriteAnimation("-belt", 3, SpriteAnimation.Case.Shoot) },
 
                 recoil = 0.1f,
                 clipSize = 24,
