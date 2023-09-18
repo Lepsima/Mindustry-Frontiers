@@ -20,13 +20,13 @@ public abstract class SyncronizableObject : MonoBehaviour {
         this.SyncID = SyncID;
     }
 
-    public virtual float[] GetSyncValues() {
-        float[] values = new float[syncValues];
-        values[0] = SyncID;
-        return values;
+    public virtual int[] GetSyncData() {
+        int[] data = new int[syncValues];
+        data[0] = SyncID;
+        return data;
     }
 
-    public virtual void ApplySyncValues(float[] values) {
+    public virtual void ApplySyncData(int[] values) {
         // Do nothing here
     }
 

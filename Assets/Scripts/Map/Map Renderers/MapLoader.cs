@@ -62,8 +62,6 @@ namespace Frontiers.Content.Maps {
             MapData mapData = mapFile.Read();
             Map map = new(mapFile.name, mapData);
             OnMapLoaded?.Invoke(null, new MapLoadedEventArgs() { loadedMap = map });
-
-            byte[] bytes = GZipCompressor.Zip(map.ToString())
         }
 
         public static void SaveMap(Map map) {

@@ -116,34 +116,68 @@ public abstract class Unit : Entity, IArmed {
 
     #region - Syncronization -
 
-    public override string SyncDataToString() {
-        string data = base.SyncDataToString();
+    public override int[] GetSyncData() {
+        int[] data = base.GetSyncData();
+
+        // Current target
+        Entity target = GetTarget();
+        data[2] = target ? target.SyncID : -1;
+
+        // Position
+        Vector2 position = GetPosition();
+        data[3] = (int)(position.x * 1000f);
+        data[4] = (int)(position.y * 1000f);
+
+        // Velocity
+        data[5] = (int)(velocity.x * 1000f);
+        data[6] = (int)(velocity.y * 1000f);
+
+        // Fuel
+        data[7] = (int)(fuel * 1000f);
+
         return data;
+    }
+
+    public override void ApplySyncData(int[] values) {
+        base.ApplySyncData(values);
+
+        SyncronizableObject syncObject = Client.GetBySyncID((int)values[2]);
+        Target = syncObject ? syncObject as Entity : null;
+
+        transform.position = new(values[3] / 1000f, values[4] / 1000f);
+        velocity = new(values[5] / 1000f, values[6] / 1000f);
+
+        fuel = values[7] / 1000f;
     }
 
     public override string LoadDataToString() {
         string data = base.LoadDataToString();
+
+        // Current target
+        Entity target = GetTarget();
+        data += (target ? Type.id : null) + ":";
+
+        // Position
+        Vector2 position = GetPosition();
+        data += Math.Round(position.x, 2) + ":" + Math.Round(position.y, 2) + ":";
+
+        // Velocity
+        data += Math.Round(velocity.x, 2) + ":" + Math.Round(velocity.y, 2) + ":";
+
+        // Fuel
+        data += Math.Round(fuel, 2) + ":";
+
         return data;
     }
 
-    public override float[] GetSyncValues() {
-        float[] values = base.GetSyncValues();
-        values[2] = GetPosition().x;
-        values[3] = GetPosition().y;
-        values[4] = velocity.x;
-        values[5] = velocity.y;
-        values[6] = Target.SyncID;
-        return values;
-    }
+    public override void ApplyLoadedValues(float[] values) {
+        base.ApplyLoadedValues(values);
 
-    public override void ApplySyncValues(float[] values) {
-        base.ApplySyncValues(values);
+        SyncronizableObject syncObject = Client.GetBySyncID((int)values[3]);
+        Target = syncObject ? syncObject as Entity : null;
 
-        transform.position = new(values[2], values[3]);
-        velocity = new(values[4], values[5]);
-
-        SyncronizableObject syncObject = Client.GetBySyncID((int)values[6]);
-        _target = syncObject ? syncObject as Entity : null;
+        transform.position = new(values[4], values[5]);
+        velocity = new(values[6], values[7]);
     }
 
     public void SetAction(Action action) {
@@ -194,7 +228,7 @@ public abstract class Unit : Entity, IArmed {
                 targetSearchTimer = 0;
                 deactivateWeaponsTimer = 0;
 
-                homePosition = GetPosition();
+                patrolPosition = Vector2.zero;
                 SetWeaponsActive(false);
             }
         }
@@ -295,7 +329,7 @@ public abstract class Unit : Entity, IArmed {
         SetWeapons();
 
         transform.SetPositionAndRotation(position, rotation);
-        homePosition = transform.position;
+        homePosition = TeamUtilities.GetClosestAllyCoreBlock(transform.position).GetPosition();
         FloorTile = null;
 
         OnTargetChanged += OnTargetValueChange;

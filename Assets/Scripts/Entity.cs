@@ -46,17 +46,6 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory, IMe
         return Type.name;
     }
 
-    public override float[] GetSyncValues() {
-        float[] values = base.GetSyncValues();
-        values[1] = health;
-        return values;
-    }
-
-    public override void ApplySyncValues(float[] values) {
-        base.ApplySyncValues(values);
-        health = values[1];
-    }
-
     public void ApplyUpgrade(UpgradeType upgrade) {
         if (appliedUpgrades.Contains(upgrade.id)) return;
         ApplyUpgrageMultiplier(upgrade);
@@ -192,15 +181,12 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory, IMe
 
     /// <summary>
     /// Sent regularly to update the entities
-    /// Includes everything
+    /// Includes most variable values that can deviate over time
     /// </summary>
     /// <returns>The data needed to sync this entity</returns>
-    public virtual string SyncDataToString() {
-        string data = this is Unit ? "<us>" : "<bs>"; // unit-sync, block-sync
-        data += SyncID + ":";
-        data += Type.id + ":";
-        data += teamCode + ":";
-        data += health + ":";
+    public override int[] GetSyncData() {
+        int[] data = base.GetSyncData();
+        data[1] = (int)(health * 1000);
         return data;
     }
 
@@ -210,11 +196,20 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory, IMe
     /// </summary>
     /// <returns>The data needed to save/load this entity on a file</returns>
     public virtual string LoadDataToString() {
-        string data = this is Unit ? "<uf>" : "<bf>"; // unit-file, block-file
+        string data = this is Unit ? "<u>" : "<b>"; // if is either a unit or a block, totally useless
         data += Type.id + ":";
         data += teamCode + ":";
         data += health + ":";
         return data;
+    }
+
+    public override void ApplySyncData(int[] values) {
+        base.ApplySyncData(values);
+        health = values[1] / 1000f;
+    }
+
+    public virtual void ApplyLoadedValues(float[] values) {
+        health = values[2];
     }
 
     public bool IsBuilding() {

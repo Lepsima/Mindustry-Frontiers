@@ -66,13 +66,13 @@ namespace Frontiers.Content.Maps {
         }
 
         public Map(byte[] tilemap, byte[] blocks, byte[] units) {
-            string tileMapData = GZipCompressor.Unzip(tilemap);
+            string tileMapData = DataCompressor.Unzip(tilemap);
 
 
-            string blockData = GZipCompressor.Unzip(blocks);
+            string blockData = DataCompressor.Unzip(blocks);
 
 
-            string unitData = GZipCompressor.Unzip(units); 
+            string unitData = DataCompressor.Unzip(units); 
         }
 
         public void LoadTilemapData(string[,,] tileNameArray) {
@@ -129,7 +129,7 @@ namespace Frontiers.Content.Maps {
                 }
             }
 
-            return GZipCompressor.Zip(tileMapData);
+            return DataCompressor.Zip(tileMapData);
         }
 
         public byte[] BlocksToBytes() {
@@ -140,7 +140,7 @@ namespace Frontiers.Content.Maps {
                 blockData += block.SyncDataToString() + ",";
             }
 
-            return GZipCompressor.Zip(blockData);
+            return DataCompressor.Zip(blockData);
         }
 
         public byte[] UnitsToBytes() {
@@ -151,11 +151,11 @@ namespace Frontiers.Content.Maps {
                 unitData += unit.SyncDataToString() + ",";
             }
 
-            return GZipCompressor.Zip(unitData);
+            return DataCompressor.Zip(unitData);
         }
 
         public void TilemapFromBytes(byte[] bytes) {
-            string tilemapData = GZipCompressor.Unzip(bytes);
+            string tilemapData = DataCompressor.Unzip(bytes);
 
             // Get the start and end of the size vector
             int start = tilemapData.IndexOf("<size:") + 5;

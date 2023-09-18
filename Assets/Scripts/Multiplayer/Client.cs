@@ -25,16 +25,25 @@ public class Client : MonoBehaviourPunCallbacks {
         return syncObjects[syncID];
     }
 
-    public static void SendSyncData(float[] values) {
-        local.photonView.RPC(nameof(RPC_ReciveSyncValues), RpcTarget.Others, (object)values);
+    public static void SendSyncData(string data) {
+        byte[] bytes = DataCompressor.Zip(data);
+        local.photonView.RPC(nameof(RPC_ReciveSyncData), RpcTarget.Others, (object)bytes);
     }
 
     [PunRPC]
-    public void RPC_ReciveSyncValues(float[] values) {
+    public void RPC_ReciveSyncData(byte[] bytes) {
         if (isRecivingMap) return;
+
+        string data = DataCompressor.Unzip(bytes);
+
+        string[] dataChunks = data.Split(',');
+        for (int i = 0; i < dataChunks.Length; i++) {
+            
+        }
+
         int syncID = (int)values[0];
         SyncronizableObject syncObject = syncObjects[syncID];
-        syncObject.ApplySyncValues(values);
+        syncObject.ApplySyncData(values);
     }
 
 
