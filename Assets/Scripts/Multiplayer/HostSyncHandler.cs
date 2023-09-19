@@ -4,9 +4,11 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 
-public static class Server {
-    public static Queue<SyncronizableObject> syncQueue = new();
+public static class HostSyncHandler {
+    public static List<SyncronizableObject> syncronizableObjects = new();
     public static float timePerUpdate;
+
+    static int index;
 
     public static Client LocalClient => Client.local;
 
@@ -14,7 +16,6 @@ public static class Server {
 
     public static void Set(int updatesPerSecond) {
         timePerUpdate = 1f / updatesPerSecond;
-        syncQueue = new();
         nextSyncID = 0;
     }
 
@@ -39,7 +40,7 @@ public static class Server {
                 continue; 
             }
 
-            Client.SendSyncData(syncObject.GetSyncValues());
+            Client.SendSyncData(syncObject.GetSyncData());
         }
     }
 }

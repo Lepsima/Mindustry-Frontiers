@@ -35,6 +35,6 @@ public abstract class SyncronizableObject : MonoBehaviour {
     }
 
     public void AddToSyncQueue() {
-        Server.syncQueue.Enqueue(this);
+        HostSyncHandler.syncQueue.Enqueue(this);
     }
 }

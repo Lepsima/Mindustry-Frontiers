@@ -46,7 +46,7 @@ namespace Frontiers.Content.Maps {
             size = mapData.size;
 
             // Create an empty tilemap
-            tilemap = new(size, Vector2Int.one * Main.RegionSize);
+            tilemap = new(size, Vector2Int.one * Main.Map_RegionSize);
 
             // Fill the tilemap with the given tile data
             LoadTilemapData(mapData.tilemapData.DecodeThis());
@@ -166,7 +166,7 @@ namespace Frontiers.Content.Maps {
             Vector2Int size = new(int.Parse(vectorComponents[0]), int.Parse(vectorComponents[1]));
 
             // Create tilemap
-            tilemap = new(size, Vector2Int.one * Main.RegionSize);
+            tilemap = new(size, Vector2Int.one * Main.Map_RegionSize);
 
             // Initialize vars
             int layers = (int)MapLayer.Total;

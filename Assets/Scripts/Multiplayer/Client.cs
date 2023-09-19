@@ -25,25 +25,17 @@ public class Client : MonoBehaviourPunCallbacks {
         return syncObjects[syncID];
     }
 
-    public static void SendSyncData(string data) {
-        byte[] bytes = DataCompressor.Zip(data);
-        local.photonView.RPC(nameof(RPC_ReciveSyncData), RpcTarget.Others, (object)bytes);
+    public static void SendSyncData(int[] data) {
+        local.photonView.RPC(nameof(RPC_ReciveSyncData), RpcTarget.Others, (object)data);
     }
 
     [PunRPC]
-    public void RPC_ReciveSyncData(byte[] bytes) {
+    public void RPC_ReciveSyncData(int[] data) {
         if (isRecivingMap) return;
 
-        string data = DataCompressor.Unzip(bytes);
-
-        string[] dataChunks = data.Split(',');
-        for (int i = 0; i < dataChunks.Length; i++) {
-            
-        }
-
-        int syncID = (int)values[0];
+        int syncID = data[0];
         SyncronizableObject syncObject = syncObjects[syncID];
-        syncObject.ApplySyncData(values);
+        syncObject.ApplySyncData(data);
     }
 
 
@@ -62,7 +54,7 @@ public class Client : MonoBehaviourPunCallbacks {
 
     [PunRPC]
     public void MasterRPC_CreateBlock(Vector2 position, int orientation, bool isPlan, short contentID, byte teamCode) {
-        int syncID = Server.GetNewSyncID();
+        int syncID = HostSyncHandler.GetNewSyncID();
         local.photonView.RPC(nameof(RPC_CreateBlock), RpcTarget.All, position, orientation, isPlan, contentID, syncID, teamCode);
     }
 
@@ -109,7 +101,7 @@ public class Client : MonoBehaviourPunCallbacks {
 
     [PunRPC]
     public void MasterRPC_CreateUnit(Vector2 position, float rotation, short contentID, byte teamCode) {
-        int syncID = Server.GetNewSyncID();
+        int syncID = HostSyncHandler.GetNewSyncID();
         local.photonView.RPC(nameof(RPC_CreateUnit), RpcTarget.All, position, rotation, contentID, syncID, teamCode);
     }
 

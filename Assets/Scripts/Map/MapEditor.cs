@@ -48,7 +48,7 @@ public class MapEditor : MonoBehaviour {
         AssetLoader.LoadAssets();
         ContentLoader.LoadContents();
 
-        Main.RegionSize = regionSize;
+        Main.Map_RegionSize = regionSize;
         MapDisplayer.SetupAtlas();
 
         MapLoader.OnMapLoaded += OnMapLoaded;
@@ -56,7 +56,7 @@ public class MapEditor : MonoBehaviour {
         if (loadsMap) { 
             MapLoader.LoadMap(loadName);
         } else {
-            tilemap = new(size, Vector2Int.one * Main.RegionSize);
+            tilemap = new(size, Vector2Int.one * Main.Map_RegionSize);
             map = new Map(saveName, size.x, size.y, tilemap);
         }
 

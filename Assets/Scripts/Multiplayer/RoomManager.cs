@@ -46,7 +46,7 @@ public class RoomManager : MonoBehaviourPunCallbacks {
 
     private void FixedUpdate() {
         if (!updateManagers) return;
-        Server.UpdateSyncObjects(Time.fixedDeltaTime);
+        HostSyncHandler.UpdateSyncObjects(Time.fixedDeltaTime);
     }
 
     #endregion

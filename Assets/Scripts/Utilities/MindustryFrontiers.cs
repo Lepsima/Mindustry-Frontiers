@@ -340,19 +340,47 @@ namespace Frontiers.Pooling {
 namespace Frontiers.Settings {
     public static class Main {
         /// <summary>
-        /// The time interval each entity should sync their data to other players
+        /// The amount of entities to sync every second
         /// </summary>
-        public static float SYNC_TIME = 5f;
+        public static int Sync_updatesPerSecond = 20;
 
         /// <summary>
-        /// The amount of pixels per meter/unit
+        /// The amount of tiles per each region, x^2 amount of tiles per region
         /// </summary>
-        public static int PixelsPerUnit = 32;
+        public static int Map_RegionSize = 32;
+    }
+
+    public static class NetworkSettings {
+        public enum HostSyncQuality {
+            Low,        // Low amount of updates
+            Standard,   // The standard, recomended even if the host has higher speed
+            High,       // Maximum sync quality, for low player count
+        }
 
         /// <summary>
-        /// The amount of tiles per each region (only one side, so if 4 is set then 4^2 = "16 tiles") 
+        /// The quality of the multiplayer syncronization
         /// </summary>
-        public static int RegionSize = 32;
+        public static HostSyncQuality hostSyncQuality;
+        
+        /// <summary>
+        /// The amount of entities to sync every second
+        /// </summary>
+        public static int updatesPerSecond;
+
+
+        public static void ApplyHostSyncQuality() {
+            switch(hostSyncQuality) {
+                case HostSyncQuality.Low:
+                    updatesPerSecond = 5;
+                    break;
+                case HostSyncQuality.Standard:
+                    updatesPerSecond = 20;
+                    break;
+                case HostSyncQuality.High:
+                    updatesPerSecond = 35;
+                    break;
+            }
+        }
     }
 }
 
