@@ -10,8 +10,7 @@ public abstract class SyncronizableObject : MonoBehaviour {
     public int SyncID { set; get; }
     public int syncValues = 1;
 
-    public float defaultSyncTime = 2f;
-    public float syncTime = 2f;
+    public float syncTime = 2f, syncTimer = 0f;
 
     public static bool IsMaster => PhotonNetwork.IsMasterClient;
     public bool syncs = true;
@@ -30,11 +29,12 @@ public abstract class SyncronizableObject : MonoBehaviour {
         // Do nothing here
     }
 
-    public void RetrySync() {
-        Invoke(nameof(AddToSyncQueue), syncTime);
+    public bool CanSync() {
+        return syncs && syncTimer <= Time.time;
     }
 
-    public void AddToSyncQueue() {
-        HostSyncHandler.syncQueue.Enqueue(this);
+    public void Sync() {
+        syncTimer = Time.time + syncTime;
+        Client.SendSyncData(GetSyncData());
     }
 }

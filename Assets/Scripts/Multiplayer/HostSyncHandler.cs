@@ -22,9 +22,8 @@ public static class HostSyncHandler {
     public static int GetNewSyncID() {
         if (!PhotonNetwork.IsMasterClient) return -1;
 
-        int syncID = nextSyncID;
         nextSyncID++;
-        return syncID;
+        return nextSyncID - 1;
     }
 
     public static void UpdateSyncObjects(float deltaTime) {
@@ -33,14 +32,12 @@ public static class HostSyncHandler {
         int updates = Mathf.FloorToInt(deltaTime / timePerUpdate);
 
         for (int i = 0; i < updates; i++) {
-            SyncronizableObject syncObject = syncQueue.Dequeue();
 
-            if (!syncObject || !syncObject.syncs) {
-                syncObject.RetrySync();
-                continue; 
-            }
+            index++;
+            if (index >= syncronizableObjects.Count) index = 0;
 
-            Client.SendSyncData(syncObject.GetSyncData());
+            SyncronizableObject syncObject = syncronizableObjects[index];
+            if (syncObject.CanSync()) syncObject.Sync();
         }
     }
 }
