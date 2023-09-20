@@ -65,14 +65,16 @@ namespace Frontiers.Content.Maps {
             //tilemap.GenerateColliders();
         }
 
-        public Map(byte[] tilemap, byte[] blocks, byte[] units) {
-            string tileMapData = DataCompressor.Unzip(tilemap);
+        public Map(string name, byte[] tilemap, byte[] blocks, byte[] units) {
+            this.name = name;
 
+            TilemapFromBytes(tilemap);
+            BlocksFromBytes(blocks);
+            UnitsFromBytes(units);
 
-            string blockData = DataCompressor.Unzip(blocks);
+            loaded = true;
 
-
-            string unitData = DataCompressor.Unzip(units); 
+            MapRaycaster.map = this;
         }
 
         public void LoadTilemapData(string[,,] tileNameArray) {
@@ -163,7 +165,7 @@ namespace Frontiers.Content.Maps {
 
             // Assemble the vector
             string[] vectorComponents = tilemapData[start..end].Split(",");
-            Vector2Int size = new(int.Parse(vectorComponents[0]), int.Parse(vectorComponents[1]));
+            size = new(int.Parse(vectorComponents[0]), int.Parse(vectorComponents[1]));
 
             // Create tilemap
             tilemap = new(size, Vector2Int.one * Main.Map_RegionSize);

@@ -259,74 +259,72 @@ public class Client : MonoBehaviourPunCallbacks {
 
     public bool isRecivingMap = false;
     public List<int> mapRequestActorNumbers = new();
+    public static MapAssembler mapAssembler;
 
     public static void RequestMap() {
         local.photonView.RPC(nameof(RPC_RequestMap), RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.ActorNumber);
         local.isRecivingMap = true;
+        mapAssembler = new();
     }
 
     [PunRPC]
     public void RPC_RequestMap(int actorNumber) {
         if (MapManager.IsLoaded()) {
+            // Send map directly
+            Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNumber);
             Map map = MapManager.Map;
-
-            string name = map.name;
-            string[] tileMapData = map.TilemapsToStringArray();
-
-            local.photonView.RPC(nameof(RPC_ReciveMapData), PhotonNetwork.CurrentRoom.GetPlayer(actorNumber), name, (Vector2)map.size, tileMapData);
+            SendMap(player, map);
         } else {
+            // Add player to request list, the map will be sent once is loaded
             if (!mapRequestActorNumbers.Contains(actorNumber)) mapRequestActorNumbers.Add(actorNumber);
         }
     }
 
     public void OnMapLoaded(object sender, MapLoader.MapLoadedEventArgs e) {
-        if (!PhotonNetwork.IsMasterClient) {
-            photonView.RPC(nameof(RPC_RequestEntityData), RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.ActorNumber);
-            return;
+        if (!PhotonNetwork.IsMasterClient || mapRequestActorNumbers.Count == 0) return;
+
+        // Send the map to the players in the request list
+        foreach(int actorNumber in mapRequestActorNumbers) {
+            SendMap(PhotonNetwork.CurrentRoom.GetPlayer(actorNumber), e.loadedMap);
         }
+    }
 
-        if (mapRequestActorNumbers.Count == 0) return;
-
-        Map map = e.loadedMap;
+    /// <summary>
+    /// Sends the data of a map to a player
+    /// </summary>
+    /// <param name="player">The player that will recive the map data</param>
+    /// <param name="map">The map that wants to be sent</param>
+    public void SendMap(Player player, Map map) {
+        // This here to prevent dumb things
+        if (!PhotonNetwork.IsMasterClient) return;
 
         string name = map.name;
-        string[] tileMapData = map.TilemapsToStringArray();
 
-
-        foreach(int actorNumber in mapRequestActorNumbers) {
-            local.photonView.RPC(nameof(RPC_ReciveMapData), PhotonNetwork.CurrentRoom.GetPlayer(actorNumber), name, (Vector2)map.size, tileMapData);
-        }
-    }
-
-    [PunRPC]
-    public void RPC_ReciveMapData(string name, Vector2 size, string[] tileMapData)  {
-        MapLoader.ReciveMap(name, size, tileMapData);
-        isRecivingMap = false;
-    }
-
-    [PunRPC]
-    public void RPC_RequestEntityData(int actorNumber) {
-        // Get data
+        byte[] tileMapData = map.TilemapToBytes();
         byte[] blockData = MapManager.Map.BlocksToBytes(true);
         byte[] unitData = MapManager.Map.UnitsToBytes(true);
 
-        // Get the player that made the request
-        Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNumber);
-        if (player == null) return;
+        local.photonView.RPC(nameof(RPC_ReciveMapData), player, name, tileMapData);
+        local.photonView.RPC(nameof(RPC_ReciveBlockData), player, blockData);
+        local.photonView.RPC(nameof(RPC_ReciveUnitData), player, blockData);
+    }
 
-        // Send data
-        local.photonView.RPC(nameof(RPC_ReciveBlockData), PhotonNetwork.CurrentRoom.GetPlayer(actorNumber), blockData);
-        local.photonView.RPC(nameof(RPC_ReciveUnitData), PhotonNetwork.CurrentRoom.GetPlayer(actorNumber), blockData);
+    [PunRPC]
+    public void RPC_ReciveMapData(string name, byte[] tileMapData) {
+        if (mapAssembler == null) Debug.LogWarning("The fuck did you do this time?");
+        mapAssembler.ReciveTilemap(name, tileMapData);
     }
 
     [PunRPC]
     public void RPC_ReciveBlockData(byte[] blockData) {
-        MapManager.Map.BlocksFromBytes(blockData);
+        if (mapAssembler == null) Debug.LogWarning("The fuck did you do this time?");
+        mapAssembler.ReciveBlocks(blockData);
     }
 
     [PunRPC] 
     public void RPC_ReciveUnitData(byte[] unitData) {
-        MapManager.Map.UnitsFromBytes(unitData);
+        if (mapAssembler == null) Debug.LogWarning("The fuck did you do this time?");
+        mapAssembler.ReciveUnits(unitData);
     }
 
     #endregion

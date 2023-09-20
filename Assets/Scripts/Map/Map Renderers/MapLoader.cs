@@ -11,6 +11,9 @@ namespace Frontiers.Content.Maps {
         public static string[] mapNames;
 
         public static event EventHandler<MapLoadedEventArgs> OnMapLoaded;
+
+        public static QuickSaveSettings QuickSaveSettings = new() { CompressionMode = CompressionMode.Gzip };
+
         public class MapLoadedEventArgs {
             public Map loadedMap;
         }
@@ -64,6 +67,11 @@ namespace Frontiers.Content.Maps {
             OnMapLoaded?.Invoke(null, new MapLoadedEventArgs() { loadedMap = map });
         }
 
+        public static void LoadMap(string name, byte[] tilemap, byte[] blocks, byte[] units) {
+            Map map = new(name, tilemap, blocks, units);
+            OnMapLoaded?.Invoke(null, new MapLoadedEventArgs() { loadedMap = map });
+        }
+
         public static void SaveMap(Map map) {
             StoreMap(map.name, map.GetMapData());
         }
@@ -71,9 +79,7 @@ namespace Frontiers.Content.Maps {
         public static void StoreMap(string name, MapData mapData) {
             string mapName = Path.Combine("Maps", name);
             QuickSaveRaw.Delete(mapName + ".json");
-
-            QuickSaveSettings settings = new() { CompressionMode = CompressionMode.Gzip };
-            QuickSaveWriter writer = QuickSaveWriter.Create(mapName, settings);
+            QuickSaveWriter writer = QuickSaveWriter.Create(mapName, QuickSaveSettings);
 
             writer.Write("data", mapData);
             writer.Commit();
@@ -81,15 +87,42 @@ namespace Frontiers.Content.Maps {
 
         public static MapData ReadMap(string name) {
             name = Path.Combine("Maps", name);
-
-            QuickSaveSettings settings = new() { CompressionMode = CompressionMode.Gzip };
-            QuickSaveReader reader = QuickSaveReader.Create(name, settings);
+            QuickSaveReader reader = QuickSaveReader.Create(name, QuickSaveSettings);
 
             return reader.Read<MapData>("data");
         }
 
         public static MapData CreateMap(Vector2Int size, string[] tileData) {
             return new MapData(size, tileData);
+        }
+    }
+
+    public class MapAssembler {
+        public byte[] tilemap, blocks, units;
+        public string name;
+
+        public void ReciveTilemap(string name, byte[] tilemap) {
+            this.name = name;
+            this.tilemap = tilemap;
+            if (IsReady()) Assemble();
+        }
+
+        public void ReciveBlocks(byte[] blocks) {
+            this.blocks = blocks;
+            if (IsReady()) Assemble();
+        }
+
+        public void ReciveUnits(byte[] units) {
+            this.units = units;
+            if (IsReady()) Assemble();
+        }
+
+        public bool IsReady() {
+            return tilemap != null && blocks != null && units != null;
+        }
+
+        public void Assemble() {
+            MapLoader.LoadMap(name, tilemap, blocks, units);
         }
     }
 
@@ -105,7 +138,7 @@ namespace Frontiers.Content.Maps {
         }
 
         public MapData Read() {
-            QuickSaveReader reader = QuickSaveReader.Create(quickSavePath);
+            QuickSaveReader reader = QuickSaveReader.Create(quickSavePath, MapLoader.QuickSaveSettings);
             return reader.Read<MapData>("data");
         }
     }
