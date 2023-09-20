@@ -132,23 +132,23 @@ namespace Frontiers.Content.Maps {
             return DataCompressor.Zip(tileMapData);
         }
 
-        public byte[] BlocksToBytes() {
+        public byte[] BlocksToBytes(bool includeSyncID) {
             // Compress block data
             string blockData = "";
 
             foreach (Block block in blocks) {
-                blockData += block.SaveDataToString() + ",";
+                blockData += block.SaveDataToString(includeSyncID) + ",";
             }
 
             return DataCompressor.Zip(blockData);
         }
 
-        public byte[] UnitsToBytes() {
+        public byte[] UnitsToBytes(bool includeSyncID) {
             // Compress unit data
             string unitData = "";
 
             foreach (Unit unit in units) {
-                unitData += unit.SaveDataToString() + ",";
+                unitData += unit.SaveDataToString(includeSyncID) + ",";
             }
 
             return DataCompressor.Zip(unitData);
@@ -183,8 +183,57 @@ namespace Frontiers.Content.Maps {
         }
 
         public void BlocksFromBytes(byte[] bytes) {
-            MapManager.Instance.InstantiateBlock(position, orientation, contentID, syncID, teamCode);
+            // Delete all blocks
+            foreach (Block block in blocks) {
+                MapManager.Instance.DeleteBlock(block, false);
+            }
+
+            // Decompress and split into chunks
+            string data = DataCompressor.Unzip(bytes);
+            string[] blockDataArray = data.Split(',');
+
+            foreach (string blockData in blockDataArray) {
+                string[] blockValues = blockData.Split(':');
+
+                // Entity parameters
+                byte syncID = byte.Parse(blockValues[0]);
+                short contentID = short.Parse(blockValues[1]);
+                byte teamCode = byte.Parse(blockValues[2]);
+                float health = float.Parse(blockValues[3]);
+
+                // Block parameters
+                int positionIndex = int.Parse(blockValues[4]);
+                byte orientation = byte.Parse(blockValues[5]);
+
+                Vector2 position = new(positionIndex / size.x, positionIndex % size.y);
+
+                Block block = MapManager.Instance.InstantiateBlock(position, orientation, contentID, syncID, teamCode);
+                block.SetHealth(health);
+            }          
         }
+
+        public void UnitsFromBytes(byte[] bytes) {
+            // Delete all units
+            foreach (Unit unit in units) {
+                MapManager.Instance.DeleteUnit(unit, false);
+            }
+
+            // Decompress and split into chunks
+            string data = DataCompressor.Unzip(bytes);
+            string[] unitDataArray = data.Split(',');
+
+            foreach(string unitData in unitDataArray) {
+                string[] unitValues = unitData.Split(':');
+
+                // Entity parameters
+                byte syncID = byte.Parse(unitValues[0]);
+                short contentID = short.Parse(unitValues[1]);
+                byte teamCode = byte.Parse(unitValues[2]);
+                float health = float.Parse(unitValues[3]);
+
+                // Unit parameters
+            }
+        } 
 
         public string[] TilemapsToStringArray() {
             // Encode the current state of the tilemap to a single string array
@@ -329,30 +378,6 @@ namespace Frontiers.Content.Maps {
                     tilemap.SetBlock(sizePosition, null);
                 }
             }
-        }
-
-        public string[] BlocksToStringArray() {
-            // Store all the blocks into a string array
-            // Used for network transfer
-            string[] blockArray = new string[Mathf.Max(blocks.Count, 2)];
-            for (int i = 0; i < blockArray.Length; i++) blockArray[i] = blocks.Count <= i ? "null" : blocks[i].SaveDataToString();
-            return blockArray;
-        }
-
-        public void SetBlockFromString(string data) {
-            if (data == "null") return;
-
-            string[] values = data.Split(':');
-
-            int syncID = int.Parse(values[0]);
-            short contentID = short.Parse(values[1]);
-            byte teamCode = byte.Parse(values[2]);
-            float health = float.Parse(values[3]);
-            Vector2 position = new(float.Parse(values[4]), float.Parse(values[5]));
-            int orientation = int.Parse(values[6]);
-
-            Block block = MapManager.Instance.InstantiateBlock(position, orientation, contentID, syncID, teamCode);
-            block.SetHealth(health);
         }
 
         public void CreateUnitFromString(string data) {

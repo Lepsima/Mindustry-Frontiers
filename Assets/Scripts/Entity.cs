@@ -186,30 +186,29 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory, IMe
     /// <returns>The data needed to sync this entity</returns>
     public override int[] GetSyncData() {
         int[] data = base.GetSyncData();
-        data[1] = (int)(health * 1000);
+        data[0] = (int)(health * 1000);
         return data;
+    }
+
+    public override void ApplySyncData(int[] values) {
+        base.ApplySyncData(values);
+        health = values[0] / 1000f;
     }
 
     /// <summary>
     /// Used to save the entity into a file
-    /// Does not include "Sync id" and may include initialization values
     /// </summary>
     /// <returns>The data needed to save/load this entity on a file</returns>
-    public virtual string SaveDataToString() {
-        string data = this is Unit ? "<u>" : "<b>"; // if is either a unit or a block, totally useless
+    public virtual string SaveDataToString(bool includeSyncID) {
+        string data = includeSyncID ? SyncID + "" : "";
         data += Type.id + ":";
         data += teamCode + ":";
         data += health + ":";
         return data;
     }
 
-    public override void ApplySyncData(int[] values) {
-        base.ApplySyncData(values);
-        health = values[1] / 1000f;
-    }
-
-    public virtual void ApplyLoadedValues(float[] values) {
-        health = values[2];
+    public virtual void ApplySaveData(string[] values, int i = 3) {
+        health = float.Parse(values[i]);
     }
 
     public bool IsBuilding() {

@@ -7,7 +7,7 @@ using Frontiers.Teams;
 using Photon.Pun;
 
 public abstract class SyncronizableObject : MonoBehaviour {
-    public int SyncID { set; get; }
+    public short SyncID { set; get; }
     public int syncValues = 1;
 
     public float syncTime = 2f, syncTimer = 0f;
@@ -15,14 +15,12 @@ public abstract class SyncronizableObject : MonoBehaviour {
     public static bool IsMaster => PhotonNetwork.IsMasterClient;
     public bool syncs = true;
 
-    public void Set(int SyncID) {
+    public void Set(short SyncID) {
         this.SyncID = SyncID;
     }
 
     public virtual int[] GetSyncData() {
-        int[] data = new int[syncValues];
-        data[0] = SyncID;
-        return data;
+        return new int[syncValues];
     }
 
     public virtual void ApplySyncData(int[] values) {

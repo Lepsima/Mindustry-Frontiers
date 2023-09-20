@@ -121,19 +121,19 @@ public abstract class Unit : Entity, IArmed {
 
         // Current target
         Entity target = GetTarget();
-        data[2] = target ? target.SyncID : -1;
+        data[1] = target ? target.SyncID : -1;
 
         // Position
         Vector2 position = GetPosition();
-        data[3] = (int)(position.x * 1000f);
-        data[4] = (int)(position.y * 1000f);
+        data[2] = (int)(position.x * 1000f);
+        data[3] = (int)(position.y * 1000f);
 
         // Velocity
-        data[5] = (int)(velocity.x * 1000f);
-        data[6] = (int)(velocity.y * 1000f);
+        data[4] = (int)(velocity.x * 1000f);
+        data[5] = (int)(velocity.y * 1000f);
 
         // Fuel
-        data[7] = (int)(fuel * 1000f);
+        data[6] = (int)(fuel * 1000f);
 
         return data;
     }
@@ -144,14 +144,14 @@ public abstract class Unit : Entity, IArmed {
         SyncronizableObject syncObject = Client.GetBySyncID((int)values[2]);
         Target = syncObject ? syncObject as Entity : null;
 
-        transform.position = new(values[3] / 1000f, values[4] / 1000f);
-        velocity = new(values[5] / 1000f, values[6] / 1000f);
+        transform.position = new(values[2] / 1000f, values[3] / 1000f);
+        velocity = new(values[4] / 1000f, values[5] / 1000f);
 
-        fuel = values[7] / 1000f;
+        fuel = values[6] / 1000f;
     }
 
-    public override string SaveDataToString() {
-        string data = base.SaveDataToString();
+    public override string SaveDataToString(bool includeSyncID) {
+        string data = base.SaveDataToString(includeSyncID);
 
         // Current target
         Entity target = GetTarget();
@@ -159,25 +159,27 @@ public abstract class Unit : Entity, IArmed {
 
         // Position
         Vector2 position = GetPosition();
-        data += Math.Round(position.x, 2) + ":" + Math.Round(position.y, 2) + ":";
+        data += (int)(position.x * 1000f) + ":" + (int)(position.y * 1000f) + ":";
 
         // Velocity
-        data += Math.Round(velocity.x, 2) + ":" + Math.Round(velocity.y, 2) + ":";
+        data += (int)(velocity.x * 1000f) + ":" + (int)(velocity.y * 1000f) + ":";
 
         // Fuel
-        data += Math.Round(fuel, 2) + ":";
+        data += (int)(fuel * 1000f) + ":";
 
         return data;
     }
 
-    public override void ApplyLoadedValues(float[] values) {
-        base.ApplyLoadedValues(values);
+    public override void ApplySaveData(string[] values, int i = 3) {
+        base.ApplySaveData(values, i);
 
-        SyncronizableObject syncObject = Client.GetBySyncID((int)values[3]);
+        SyncronizableObject syncObject = Client.GetBySyncID(int.Parse(values[i + 1]));
         Target = syncObject ? syncObject as Entity : null;
 
-        transform.position = new(values[4], values[5]);
-        velocity = new(values[6], values[7]);
+        transform.position = new(float.Parse(values[i + 2]), float.Parse(values[i + 3]));
+        velocity = new(float.Parse(values[i + 4]), float.Parse(values[i + 5]));
+
+        fuel = float.Parse(values[i + 6]);
     }
 
     public void SetAction(Action action) {

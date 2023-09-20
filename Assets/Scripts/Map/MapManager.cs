@@ -66,12 +66,11 @@ public class MapManager : MonoBehaviour {
     public static bool TypeEquals(Type target, Type reference) => target == reference || target.IsSubclassOf(reference);
 
     public int GetID() {
-        int ID = nextID;
         nextID++;
-        return ID;
+        return nextID - 1;
     }
 
-    public Block InstantiateBlock(Vector2 position, int orientation, short contentID, int syncID, byte teamCode) {
+    public Block InstantiateBlock(Vector2 position, int orientation, short contentID, short syncID, byte teamCode) {
         Vector2Int gridPosition = Vector2Int.CeilToInt(position);
         BlockType blockType = (BlockType)ContentLoader.GetContentById(contentID);
 
@@ -84,7 +83,7 @@ public class MapManager : MonoBehaviour {
         return block;
     }
 
-    public ConstructionBlock InstantiateConstructionBlock(Vector2 position, int orientation, short contentID, int syncID, byte teamCode) {
+    public ConstructionBlock InstantiateConstructionBlock(Vector2 position, int orientation, short contentID, short syncID, byte teamCode) {
         Vector2Int gridPosition = Vector2Int.CeilToInt(position);
         BlockType blockType = (BlockType)ContentLoader.GetContentById(contentID);
 

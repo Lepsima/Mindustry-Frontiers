@@ -12,7 +12,7 @@ using System.IO.Compression;
 
 public class Client : MonoBehaviourPunCallbacks {
     public static Client local;
-    public static Dictionary<int, SyncronizableObject> syncObjects = new();
+    public static Dictionary<short, SyncronizableObject> syncObjects = new();
 
     private void Awake() {
         local = this;
@@ -21,7 +21,7 @@ public class Client : MonoBehaviourPunCallbacks {
 
     public static bool TypeEquals(Type target, Type reference) => target == reference || target.IsSubclassOf(reference);
 
-    public static SyncronizableObject GetBySyncID(int syncID) {
+    public static SyncronizableObject GetBySyncID(short syncID) {
         return syncObjects[syncID];
     }
 
@@ -34,7 +34,7 @@ public class Client : MonoBehaviourPunCallbacks {
         if (isRecivingMap) return;
 
         int syncID = data[0];
-        SyncronizableObject syncObject = syncObjects[syncID];
+        SyncronizableObject syncObject = syncObjects[(short)syncID];
         syncObject.ApplySyncData(data);
     }
 
@@ -54,12 +54,12 @@ public class Client : MonoBehaviourPunCallbacks {
 
     [PunRPC]
     public void MasterRPC_CreateBlock(Vector2 position, int orientation, bool isPlan, short contentID, byte teamCode) {
-        int syncID = HostSyncHandler.GetNewSyncID();
+        short syncID = HostSyncHandler.GetNewSyncID();
         local.photonView.RPC(nameof(RPC_CreateBlock), RpcTarget.All, position, orientation, isPlan, contentID, syncID, teamCode);
     }
 
     [PunRPC]
-    public void RPC_CreateBlock(Vector2 position, int orientation, bool isPlan, short contentID, int syncID, byte teamCode) {
+    public void RPC_CreateBlock(Vector2 position, int orientation, bool isPlan, short contentID, short syncID, byte teamCode) {
         if (isRecivingMap) return;
 
         if (isPlan) { 
@@ -82,12 +82,12 @@ public class Client : MonoBehaviourPunCallbacks {
     }
 
     [PunRPC]
-    public void MasterRPC_DestroyBlock(int syncID, bool destroyed) {
+    public void MasterRPC_DestroyBlock(short syncID, bool destroyed) {
         local.photonView.RPC(nameof(RPC_DestroyBlock), RpcTarget.All, syncID, destroyed);
     }
 
     [PunRPC]
-    public void RPC_DestroyBlock(int syncID, bool destroyed) {
+    public void RPC_DestroyBlock(short syncID, bool destroyed) {
         if (isRecivingMap) return;
         Block block = (Block)syncObjects[syncID];
         block.Kill(destroyed);
@@ -101,12 +101,12 @@ public class Client : MonoBehaviourPunCallbacks {
 
     [PunRPC]
     public void MasterRPC_CreateUnit(Vector2 position, float rotation, short contentID, byte teamCode) {
-        int syncID = HostSyncHandler.GetNewSyncID();
+        short syncID = HostSyncHandler.GetNewSyncID();
         local.photonView.RPC(nameof(RPC_CreateUnit), RpcTarget.All, position, rotation, contentID, syncID, teamCode);
     }
 
     [PunRPC]
-    public void RPC_CreateUnit(Vector2 position, float rotation, short contentID, int syncID, byte teamCode) {
+    public void RPC_CreateUnit(Vector2 position, float rotation, short contentID, short syncID, byte teamCode) {
         if (isRecivingMap) return;
         MapManager.Instance.InstantiateUnit(position, rotation, contentID, syncID, teamCode);
     }
@@ -118,12 +118,12 @@ public class Client : MonoBehaviourPunCallbacks {
     }
 
     [PunRPC]
-    public void MasterRPC_DestroyUnit(int syncID, bool destroyed) {
+    public void MasterRPC_DestroyUnit(short syncID, bool destroyed) {
         local.photonView.RPC(nameof(RPC_DestroyUnit), RpcTarget.All, syncID, destroyed);
     }
 
     [PunRPC]
-    public void RPC_DestroyUnit(int syncID, bool destroyed) {
+    public void RPC_DestroyUnit(short syncID, bool destroyed) {
         if (isRecivingMap) return;
         Unit unit = (Unit)syncObjects[syncID];
         unit.Kill(destroyed);
@@ -137,7 +137,7 @@ public class Client : MonoBehaviourPunCallbacks {
     }
 
     [PunRPC]
-    public void RPC_WeaponShoot(int syncID, int weaponID) {
+    public void RPC_WeaponShoot(short syncID, int weaponID) {
         if (isRecivingMap) return;
         Weapon weapon = ((IArmed)syncObjects[syncID]).GetWeaponByID(weaponID);
         weapon.Shoot();
@@ -149,7 +149,7 @@ public class Client : MonoBehaviourPunCallbacks {
     }
 
     [PunRPC]
-    public void RPC_UnitTakeoff(int syncID) {
+    public void RPC_UnitTakeoff(short syncID) {
         if (isRecivingMap) return;
         Unit unit = (Unit)syncObjects[syncID];
         unit.OnTakeOff();
@@ -161,7 +161,7 @@ public class Client : MonoBehaviourPunCallbacks {
     }
 
     [PunRPC]
-    public void RPC_UnitChangePatrolPoint(int syncID, Vector2 point) {
+    public void RPC_UnitChangePatrolPoint(short syncID, Vector2 point) {
         if (isRecivingMap) return;
         Unit unit = (Unit)syncObjects[syncID];
         unit.patrolPosition = point;
@@ -173,7 +173,7 @@ public class Client : MonoBehaviourPunCallbacks {
     }
 
     [PunRPC]
-    public void RPC_BulletHit(int syncID, short bulletID) {
+    public void RPC_BulletHit(short syncID, short bulletID) {
         if (isRecivingMap) return;
         Entity entity = (Entity)syncObjects[syncID];
         BulletType bulletType = BulletLoader.loadedBullets[bulletID];
@@ -188,7 +188,7 @@ public class Client : MonoBehaviourPunCallbacks {
     }
 
     [PunRPC]
-    public void RPC_Damage(int syncID, float damage) {
+    public void RPC_Damage(short syncID, float damage) {
         if (isRecivingMap) return;
         Entity entity = (Entity)syncObjects[syncID];
         DamageHandler.Damage(new(damage), entity);
@@ -217,7 +217,7 @@ public class Client : MonoBehaviourPunCallbacks {
 
 
     [PunRPC]
-    public void RPC_AddItem(int syncID, short itemID, int amount) {
+    public void RPC_AddItem(short syncID, short itemID, int amount) {
         if (isRecivingMap) return;
         Entity entity = (Entity)syncObjects[syncID];
         Item item = (Item)ContentLoader.GetContentById(itemID);
@@ -233,7 +233,7 @@ public class Client : MonoBehaviourPunCallbacks {
     }
 
     [PunRPC]
-    public void RPC_AddItems(int syncID, int[] serializedStacks) {
+    public void RPC_AddItems(short syncID, int[] serializedStacks) {
         if (isRecivingMap) return;
 
         ItemStack[] stacks = ItemStack.DeSerialize(serializedStacks);

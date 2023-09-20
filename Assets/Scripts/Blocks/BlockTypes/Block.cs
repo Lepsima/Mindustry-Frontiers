@@ -25,15 +25,15 @@ public class Block : Entity {
 
     static readonly Vector2Int[] adjacentPositions = new Vector2Int[4] { new Vector2Int(1, 0), new Vector2Int(0, 1), new Vector2Int(-1, 0), new Vector2Int(0, -1) };
 
-    public override string SaveDataToString() {
-        string data = base.SaveDataToString();
+    public override string SaveDataToString(bool includeSyncID) {
+        string data = base.SaveDataToString(includeSyncID);
 
         // Save position as 2d index
         Vector2Int position = GetGridPosition();
-        data += (position.x * MapManager.Map.size.x) + position.y;
+        data += (position.x * MapManager.Map.size.x) + position.y + ":";
 
         // Save orientation
-        data += orientation + ":";
+        data += orientation % 4 + ":";
         return data;
     }
 

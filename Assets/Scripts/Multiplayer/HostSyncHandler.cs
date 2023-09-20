@@ -12,18 +12,18 @@ public static class HostSyncHandler {
 
     public static Client LocalClient => Client.local;
 
-    public static int nextSyncID;
+    public static short nextSyncID;
 
     public static void Set(int updatesPerSecond) {
         timePerUpdate = 1f / updatesPerSecond;
         nextSyncID = 0;
     }
 
-    public static int GetNewSyncID() {
+    public static short GetNewSyncID() {
         if (!PhotonNetwork.IsMasterClient) return -1;
 
         nextSyncID++;
-        return nextSyncID - 1;
+        return (short)(nextSyncID - 1);
     }
 
     public static void UpdateSyncObjects(float deltaTime) {
