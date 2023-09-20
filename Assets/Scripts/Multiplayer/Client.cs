@@ -305,13 +305,21 @@ public class Client : MonoBehaviourPunCallbacks {
 
     [PunRPC]
     public void RPC_RequestEntityData(int actorNumber) {
-        string[] blockData = MapManager.Map.BlocksToStringArray();
+        byte[] blockData = MapManager.Map.BlocksToBytes();
+        byte[] unitData = MapManager.Map.UnitsToBytes();
+
         local.photonView.RPC(nameof(RPC_ReciveBlockData), PhotonNetwork.CurrentRoom.GetPlayer(actorNumber), blockData);
+        //local.photonView.RPC(nameof(RPC_ReciveBlockData), PhotonNetwork.CurrentRoom.GetPlayer(actorNumber), blockData);
     }
 
     [PunRPC]
-    public void RPC_ReciveBlockData(string[] blockData) {
-        MapManager.Map.SetBlocksFromStringArray(blockData);
+    public void RPC_ReciveBlockData(byte[] blockData) {
+        MapManager.Map.BlocksFromBytes(blockData);
+    }
+
+    [PunRPC] 
+    public void RPC_ReciveUnitData() {
+
     }
 
     #endregion

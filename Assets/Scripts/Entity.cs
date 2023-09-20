@@ -195,7 +195,7 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory, IMe
     /// Does not include "Sync id" and may include initialization values
     /// </summary>
     /// <returns>The data needed to save/load this entity on a file</returns>
-    public virtual string LoadDataToString() {
+    public virtual string SaveDataToString() {
         string data = this is Unit ? "<u>" : "<b>"; // if is either a unit or a block, totally useless
         data += Type.id + ":";
         data += teamCode + ":";

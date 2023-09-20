@@ -150,8 +150,8 @@ public abstract class Unit : Entity, IArmed {
         fuel = values[7] / 1000f;
     }
 
-    public override string LoadDataToString() {
-        string data = base.LoadDataToString();
+    public override string SaveDataToString() {
+        string data = base.SaveDataToString();
 
         // Current target
         Entity target = GetTarget();

@@ -137,7 +137,7 @@ namespace Frontiers.Content.Maps {
             string blockData = "";
 
             foreach (Block block in blocks) {
-                blockData += block.SyncDataToString() + ",";
+                blockData += block.SaveDataToString() + ",";
             }
 
             return DataCompressor.Zip(blockData);
@@ -148,7 +148,7 @@ namespace Frontiers.Content.Maps {
             string unitData = "";
 
             foreach (Unit unit in units) {
-                unitData += unit.SyncDataToString() + ",";
+                unitData += unit.SaveDataToString() + ",";
             }
 
             return DataCompressor.Zip(unitData);
@@ -335,7 +335,7 @@ namespace Frontiers.Content.Maps {
             // Store all the blocks into a string array
             // Used for network transfer
             string[] blockArray = new string[Mathf.Max(blocks.Count, 2)];
-            for (int i = 0; i < blockArray.Length; i++) blockArray[i] = blocks.Count <= i ? "null" : blocks[i].SyncDataToString();
+            for (int i = 0; i < blockArray.Length; i++) blockArray[i] = blocks.Count <= i ? "null" : blocks[i].SaveDataToString();
             return blockArray;
         }
 
