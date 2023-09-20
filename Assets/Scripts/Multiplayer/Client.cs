@@ -22,6 +22,7 @@ public class Client : MonoBehaviourPunCallbacks {
     public static bool TypeEquals(Type target, Type reference) => target == reference || target.IsSubclassOf(reference);
 
     public static SyncronizableObject GetBySyncID(short syncID) {
+        if (syncID == -1) return null;
         return syncObjects[syncID];
     }
 
@@ -305,11 +306,17 @@ public class Client : MonoBehaviourPunCallbacks {
 
     [PunRPC]
     public void RPC_RequestEntityData(int actorNumber) {
-        byte[] blockData = MapManager.Map.BlocksToBytes();
-        byte[] unitData = MapManager.Map.UnitsToBytes();
+        // Get data
+        byte[] blockData = MapManager.Map.BlocksToBytes(true);
+        byte[] unitData = MapManager.Map.UnitsToBytes(true);
 
+        // Get the player that made the request
+        Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNumber);
+        if (player == null) return;
+
+        // Send data
         local.photonView.RPC(nameof(RPC_ReciveBlockData), PhotonNetwork.CurrentRoom.GetPlayer(actorNumber), blockData);
-        //local.photonView.RPC(nameof(RPC_ReciveBlockData), PhotonNetwork.CurrentRoom.GetPlayer(actorNumber), blockData);
+        local.photonView.RPC(nameof(RPC_ReciveUnitData), PhotonNetwork.CurrentRoom.GetPlayer(actorNumber), blockData);
     }
 
     [PunRPC]
@@ -318,8 +325,8 @@ public class Client : MonoBehaviourPunCallbacks {
     }
 
     [PunRPC] 
-    public void RPC_ReciveUnitData() {
-
+    public void RPC_ReciveUnitData(byte[] unitData) {
+        MapManager.Map.UnitsFromBytes(unitData);
     }
 
     #endregion

@@ -141,7 +141,7 @@ public abstract class Unit : Entity, IArmed {
     public override void ApplySyncData(int[] values) {
         base.ApplySyncData(values);
 
-        SyncronizableObject syncObject = Client.GetBySyncID((int)values[2]);
+        SyncronizableObject syncObject = Client.GetBySyncID((short)values[2]);
         Target = syncObject ? syncObject as Entity : null;
 
         transform.position = new(values[2] / 1000f, values[3] / 1000f);
@@ -155,11 +155,14 @@ public abstract class Unit : Entity, IArmed {
 
         // Current target
         Entity target = GetTarget();
-        data += (target ? Type.id : null) + ":";
+        data += (target ? target.SyncID : -1) + ":";
 
         // Position
         Vector2 position = GetPosition();
         data += (int)(position.x * 1000f) + ":" + (int)(position.y * 1000f) + ":";
+
+        // Rotation
+        data += (short)(transform.eulerAngles.z * 1000f);
 
         // Velocity
         data += (int)(velocity.x * 1000f) + ":" + (int)(velocity.y * 1000f) + ":";
@@ -173,13 +176,12 @@ public abstract class Unit : Entity, IArmed {
     public override void ApplySaveData(string[] values, int i = 3) {
         base.ApplySaveData(values, i);
 
-        SyncronizableObject syncObject = Client.GetBySyncID(int.Parse(values[i + 1]));
+        SyncronizableObject syncObject = Client.GetBySyncID(short.Parse(values[i + 1]));
         Target = syncObject ? syncObject as Entity : null;
 
-        transform.position = new(float.Parse(values[i + 2]), float.Parse(values[i + 3]));
-        velocity = new(float.Parse(values[i + 4]), float.Parse(values[i + 5]));
+        velocity = new(int.Parse(values[i + 5]) / 1000f, int.Parse(values[i + 6]) / 1000f);
 
-        fuel = float.Parse(values[i + 6]);
+        fuel = int.Parse(values[i + 7]) / 1000f;
     }
 
     public void SetAction(Action action) {

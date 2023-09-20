@@ -101,7 +101,7 @@ public class MapManager : MonoBehaviour {
         Destroy(block.gameObject);
     }
 
-    public Unit InstantiateUnit(Vector2 position, float rotation, short contentID, int syncID, byte teamCode) {
+    public Unit InstantiateUnit(Vector2 position, float rotation, short contentID, short syncID, byte teamCode) {
         UnitType unitType = ContentLoader.GetContentById(contentID) as UnitType;
         GameObject unitGameObject = Instantiate(unitPrefab, position, Quaternion.identity);
         Unit unit = (Unit)unitGameObject.AddComponent(unitType.type);

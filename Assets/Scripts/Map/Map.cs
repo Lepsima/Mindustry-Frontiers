@@ -199,7 +199,6 @@ namespace Frontiers.Content.Maps {
                 byte syncID = byte.Parse(blockValues[0]);
                 short contentID = short.Parse(blockValues[1]);
                 byte teamCode = byte.Parse(blockValues[2]);
-                float health = float.Parse(blockValues[3]);
 
                 // Block parameters
                 int positionIndex = int.Parse(blockValues[4]);
@@ -208,7 +207,7 @@ namespace Frontiers.Content.Maps {
                 Vector2 position = new(positionIndex / size.x, positionIndex % size.y);
 
                 Block block = MapManager.Instance.InstantiateBlock(position, orientation, contentID, syncID, teamCode);
-                block.SetHealth(health);
+                block.ApplySaveData(blockValues);
             }          
         }
 
@@ -226,12 +225,16 @@ namespace Frontiers.Content.Maps {
                 string[] unitValues = unitData.Split(':');
 
                 // Entity parameters
-                byte syncID = byte.Parse(unitValues[0]);
+                short syncID = short.Parse(unitValues[0]);
                 short contentID = short.Parse(unitValues[1]);
                 byte teamCode = byte.Parse(unitValues[2]);
-                float health = float.Parse(unitValues[3]);
 
                 // Unit parameters
+                Vector2 position = new(int.Parse(unitValues[5]) / 1000f, int.Parse(unitValues[6]) / 1000f);
+                float rotation = short.Parse(unitValues[7]) / 1000f;
+
+                Unit unit = MapManager.Instance.InstantiateUnit(position, rotation, contentID, syncID, teamCode);
+                unit.ApplySaveData(unitValues);
             }
         } 
 
