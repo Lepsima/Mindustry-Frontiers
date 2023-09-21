@@ -33,7 +33,11 @@ public class TurretBlock : ItemBlock, IArmed {
         if (weapon.consumesItems) inventory.SetAllowedItems(new Item[1] { weapon.ammoItem });
     }
 
-    public Weapon GetWeaponByID(int ID) {
+    public Weapon GetWeaponByID(byte id) {
         return installedWeapon;
+    }
+
+    public void ConsumeAmmo(float amount) {
+
     }
 }

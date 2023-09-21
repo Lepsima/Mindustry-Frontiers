@@ -139,14 +139,18 @@ public class Weapon : MonoBehaviour {
         return null;
     }
 
-    public virtual void Set(Entity parentEntity, int weaponID, WeaponType weaponType, bool mirrored = false, bool onTop = false) {
+    public virtual void Set(Entity parentEntity, short weaponID, WeaponType weaponType, bool mirrored = false, bool onTop = false) {
+        if ((IArmed)parentEntity == null) {
+            Debug.LogError("The parent entity doesn't contain the IArmed interface required to operate weapons");
+            return;
+        }
+
         this.parentEntity = parentEntity;
         this.weaponID = weaponID;
         this.mirrored = mirrored;
         Type = weaponType;
 
         weaponOffset = transform.localPosition;
-        if (Type.consumesItems && !parentEntity.hasItemInventory) Debug.LogWarning(Type.name + " consumes items but " + parentEntity.GetEntityType().name + " doesn't have inventory, this may cause errors");
 
         EndReload();
         SetSprites(onTop);

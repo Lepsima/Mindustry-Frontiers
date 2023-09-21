@@ -59,8 +59,8 @@ public class MapManager : MonoBehaviour {
     }
 
     public void InitializeCores() {
-        Client.CreateBlock(shardCorePosition, 0, false, Blocks.coreShard, 1);
-        Client.CreateBlock(cruxCorePosition, 0, false, Blocks.coreShard, 2);
+        Client.CreateBlock(shardCorePosition, 0, Blocks.coreShard, 1);
+        Client.CreateBlock(cruxCorePosition, 0, Blocks.coreShard, 2);
     }
 
     public static bool TypeEquals(Type target, Type reference) => target == reference || target.IsSubclassOf(reference);
@@ -76,19 +76,6 @@ public class MapManager : MonoBehaviour {
 
         GameObject blockGameObject = Instantiate(blockPrefab, (Vector2)gridPosition, Quaternion.identity);
         Block block = (Block)blockGameObject.AddComponent(blockType.type);
-
-        block.Set(syncID);
-        block.Set(gridPosition, Quaternion.Euler(0, 0, orientation * 90f), blockType, GetID(), teamCode);
-
-        return block;
-    }
-
-    public ConstructionBlock InstantiateConstructionBlock(Vector2 position, int orientation, short contentID, short syncID, byte teamCode) {
-        Vector2Int gridPosition = Vector2Int.CeilToInt(position);
-        BlockType blockType = (BlockType)ContentLoader.GetContentById(contentID);
-
-        GameObject blockGameObject = Instantiate(blockPrefab, (Vector2)gridPosition, Quaternion.identity);
-        ConstructionBlock block = blockGameObject.AddComponent<ConstructionBlock>();
 
         block.Set(syncID);
         block.Set(gridPosition, Quaternion.Euler(0, 0, orientation * 90f), blockType, GetID(), teamCode);

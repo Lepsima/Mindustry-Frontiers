@@ -92,7 +92,7 @@ public class FireController : MonoBehaviour {
     }
 
     public bool IsFlammable(Block block) {
-        if (!block || !block.hasItemInventory) return false;
+        if (!block || block is not ItemBlock) return false;
         return ((ItemBlock)block).IsFlammable();
     }
 

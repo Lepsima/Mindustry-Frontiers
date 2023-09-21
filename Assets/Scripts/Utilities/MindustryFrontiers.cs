@@ -826,7 +826,7 @@ namespace Frontiers.Content {
 
         public Sound destroySound = Sounds.@break;
 
-        public bool updates = false, breakable = true, solid = true;
+        public bool updates = false, syncs = true, breakable = true, solid = true;
         public int size = 1;
 
         public BlockType(string name, Type type, int tier = 1) : base(name, type, tier) {

@@ -99,7 +99,7 @@ public class PlayerManager : MonoBehaviour {
     private void SelectEntity(Entity entity) {
         selectedEntity = entity;
         OnEntitySelected?.Invoke(this, new Entity.EntityArg() { other = selectedEntity });
-        InventoryViewer.Instance.SetInventory(selectedEntity ? selectedEntity.GetInventory() : null);
+        //InventoryViewer.Instance.SetInventory(selectedEntity ? selectedEntity.GetInventory() : null);
     }
 
     private Entity GetEntityInPos(Vector2 pos) {
@@ -119,8 +119,8 @@ public class PlayerManager : MonoBehaviour {
                 sorterBlock.SetFilter(item);
             }
 
-            if (selectedEntity.CanReciveItem(item)) {
-                selectedEntity.ReciveItems(item, amount);
+            if (selectedEntity is ItemBlock block && block.CanReciveItem(item)) {
+                block.ReciveItems(item, amount);
             }
 
         } else if (selectedContent is Fluid fluid) {

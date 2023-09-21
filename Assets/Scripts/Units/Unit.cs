@@ -87,8 +87,6 @@ public abstract class Unit : Entity, IArmed {
         areWeaponsActive, // Wether the weapons of the unit are active or not
         canLoseTarget = true; //Wether to update the target lost timer, used to not lose the current target when doing long maneuvers
 
-    protected ConstructionBlock constructingBlock;
-
     // Timers
     protected float
         targetSearchTimer, // The next time the unit can search for a target
@@ -313,7 +311,6 @@ public abstract class Unit : Entity, IArmed {
         base.Set(position, rotation, type, id, teamCode);
 
         size = Type.size;
-        hasItemInventory = true;
 
         maxVelocity = Type.maxVelocity;
         rotationSpeed = Type.rotationSpeed;
@@ -338,7 +335,9 @@ public abstract class Unit : Entity, IArmed {
 
         OnTargetChanged += OnTargetValueChange;
 
-        syncValues = 7;
+        syncs = true; // Units always sync, if not desired just make "syncTime" really high
+        syncValues = 7; // The amount of values sent each sync (do not change)
+        syncTime = 3f; // The minimum time between syncs
 
         MapManager.Map.AddUnit(this);
         Client.syncObjects.Add(SyncID, this);
@@ -380,18 +379,11 @@ public abstract class Unit : Entity, IArmed {
         weaponGameObject.transform.localScale = Vector3.one;
 
         Weapon weapon = weaponGameObject.AddComponent<Weapon>();
-        weapon.Set(this, weapons.Count, weaponMount.weapon, mirrored, weaponMount.onTop);
+        weapon.Set(this, (short)weapons.Count, weaponMount.weapon, mirrored, weaponMount.onTop);
         weapons.Add(weapon);
     }
 
     public void SetVelocity(Vector2 velocity) => this.velocity = velocity;
-
-    public override void SetInventory() {
-        inventory = new Inventory(itemCapacity, Type.itemMass);
-        hasItemInventory = true;
-
-        base.SetInventory();
-    }
 
     protected virtual void CreateTransforms() {
         shadow = transform.GetComponentInChildren<Shadow>();
@@ -407,66 +399,14 @@ public abstract class Unit : Entity, IArmed {
 
     #region - Events -
 
-    public override void OnInventoryValueChange(object sender, EventArgs e) {
-        if (isCoreUnit) {
-            if (Mode != UnitMode.Assist)
-                return;
-            UpdateSubBehaviour();
-        }
-    }
-
-    protected void OnTargetInventoryValueChange(object sender, EventArgs e) {
-        if (isCoreUnit) {
-            if (Mode != UnitMode.Assist)
-                return;
-            UpdateSubBehaviour();
-        }
-    }
-
     protected virtual void OnTargetValueChange(object sender, EntityArg e) {
         if (isCoreUnit) {
-
+            // I cant remember what was this for...
         }
     }
 
     protected virtual void OnFloorTileChange() {
 
-    }
-
-    #endregion
-
-
-    #region - Core Unit things - 
-    public void UpdateSubBehaviour() {
-        if (!constructingBlock && ConstructionBlock.blocksInConstruction.Count == 0)
-            subStateMode = AssistSubState.Waiting;
-
-        // If has enough or the max amount of items to build the block, go directly to it, else go to the core to refill
-        bool hasMaxItems = inventory.HasToMax(constructingBlock.GetRestantItems());
-        bool hasUsefulItems = inventory.Empty(constructingBlock.GetRequiredItems()) && !inventory.Empty();
-        subStateMode = hasMaxItems || hasUsefulItems ? AssistSubState.Deposit : AssistSubState.Collect;
-    }
-
-    private ConstructionBlock TryGetConstructionBlock() {
-        if (constructionSearchTimer > Time.time)
-            return null;
-        constructionSearchTimer = Time.time + 1f;
-
-        ConstructionBlock closestBlock = null;
-        float closestDistance = 100000f;
-
-        foreach (ConstructionBlock block in ConstructionBlock.blocksInConstruction) {
-            if (!Target.GetInventory().Has(block.GetRestantItems()))
-                continue;
-            float distance = Vector2.Distance(block.GetPosition(), GetPosition());
-
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                closestBlock = block;
-            }
-        }
-
-        return closestBlock;
     }
 
     #endregion
@@ -612,79 +552,6 @@ public abstract class Unit : Entity, IArmed {
         if (!isCoreUnit) {
             EnterTemporalMode(UnitMode.Return);
             return;
-        }
-
-        // If there is no block to build, search for any other blocks in the map
-        if (constructingBlock == null) {
-            ConstructionBlock found = null;
-
-            if (ConstructionBlock.blocksInConstruction.Count != 0)
-                found = TryGetConstructionBlock();
-            else
-                subStateMode = AssistSubState.Waiting;
-
-            if (found != null) {
-                constructingBlock = found;
-                UpdateSubBehaviour();
-            }
-        }
-
-        // If there's nothing to do, go back to core and deposit all items
-        if (subStateMode == AssistSubState.Waiting) {
-            if (!Target) {
-                IdlingBehaviour();
-                return;
-            }
-
-            if (inventory.Empty())
-                return;
-            float distanceToCore = Vector2.Distance(Target.GetPosition(), GetPosition());
-
-            if (distanceToCore < itemPickupDistance) {
-                _move = false;
-
-                // Drop items to core
-                inventory.TransferAll(Target.GetInventory());
-            } else {
-                SetBehaviourPosition(Target.GetPosition());
-            }
-        }
-
-        // If needs items to build block, go to core and pickup items
-        if (subStateMode == AssistSubState.Collect) {
-            if (!Target) {
-                IdlingBehaviour();
-                return;
-            }
-
-            float distanceToCore = Vector2.Distance(Target.GetPosition(), GetPosition());
-
-            if (distanceToCore < itemPickupDistance) {
-                _move = false;
-
-                // Drop items to core
-                inventory.TransferAll(Target.GetInventory());
-
-                // Get only useful items
-                Target.GetInventory().TransferAll(inventory, ItemStack.ToItems(constructingBlock.GetRestantItems()));
-
-            } else {
-                SetBehaviourPosition(Target.GetPosition());
-            }
-        }
-
-        // If has items to build block, go to the block and deposit them
-        if (subStateMode == AssistSubState.Deposit) {
-            float distanceToConstruction = Vector2.Distance(constructingBlock.GetPosition(), GetPosition());
-
-            if (distanceToConstruction < itemPickupDistance) {
-                _move = false;
-
-                // Drops items on the constructing block
-                inventory.TransferSubstractAmount(constructingBlock.GetInventory(), constructingBlock.GetRestantItems());
-            } else {
-                SetBehaviourPosition(constructingBlock.GetPosition());
-            }
         }
     }
 
@@ -937,8 +804,13 @@ public abstract class Unit : Entity, IArmed {
         areWeaponsActive = value;
     }
 
-    public Weapon GetWeaponByID(int ID) {
-        return weapons[ID];
+    public Weapon GetWeaponByID(byte id) {
+        return weapons[id];
     }
+
+    public void ConsumeAmmo(float amount) {
+
+    }
+
     #endregion
 }

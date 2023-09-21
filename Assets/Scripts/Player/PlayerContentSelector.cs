@@ -39,7 +39,7 @@ public static class PlayerContentSelector {
                 // Try placing block
                 if (!MapManager.mouseGridAllowsPlace) return;
                 int orientation = blockType.hasOrientation ? GetOrientation : 0;
-                Client.CreateBlock(MapManager.mouseGridPos, orientation, false, selectedContent, TeamUtilities.GetLocalTeam());
+                Client.CreateBlock(MapManager.mouseGridPos, orientation, selectedContent, TeamUtilities.GetLocalTeam());
 
             } else if (mode == 1) {
                 // Try removing block

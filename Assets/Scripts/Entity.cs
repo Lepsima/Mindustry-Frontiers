@@ -11,7 +11,7 @@ using Frontiers.Content;
 using Frontiers.Assets;
 using Frontiers.Teams;
 
-public abstract class Entity : SyncronizableObject, IDamageable, IInventory, IMessager {
+public abstract class Entity : SyncronizableObject, IDamageable, IMessager {
     public event EventHandler<EntityArg> OnDestroyed;
     public event EventHandler<EventArgs> OnDamaged;
 
@@ -21,7 +21,6 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory, IMe
 
     protected Color teamColor;
     protected EntityType Type;
-    protected Inventory inventory;
     protected AudioSource audioSource;
 
     protected int id;
@@ -36,7 +35,6 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory, IMe
 
     #endregion
 
-    public bool hasItemInventory = false, hasFluidInventory = false;
     public float size;
 
     public bool wasDestroyed = false;
@@ -71,10 +69,12 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory, IMe
         itemCapacity = Type.itemCapacity;
 
         SetLayerAllChildren(transform, GetTeamLayer());
-        SetInventory();
         SetSprites();
 
-        syncValues = 1;
+        // Do not sync by default
+        syncs = false;
+        syncValues = 0;
+        syncTime = 999999f;
     }
 
     protected void ShowSprites(bool state) {
@@ -96,17 +96,11 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory, IMe
 
     public virtual Vector2 GetPredictedPosition(Vector2 origin, Vector2 velocity) => transform.position;
 
-    public Inventory GetInventory() => inventory;
-
     public byte GetTeam() => TeamUtilities.GetTeamByCode(teamCode);
 
     public bool IsLocalTeam() => TeamUtilities.GetLocalTeam() == GetTeam();
 
     public abstract EntityType GetEntityType();
-
-    public virtual void SetInventory() {
-        if (inventory != null) inventory.OnAmountChanged += OnInventoryValueChange;
-    }
 
     public static void SetLayerAllChildren(Transform root, int layer) {
         Transform[] children = root.GetComponentsInChildren<Transform>(true);
@@ -124,16 +118,6 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory, IMe
     }
 
     protected abstract void SetSprites();
-
-    public abstract void OnInventoryValueChange(object sender, EventArgs e);
-
-    public virtual bool CanReciveItem(Item item, int orientation = 0) {
-        return hasItemInventory && inventory != null && inventory.Allowed(item);
-    }
-
-    public virtual void ReciveItems(Item item, int amount = 1, int orientation = 0) {
-        inventory?.Add(item, amount);
-    }
 
     public float GetHealthPercent() {
         return health / maxHealth;

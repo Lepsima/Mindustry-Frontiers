@@ -58,9 +58,12 @@ public class Block : Entity {
         //Set collider size according to block size
         GetComponent<BoxCollider2D>().size = Vector2.one * Type.size;
         size = Type.size;
-        syncTime = 10f;
 
-        if (!MapManager.TypeEquals(Type.type, typeof(ConstructionBlock))) EffectPlayer.PlayEffect(Effects.build, GetPosition(), size);
+        syncs = Type.syncs;
+        syncValues = 1; // The amount of values sent each sync (do not change)
+        syncTime = 10f; // The minimum time between syncs
+
+        EffectPlayer.PlayEffect(Effects.build, GetPosition(), size);
 
         // Add this block to the map lists
         MapManager.Map.AddBlock(this);
@@ -124,59 +127,8 @@ public class Block : Entity {
         }
     }
 
-    // This needs to be here because the base is abstract
-    public override void OnInventoryValueChange(object sender, EventArgs e) {
-
-    }
-
     public override EntityType GetEntityType() => Type;
 
-    // Unused
-    /*
-    public bool ExistsIn(Vector2Int position) {
-        return MapManager.Map.blockPositions[position] == this;
-        
-        if (Type.size == 1 && GetGridPosition() == position) return true;
-
-        for (int x = 0; x < Type.size; x++) {
-            for (int y = 0; y < Type.size; y++) {
-                if (position == new Vector2Int(x, y) + GetGridPosition()) return true;
-            }
-        }
-        return false;
-    }
-
-    public bool IsNear(Block other) {
-        // Try to discard by distance
-        float distance = Vector2.Distance(GetPosition(), other.GetPosition());
-        if (distance > (Type.size + other.Type.size)) return false;
-
-        // Check if the other block exists in any of the border tiles
-        for (int i = 0; i < Type.size; i++) if (MapManager.Map.blockPositions[GetGridPosition() + new Vector2Int(Type.size, i)] == other) return true;
-        for (int i = 0; i < Type.size; i++) if (MapManager.Map.blockPositions[GetGridPosition() + new Vector2Int(i, Type.size)] == other) return true;  
-        for (int i = 0; i < Type.size; i++) if (MapManager.Map.blockPositions[GetGridPosition() + new Vector2Int(-1, i)] == other) return true;
-        for (int i = 0; i < Type.size; i++) if (MapManager.Map.blockPositions[GetGridPosition() + new Vector2Int(i, -1)] == other) return true;
-
-        return false;
-    }
-
-    // Gets the tiles that this block sits in
-    public TileType[] GetTiles() {
-        TileType[] allTiles = new TileType[Type.size * Type.size];
-
-        for(int x = 0; x < Type.size; x++) {
-            for (int y = 0; y < Type.size; y++) {
-                Vector2Int tilePosition = new Vector2Int(x, y) + GetGridPosition();
-                TileType tile = MapManager.Map.GetMapTileTypeAt(MapLayer.Ground, tilePosition);
-
-                int i = x + Type.size * y;
-                allTiles[i] = tile;
-            }
-        }
-
-        return allTiles;
-    }
-    */
 
     // Get the block in front of this using the orientation
     // Only works properly with 1x1 blocks, bigger blocks shouldn't have orientation

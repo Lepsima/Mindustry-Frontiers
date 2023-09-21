@@ -109,7 +109,7 @@ public class CrafterBlock : ItemBlock {
         }
     }
 
-    public override void OnInventoryValueChange(object sender, System.EventArgs e) {
+    public override void OnInventoryValueChange(object sender, EventArgs e) {
         itemPass = !hasItemInventory || inventory.Has(craftConsumption.items) && inventory.Fits(craftProduction.items);
         CraftState(itemPass && fluidPass);
     }

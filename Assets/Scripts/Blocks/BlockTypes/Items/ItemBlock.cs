@@ -5,8 +5,11 @@ using System.Linq;
 using Frontiers.FluidSystem;
 using System;
 
-public abstract class ItemBlock : Block {
+public abstract class ItemBlock : Block, IInventory {
     public new ItemBlockType Type { get => (ItemBlockType)base.Type; protected set => base.Type = value; }
+
+    protected Inventory inventory;
+    public bool hasItemInventory = false, hasFluidInventory = false;
 
     protected ItemBlock[] adjacentBlocks;
     protected ItemBlock[] reciverBlocks;
@@ -47,20 +50,8 @@ public abstract class ItemBlock : Block {
         spriteRenderer.sortingOrder = 2;
     }
 
-    public override void SetInventory() {
-        hasItemInventory = Type.hasItemInventory;
-        hasFluidInventory = Type.hasFluidInventory;
+    public virtual void OnInventoryValueChange(object sender, EventArgs e) {
 
-        if (hasItemInventory) {
-            inventory = new Inventory(Type.allowsSingleItem, Type.itemCapacity, Type.itemMass);
-        }
-
-        if (hasFluidInventory) {
-            fluidInventory = new FluidInventory(this);
-            fluidInventory.OnVolumeChanged += OnVolumeChanged;
-        }
-
-        base.SetInventory();
     }
 
     public virtual void OnVolumeChanged(object sender, EventArgs e) {
@@ -71,13 +62,17 @@ public abstract class ItemBlock : Block {
             return;
         }
 
-        Color color = fluidInventory.displayFluid.color / 255;
+        Color color = fluidInventory.displayFluid.color / 255f;
         color.a = fluidInventory.usedVolume / Type.maxVolume;
         fluidSpriteRenderer.color = color;
     }
 
-    public override bool CanReciveItem(Item item, int orientation = 0) { 
-        return base.CanReciveItem(item) && IsAcceptedItem(item) && !inventory.Full(item); 
+    public virtual void ReciveItems(Item item, int amount = 1, int orientation = 0) {
+        inventory?.Add(item, amount);
+    }
+
+    public virtual bool CanReciveItem(Item item, int orientation = 0) { 
+        return hasItemInventory && inventory != null && inventory.Allowed(item) && IsAcceptedItem(item) && !inventory.Full(item); 
     }
 
     public virtual bool CanOutputFluid(Fluid fluid) {
@@ -89,6 +84,23 @@ public abstract class ItemBlock : Block {
     }
 
     public virtual bool IsAcceptedItem(Item item) => acceptedItems == null || acceptedItems.Length == 0 || acceptedItems.Contains(item);
+
+    public Inventory GetInventory() => inventory;
+
+    public virtual void SetInventory() {
+        hasItemInventory = Type.hasItemInventory;
+        hasFluidInventory = Type.hasFluidInventory;
+
+        if (hasItemInventory) {
+            inventory = new Inventory(Type.allowsSingleItem, Type.itemCapacity, Type.itemMass);
+            inventory.OnAmountChanged += OnInventoryValueChange;
+        }
+
+        if (hasFluidInventory) {
+            fluidInventory = new FluidInventory(this);
+            fluidInventory.OnVolumeChanged += OnVolumeChanged;
+        }
+    }
 
     protected override void Update() {
         base.Update();
@@ -104,7 +116,7 @@ public abstract class ItemBlock : Block {
 
         int offset = reciverBlockIndex;
 
-        for(int io = offset; io < reciverBlockCount + offset; io++) {
+        for (int io = offset; io < reciverBlockCount + offset; io++) {
             int i = io % reciverBlockCount;
 
             Item item = inventory.Has(currentItem, 1) ? currentItem : (outputItems == null ? inventory.First() : inventory.First(outputItems));

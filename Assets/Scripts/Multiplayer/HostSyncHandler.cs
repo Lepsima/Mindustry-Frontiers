@@ -32,10 +32,11 @@ public static class HostSyncHandler {
         int updates = Mathf.FloorToInt(deltaTime / timePerUpdate);
 
         for (int i = 0; i < updates; i++) {
-
+            // Move index to restart loop
             index++;
             if (index >= syncronizableObjects.Count) index = 0;
 
+            // Sync if is the timer ended
             SyncronizableObject syncObject = syncronizableObjects[index];
             if (syncObject.CanSync()) syncObject.Sync();
         }

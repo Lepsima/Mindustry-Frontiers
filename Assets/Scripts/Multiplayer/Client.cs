@@ -40,74 +40,57 @@ public class Client : MonoBehaviourPunCallbacks {
     }
 
 
-    public static void BuildBlock(ConstructionBlock block) {
-        local.photonView.RPC(nameof(MasterRPC_BuildBlock), RpcTarget.MasterClient, (Vector2)block.GetGridPosition(), block.GetOrientation(), block.Type.id, block.GetTeam(), block.SyncID);
+
+    public static void CreateBlock(Vector2 position, int orientation, Content type, byte teamCode) {
+        // As a player, send the block data to the host
+        local.photonView.RPC(nameof(MasterRPC_CreateBlock), RpcTarget.MasterClient, position, orientation, type.id, teamCode);
     }
 
     [PunRPC]
-    public void MasterRPC_BuildBlock(Vector2 position, int orientation, short contentID, byte teamCode, int syncID) {
-        local.photonView.RPC(nameof(RPC_CreateBlock), RpcTarget.All, position, orientation, false, contentID, syncID, teamCode);
-    }
-
-    public static void CreateBlock(Vector2 position, int orientation, bool isPlan, Content type, byte teamCode) {
-        local.photonView.RPC(nameof(MasterRPC_CreateBlock), RpcTarget.MasterClient, position, orientation, isPlan, type.id, teamCode);
-    }
-
-    [PunRPC]
-    public void MasterRPC_CreateBlock(Vector2 position, int orientation, bool isPlan, short contentID, byte teamCode) {
+    public void MasterRPC_CreateBlock(Vector2 position, int orientation, short contentID, byte teamCode) {
+        // As the host, assign a Sync ID to the new block
         short syncID = HostSyncHandler.GetNewSyncID();
-        local.photonView.RPC(nameof(RPC_CreateBlock), RpcTarget.All, position, orientation, isPlan, contentID, syncID, teamCode);
+        local.photonView.RPC(nameof(RPC_CreateBlock), RpcTarget.All, position, orientation, contentID, syncID, teamCode);
     }
 
     [PunRPC]
-    public void RPC_CreateBlock(Vector2 position, int orientation, bool isPlan, short contentID, short syncID, byte teamCode) {
+    public void RPC_CreateBlock(Vector2 position, int orientation, short contentID, short syncID, byte teamCode) {
+        // As all players, recive the new block
         if (isRecivingMap) return;
-
-        if (isPlan) { 
-            MapManager.Instance.InstantiateConstructionBlock(position, orientation, contentID, syncID, teamCode); 
-        } else { 
-
-            if (syncObjects.ContainsKey(syncID)) {
-                ConstructionBlock constructionBlock = syncObjects[syncID] as ConstructionBlock;
-                MapManager.Instance.DeleteBlock(constructionBlock, false);
-            }
-
-            MapManager.Instance.InstantiateBlock(position, orientation, contentID, syncID, teamCode); 
-        }
+        MapManager.Instance.InstantiateBlock(position, orientation, contentID, syncID, teamCode);
     }
 
 
 
     public static void DestroyBlock(Block block, bool destroyed = false) {
-        local.photonView.RPC(nameof(MasterRPC_DestroyBlock), RpcTarget.MasterClient, block.SyncID, destroyed);
-    }
-
-    [PunRPC]
-    public void MasterRPC_DestroyBlock(short syncID, bool destroyed) {
-        local.photonView.RPC(nameof(RPC_DestroyBlock), RpcTarget.All, syncID, destroyed);
+        // As a player, send the remove command to all players
+        local.photonView.RPC(nameof(RPC_DestroyBlock), RpcTarget.MasterClient, block.SyncID, destroyed);
     }
 
     [PunRPC]
     public void RPC_DestroyBlock(short syncID, bool destroyed) {
+        // As all players, recive remove command
         if (isRecivingMap) return;
-        Block block = (Block)syncObjects[syncID];
-        block.Kill(destroyed);
+        ((Block)syncObjects[syncID]).Kill(destroyed);
     }
 
 
 
     public static void CreateUnit(Vector2 position, float rotation, Content type, byte teamCode) {
+        // As a player, send unit creation command to the host
         local.photonView.RPC(nameof(MasterRPC_CreateUnit), RpcTarget.MasterClient, position, rotation, type.id, teamCode);
     }
 
     [PunRPC]
     public void MasterRPC_CreateUnit(Vector2 position, float rotation, short contentID, byte teamCode) {
+        // As the host, assign a Sync ID to the unit
         short syncID = HostSyncHandler.GetNewSyncID();
         local.photonView.RPC(nameof(RPC_CreateUnit), RpcTarget.All, position, rotation, contentID, syncID, teamCode);
     }
 
     [PunRPC]
     public void RPC_CreateUnit(Vector2 position, float rotation, short contentID, short syncID, byte teamCode) {
+        // As all players, recive the unit data with the Sync ID
         if (isRecivingMap) return;
         MapManager.Instance.InstantiateUnit(position, rotation, contentID, syncID, teamCode);
     }
@@ -115,33 +98,30 @@ public class Client : MonoBehaviourPunCallbacks {
 
 
     public static void DestroyUnit(Unit unit, bool destroyed = false) {
-        local.photonView.RPC(nameof(MasterRPC_DestroyUnit), RpcTarget.MasterClient, unit.SyncID, destroyed);
-    }
-
-    [PunRPC]
-    public void MasterRPC_DestroyUnit(short syncID, bool destroyed) {
-        local.photonView.RPC(nameof(RPC_DestroyUnit), RpcTarget.All, syncID, destroyed);
+        // As a player, send a destroy command to all players
+        local.photonView.RPC(nameof(RPC_DestroyUnit), RpcTarget.MasterClient, unit.SyncID, destroyed);
     }
 
     [PunRPC]
     public void RPC_DestroyUnit(short syncID, bool destroyed) {
+        // As all players, destroy unit
         if (isRecivingMap) return;
-        Unit unit = (Unit)syncObjects[syncID];
-        unit.Kill(destroyed);
-    }
+        ((Unit)syncObjects[syncID]).Kill(destroyed);
+    } 
 
 
 
     public static void WeaponShoot(Weapon weapon) {
+        // If is host, send shoot command to all players
         if (!PhotonNetwork.IsMasterClient) return;
         local.photonView.RPC(nameof(RPC_WeaponShoot), RpcTarget.All, weapon.parentEntity.SyncID, weapon.weaponID);
     }
 
     [PunRPC]
-    public void RPC_WeaponShoot(short syncID, int weaponID) {
+    public void RPC_WeaponShoot(short syncID, byte weaponID) {
+        // As a player, shoot weapon
         if (isRecivingMap) return;
-        Weapon weapon = ((IArmed)syncObjects[syncID]).GetWeaponByID(weaponID);
-        weapon.Shoot();
+        ((IArmed)syncObjects[syncID]).GetWeaponByID(weaponID).Shoot();
     }
 
     public static void UnitTakeOff(Unit unit) {
@@ -220,11 +200,11 @@ public class Client : MonoBehaviourPunCallbacks {
     [PunRPC]
     public void RPC_AddItem(short syncID, short itemID, int amount) {
         if (isRecivingMap) return;
-        Entity entity = (Entity)syncObjects[syncID];
+        ItemBlock block = (ItemBlock)syncObjects[syncID];
         Item item = (Item)ContentLoader.GetContentById(itemID);
 
-        if (!entity.CanReciveItem(item)) return;
-        entity.GetInventory().Add(item, amount);
+        if (!block.CanReciveItem(item)) return;
+        block.GetInventory().Add(item, amount);
     }
 
     public static void AddItems(Entity entity, ItemStack[] stacks) {
@@ -238,10 +218,10 @@ public class Client : MonoBehaviourPunCallbacks {
         if (isRecivingMap) return;
 
         ItemStack[] stacks = ItemStack.DeSerialize(serializedStacks);
-        Entity entity = (Entity)syncObjects[syncID];
+        ItemBlock block = (ItemBlock)syncObjects[syncID];
 
-        if (!entity.hasItemInventory) return;
-        entity.GetInventory().Add(stacks);
+        if (!block.hasItemInventory) return;
+        block.GetInventory().Add(stacks);
     }
 
     public static void CreateFire(Vector2 gridPosition) {
