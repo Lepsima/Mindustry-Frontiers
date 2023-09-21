@@ -17,6 +17,7 @@ public class Weapon : MonoBehaviour {
     private Vector2 weaponOffset;
 
     public Entity parentEntity, target;
+    public IArmed iArmed;
     public int weaponID;
 
     private Barrel[] barrels;
@@ -140,7 +141,9 @@ public class Weapon : MonoBehaviour {
     }
 
     public virtual void Set(Entity parentEntity, short weaponID, WeaponType weaponType, bool mirrored = false, bool onTop = false) {
-        if ((IArmed)parentEntity == null) {
+        iArmed = parentEntity as IArmed;
+
+        if (iArmed == null) {
             Debug.LogError("The parent entity doesn't contain the IArmed interface required to operate weapons");
             return;
         }
@@ -210,7 +213,7 @@ public class Weapon : MonoBehaviour {
         }
 
         // Check if consumes ammo and if has enough
-        if (Type.consumesItems && !parentEntity.GetInventory().Has(Type.ammoItem, 1)) return false;
+        if (Type.consumesAmmo && !iArmed.CanConsumeAmmo(Type.ammoPerShot)) return false;
 
         return true;
     }
@@ -232,7 +235,7 @@ public class Weapon : MonoBehaviour {
         avilableShootTimer = Time.time + time;
 
         if (hasAnimations) animator.NextFrame(SpriteAnimation.Case.Shoot);
-        if (Type.consumesItems) parentEntity.GetInventory().Substract(Type.ammoItem, 1);
+        if (Type.consumesAmmo) iArmed.ConsumeAmmo(Type.ammoPerShot);
 
         if (hasMultiBarrel) {
             transform.position += transform.up * -Type.recoil / (barrels.Length * 2f);

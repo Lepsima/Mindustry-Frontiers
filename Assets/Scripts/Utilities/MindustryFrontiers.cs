@@ -2139,7 +2139,6 @@ namespace Frontiers.Content {
 
     #region - Weapons -
     public class WeaponType : Content {
-        public Item ammoItem;
         public Sprite outlineSprite;
         public SpriteAnimation[] animations;
         public WeaponBarrel[] barrels;
@@ -2152,16 +2151,29 @@ namespace Frontiers.Content {
 
         public float shootFXSize = 1f, casingFXSize = 1f, casingFXOffset = -0.5f;
 
-        public bool independent = false;
-        public bool consumesItems = false;
-        public bool predictTarget = true;
-        public bool chargesUp = false;
+        public bool consumesAmmo = false; // Wether if it consumes ammo
+        public float ammoPerShot = 0.25f; // The amount of ammo units consumed per shot, 1 ammo == 1 item
+        public Item ammoItem; // Only the first ammo item is used to calculate the ammo type of units
 
-        public float chargedShootTime = 1f, chargeShotCooldown = 1f;
-        public int shotsToChargeUp = 1;
+        public bool independent = false; // If enbled, can gather it's own target
+        public bool predictTarget = true; // If enabled, the weapon can predict the bullet collision of moving targets
 
-        public int clipSize = 10;
-        public float maxTargetDeviation = 15f, spread = 5f, recoil = 0.75f, returnSpeed = 1f, shootTime = 1f, reloadTime = 1f, rotateSpeed = 90f;
+        public bool chargesUp = false; // Special behabiour, if enabled, the fire rate increases per each shot
+        public float chargedShootTime = 1f; // The firerate after the weapon is fully charged
+        public float chargeShotCooldown = 1f; // The rate at wich each charge dissapears
+        public int shotsToChargeUp = 1; // The amount of shots needed to fully charge
+
+        public int clipSize = 10; // The amount of shots per magazine, keep to 1 if this behaviour isn't wanted
+        public float shootTime = 1f; // The time between shots
+        public float reloadTime = 1f; // The time for each magazine to reload
+
+        public float rotateSpeed = 90f; // The degrees per second this weapon rotates at
+        public float maxTargetDeviation = 15f; // The angle of inacurracy that the weapon sees as accepable to shoot at
+        public float spread = 5f;  // The max deviation of the bullets when shot
+
+        // The higher both values, the "snappier" it looks
+        public float recoil = 0.75f; // The recoil of the weapon after each shot
+        public float returnSpeed = 1f; // The return speed to compensate recoil, keep high for fast shooting weapons
 
         public WeaponType(string name) : base(name) {
             outlineSprite = AssetLoader.GetSprite(name + "-outline", true);
@@ -2414,7 +2426,7 @@ namespace Frontiers.Content {
                 shootOffset = new Vector2(0, 0.5f),
 
                 independent = true,
-                consumesItems = true,
+                consumesAmmo = true,
                 maxTargetDeviation = 360f,
 
                 clipSize = 1,

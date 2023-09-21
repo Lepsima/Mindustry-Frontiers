@@ -10,6 +10,8 @@ public class TurretBlock : ItemBlock, IArmed {
     public new TurretBlockType Type { get => (TurretBlockType)base.Type; protected set => base.Type = value; }
     public Weapon installedWeapon;
 
+    public float ammo;
+
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
 
@@ -30,7 +32,11 @@ public class TurretBlock : ItemBlock, IArmed {
         base.SetInventory();
 
         WeaponType weapon = Type.weapon.weapon;
-        if (weapon.consumesItems) inventory.SetAllowedItems(new Item[1] { weapon.ammoItem });
+        if (weapon.consumesAmmo) inventory.SetAllowedItems(new Item[1] { weapon.ammoItem });
+    }
+
+    public override void ReciveItems(Item item, int amount = 1, int orientation = 0) {
+        base.ReciveItems(item, amount, orientation);
     }
 
     public Weapon GetWeaponByID(byte id) {
@@ -38,6 +44,10 @@ public class TurretBlock : ItemBlock, IArmed {
     }
 
     public void ConsumeAmmo(float amount) {
+        ammo -= amount;
+    }
 
+    public bool CanConsumeAmmo(float amount) {
+        return ammo >= amount;
     }
 }
