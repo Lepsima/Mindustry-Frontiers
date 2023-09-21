@@ -18,7 +18,7 @@ public class Weapon : MonoBehaviour {
 
     public Entity parentEntity, target;
     public IArmed iArmed;
-    public int weaponID;
+    public byte weaponID;
 
     private Barrel[] barrels;
 
@@ -140,7 +140,7 @@ public class Weapon : MonoBehaviour {
         return null;
     }
 
-    public virtual void Set(Entity parentEntity, short weaponID, WeaponType weaponType, bool mirrored = false, bool onTop = false) {
+    public virtual void Set(Entity parentEntity, byte weaponID, WeaponType weaponType, bool mirrored = false, bool onTop = false) {
         iArmed = parentEntity as IArmed;
 
         if (iArmed == null) {
@@ -212,10 +212,7 @@ public class Weapon : MonoBehaviour {
             return false;
         }
 
-        // Check if consumes ammo and if has enough
-        if (Type.consumesAmmo && !iArmed.CanConsumeAmmo(Type.ammoPerShot)) return false;
-
-        return true;
+        return iArmed.CanConsumeAmmo(Type.ammoPerShot);
     }
 
     public void SetActive(bool state) {
@@ -235,7 +232,7 @@ public class Weapon : MonoBehaviour {
         avilableShootTimer = Time.time + time;
 
         if (hasAnimations) animator.NextFrame(SpriteAnimation.Case.Shoot);
-        if (Type.consumesAmmo) iArmed.ConsumeAmmo(Type.ammoPerShot);
+        iArmed.ConsumeAmmo(Type.ammoPerShot);
 
         if (hasMultiBarrel) {
             transform.position += transform.up * -Type.recoil / (barrels.Length * 2f);

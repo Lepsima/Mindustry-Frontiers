@@ -380,7 +380,7 @@ public abstract class Unit : Entity, IArmed {
         weaponGameObject.transform.localScale = Vector3.one;
 
         Weapon weapon = weaponGameObject.AddComponent<Weapon>();
-        weapon.Set(this, (short)weapons.Count, weaponMount.weapon, mirrored, weaponMount.onTop);
+        weapon.Set(this, (byte)weapons.Count, weaponMount.weapon, mirrored, weaponMount.onTop);
         weapons.Add(weapon);
     }
 

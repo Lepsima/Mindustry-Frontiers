@@ -27,7 +27,7 @@ public abstract class ItemBlock : Block, IInventory {
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
-
+        SetInventory();
         GetAdjacentBlocks();
         UpdateAdjacentBlocks();
     }

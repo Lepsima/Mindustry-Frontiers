@@ -1036,7 +1036,9 @@ namespace Frontiers.Content {
     }
 
     public class TurretBlockType : ItemBlockType {
-        public WeaponMount weapon;
+        public WeaponMount mount;
+        public Item ammoItem = Items.copper;
+        public float ammoAmount = 1f;
 
         public TurretBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             updates = true;
@@ -1291,7 +1293,7 @@ namespace Frontiers.Content {
 
             tempest = new TurretBlockType("tempest", typeof(TurretBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 75),
-                weapon = new WeaponMount(Weapons.tempestWeapon, Vector2.zero),
+                mount = new WeaponMount(Weapons.tempestWeapon, Vector2.zero),
 
                 health = 230f,
                 size = 2,
@@ -1301,7 +1303,7 @@ namespace Frontiers.Content {
 
             windstorm = new TurretBlockType("windstorm", typeof(TurretBlock), 2) {
                 buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 75),
-                weapon = new WeaponMount(Weapons.windstormWeapon, Vector2.zero),
+                mount = new WeaponMount(Weapons.windstormWeapon, Vector2.zero),
 
                 health = 540f,
                 size = 3,
@@ -1312,7 +1314,7 @@ namespace Frontiers.Content {
 
             stinger = new TurretBlockType("stinger", typeof(TurretBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 75),
-                weapon = new WeaponMount(Weapons.stingerWeapon, Vector2.zero),
+                mount = new WeaponMount(Weapons.stingerWeapon, Vector2.zero),
 
                 health = 320f,
                 size = 2,
@@ -1322,7 +1324,7 @@ namespace Frontiers.Content {
 
             path = new TurretBlockType("path", typeof(TurretBlock), 3) {
                 buildCost = ItemStack.With(Items.copper, 125, Items.graphite, 55, Items.silicon, 35),
-                weapon = new WeaponMount(Weapons.pathWeapon, Vector2.zero),
+                mount = new WeaponMount(Weapons.pathWeapon, Vector2.zero),
 
                 health = 275f,
                 size = 2,
@@ -1332,7 +1334,7 @@ namespace Frontiers.Content {
 
             spread = new TurretBlockType("spread", typeof(TurretBlock), 3) {
                 buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 65, Items.silicon, 80),
-                weapon = new WeaponMount(Weapons.spreadWeapon, Vector2.zero),
+                mount = new WeaponMount(Weapons.spreadWeapon, Vector2.zero),
 
                 health = 245f,
                 size = 2,
@@ -1342,7 +1344,7 @@ namespace Frontiers.Content {
 
             cyclone = new TurretBlockType("cyclone", typeof(TurretBlock), 3) {
                 buildCost = ItemStack.With(Items.copper, 125, Items.graphite, 55, Items.silicon, 35),
-                weapon = new WeaponMount(Weapons.cycloneWeapon, Vector2.zero),
+                mount = new WeaponMount(Weapons.cycloneWeapon, Vector2.zero),
 
                 health = 512f,
                 size = 3,
@@ -1751,6 +1753,8 @@ namespace Frontiers.Content {
         public float emptyMass = 10f, fuelDensity = 0.0275f;
 
         public WeaponMount[] weapons = new WeaponMount[0];
+        public Item ammoItem = Items.copper;
+        public float ammoAmount = 1f;
 
         public UnitType(string name, Type type, int tier = 1) : base(name, type, tier) {
             cellSprite = AssetLoader.GetSprite(name + "-cell");
@@ -2150,10 +2154,7 @@ namespace Frontiers.Content {
         public Effect shootFX = Effects.muzzle, casingFX = Effects.casing;
 
         public float shootFXSize = 1f, casingFXSize = 1f, casingFXOffset = -0.5f;
-
-        public bool consumesAmmo = false; // Wether if it consumes ammo
         public float ammoPerShot = 0.25f; // The amount of ammo units consumed per shot, 1 ammo == 1 item
-        public Item ammoItem; // Only the first ammo item is used to calculate the ammo type of units
 
         public bool independent = false; // If enbled, can gather it's own target
         public bool predictTarget = true; // If enabled, the weapon can predict the bullet collision of moving targets
@@ -2177,11 +2178,6 @@ namespace Frontiers.Content {
 
         public WeaponType(string name) : base(name) {
             outlineSprite = AssetLoader.GetSprite(name + "-outline", true);
-        }
-
-        public WeaponType(string name, Item ammoItem) : base(name) {
-            outlineSprite = AssetLoader.GetSprite(name + "-outline", true);
-            this.ammoItem = ammoItem;
         }
 
         public float Range { get => bulletType.Range; }
@@ -2421,12 +2417,11 @@ namespace Frontiers.Content {
                 casingFXOffset = -1.5f,
             };
 
-            missileRack = new WeaponType("missileRack", Items.basicAmmo) {
+            missileRack = new WeaponType("missileRack") {
                 bulletType = Bullets.missileBullet,
                 shootOffset = new Vector2(0, 0.5f),
 
                 independent = true,
-                consumesAmmo = true,
                 maxTargetDeviation = 360f,
 
                 clipSize = 1,
