@@ -8,7 +8,7 @@ using Photon.Pun;
 
 public abstract class SyncronizableObject : MonoBehaviour {
     public short SyncID { set; get; }
-    public int syncValues = 1;
+    public int syncValues = 0;
 
     public float syncTime = 2f, syncTimer = 0f;
 

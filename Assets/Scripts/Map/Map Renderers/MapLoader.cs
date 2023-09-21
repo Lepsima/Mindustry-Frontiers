@@ -67,8 +67,8 @@ namespace Frontiers.Content.Maps {
             OnMapLoaded?.Invoke(null, new MapLoadedEventArgs() { loadedMap = map });
         }
 
-        public static void LoadMap(string name, byte[] tilemap, byte[] blocks, byte[] units) {
-            Map map = new(name, tilemap, blocks, units);
+        public static void LoadMap(string name, Vector2Int size, byte[] tilemap, byte[] blocks, byte[] units) {
+            Map map = new(name, size, tilemap, blocks, units);
             OnMapLoaded?.Invoke(null, new MapLoadedEventArgs() { loadedMap = map });
         }
 
@@ -100,9 +100,11 @@ namespace Frontiers.Content.Maps {
     public class MapAssembler {
         public byte[] tilemap, blocks, units;
         public string name;
+        public Vector2Int size;
 
-        public void ReciveTilemap(string name, byte[] tilemap) {
+        public void ReciveTilemap(string name, Vector2Int size, byte[] tilemap) {
             this.name = name;
+            this.size = size;
             this.tilemap = tilemap;
             if (IsReady()) Assemble();
         }
@@ -122,7 +124,15 @@ namespace Frontiers.Content.Maps {
         }
 
         public void Assemble() {
-            MapLoader.LoadMap(name, tilemap, blocks, units);
+            MapLoader.LoadMap(name, size, tilemap, blocks, units);
+            Dispose();
+        }
+
+        public void Dispose() {
+            name = null;
+            tilemap = null;
+            blocks = null;
+            units = null;
         }
     }
 

@@ -304,15 +304,15 @@ public class Client : MonoBehaviourPunCallbacks {
         byte[] blockData = MapManager.Map.BlocksToBytes(true);
         byte[] unitData = MapManager.Map.UnitsToBytes(true);
 
-        local.photonView.RPC(nameof(RPC_ReciveMapData), player, name, tileMapData);
+        local.photonView.RPC(nameof(RPC_ReciveMapData), player, name, (Vector2)map.size, tileMapData);
         local.photonView.RPC(nameof(RPC_ReciveBlockData), player, blockData);
         local.photonView.RPC(nameof(RPC_ReciveUnitData), player, blockData);
     }
 
     [PunRPC]
-    public void RPC_ReciveMapData(string name, byte[] tileMapData) {
+    public void RPC_ReciveMapData(string name, Vector2 size, byte[] tileMapData) {
         if (mapAssembler == null) Debug.LogWarning("The fuck did you do this time?");
-        mapAssembler.ReciveTilemap(name, tileMapData);
+        mapAssembler.ReciveTilemap(name, Vector2Int.CeilToInt(size), tileMapData);
     }
 
     [PunRPC]

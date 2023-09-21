@@ -53,27 +53,22 @@ namespace Frontiers.Content.Maps {
 
             // End loading
             loaded = true;
-
             MapRaycaster.map = this;
-
-            /*for (int x = 0; x < size.x; x++) {
-                for (int y = 0; y < size.y; y++) {
-                    Debug.Log(GetMapTileTypeAt(MapLayer.Ground, new Vector2(x, y)));
-                }
-            }
-            */
-            //tilemap.GenerateColliders();
         }
 
-        public Map(string name, byte[] tilemap, byte[] blocks, byte[] units) {
+        public Map(string name,Vector2Int size, byte[] tilemap, byte[] blocks, byte[] units) {
+            // Create tilemap
             this.name = name;
+            this.size = size;
+            this.tilemap = new Tilemap(size, Vector2Int.one * Main.Map_RegionSize);
 
+            // Load data
             TilemapFromBytes(tilemap);
             BlocksFromBytes(blocks);
             UnitsFromBytes(units);
 
+            // End loading
             loaded = true;
-
             MapRaycaster.map = this;
         }
 
@@ -122,9 +117,9 @@ namespace Frontiers.Content.Maps {
         }
 
         public byte[] TilemapToBytes() {
-            // Compress tilemap data
-            string tileMapData = $"<size:{size.x},{size.y}:size>";
+            string tileMapData = "";
 
+            // Compress tilemap data
             for (int x = 0; x < size.x; x++) {
                 for (int y = 0; y < size.y; y++) {
                     tileMapData += tilemap.GetTile(new Vector2Int(x, y)).ToString();
@@ -157,31 +152,28 @@ namespace Frontiers.Content.Maps {
         }
 
         public void TilemapFromBytes(byte[] bytes) {
+            // Decompress
             string tilemapData = DataCompressor.Unzip(bytes);
-
-            // Get the start and end of the size vector
-            int start = tilemapData.IndexOf("<size:") + 5;
-            int end = tilemapData.IndexOf(":size>");
-
-            // Assemble the vector
-            string[] vectorComponents = tilemapData[start..end].Split(",");
-            size = new(int.Parse(vectorComponents[0]), int.Parse(vectorComponents[1]));
-
-            // Create tilemap
-            tilemap = new(size, Vector2Int.one * Main.Map_RegionSize);
 
             // Initialize vars
             int layers = (int)MapLayer.Total;
 
             // Each string contains a list of all the tiles in the {index} layer
-            string[] layerDatas = (string[])tilemapData.SplitToChunks(layers);
+            //string[] layerDatas = (string[])tilemapData.SplitToChunks(layers);
+            //Debug.Log(tilemapData);
 
             // Load each tile
-            for (int i = 0; i < layerDatas[0].Length; i++) {
+            for (int x = 0; x < size.x; x++) {
+                for (int y = 0; y < size.y; y++) {
+                    string tileData = tilemapData.Substring(0, layers);
+                    tilemap.SetTile(new Vector2Int(x, y), tileData);
+                }
+            }
+            /*for (int i = 0; i < layerDatas[0].Length; i++) {
                 Vector2Int position = new(i / size.x, i % size.y);
                 string data = layerDatas[i];
                 tilemap.SetTile(position, data);
-            }
+            }*/
         }
 
         public void BlocksFromBytes(byte[] bytes) {
@@ -198,7 +190,7 @@ namespace Frontiers.Content.Maps {
                 string[] blockValues = blockData.Split(':');
 
                 // Entity parameters
-                byte syncID = byte.Parse(blockValues[0]);
+                short syncID = short.Parse(blockValues[0]);
                 short contentID = short.Parse(blockValues[1]);
                 byte teamCode = byte.Parse(blockValues[2]);
 

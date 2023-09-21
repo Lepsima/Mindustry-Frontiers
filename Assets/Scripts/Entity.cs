@@ -74,7 +74,7 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory, IMe
         SetInventory();
         SetSprites();
 
-        syncValues = 2;
+        syncValues = 1;
     }
 
     protected void ShowSprites(bool state) {
@@ -200,7 +200,7 @@ public abstract class Entity : SyncronizableObject, IDamageable, IInventory, IMe
     /// </summary>
     /// <returns>The data needed to save/load this entity on a file</returns>
     public virtual string SaveDataToString(bool includeSyncID) {
-        string data = includeSyncID ? SyncID + "" : "";
+        string data = includeSyncID ? SyncID + ":" : "";
         data += Type.id + ":";
         data += teamCode + ":";
         data += health + ":";
