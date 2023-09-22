@@ -84,9 +84,7 @@ public class Block : Entity {
         transform.Find("Shadow").localScale = 1.1f * Type.size * Vector2.one;
 
         // If has team sprite, set it's color to the team color
-        if (teamSpriteRenderer) {
-            teamSpriteRenderer.color = teamColor;
-        }
+        if (teamSpriteRenderer) Type.SetTeamRenderer(teamSpriteRenderer, teamCode);
 
         // Glow sprites
         if (Type.glowSprites == null) return;

@@ -1,38 +1,25 @@
+using CI.QuickSave;
+using Frontiers.Animations;
+using Frontiers.Assets;
+using Frontiers.Content.Flags;
+using Frontiers.Content.Maps;
+using Frontiers.Content.SoundEffects;
+using Frontiers.Content.Upgrades;
+using Frontiers.Content.VisualEffects;
+using Frontiers.FluidSystem;
+using Frontiers.Pooling;
+using Frontiers.Teams;
+using Newtonsoft.Json;
 using Photon.Pun;
 using Photon.Pun.UtilityScripts;
 using Photon.Realtime;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Tilemaps;
-using Frontiers.Content;
-using Frontiers.Content.Flags;
-using Frontiers.Content.SoundEffects;
-using Frontiers.Content.Upgrades;
-using Frontiers.Content.Maps;
-using Frontiers.Settings;
-using Frontiers.Squadrons;
-using Frontiers.Teams;
-using Frontiers.Pooling;
-using Frontiers.Animations;
-using Frontiers.Assets;
-using CI.QuickSave.Core.Serialisers;
-using CI.QuickSave.Core.Settings;
-using CI.QuickSave.Core.Storage;
-using CI.QuickSave.Core.Converters;
-using CI.QuickSave;
-using Newtonsoft.Json;
 using Object = UnityEngine.Object;
-using Random = UnityEngine.Random;
 using SpriteAnimation = Frontiers.Animations.SpriteAnimation;
-using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
-using Region = Frontiers.Content.Maps.Tilemap.Region;
-using UnityEditor;
-using Frontiers.Content.VisualEffects;
-using Frontiers.FluidSystem;
 
 namespace Frontiers.Animations {
 
@@ -822,6 +809,7 @@ namespace Frontiers.Content {
 
     public class BlockType : EntityType {
         public Sprite teamSprite, topSprite, bottomSprite;
+        public Sprite localTeamSprite, enemyTeamSprite;
         public Sprite[] glowSprites;
 
         public Sound destroySound = Sounds.@break;
@@ -830,7 +818,10 @@ namespace Frontiers.Content {
         public int size = 1;
 
         public BlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
-            teamSprite = AssetLoader.GetSprite(name + "-team", true); 
+            teamSprite = AssetLoader.GetSprite(name + "-team", true);
+            localTeamSprite = AssetLoader.GetSprite(name + "-team-local", true);
+            enemyTeamSprite = AssetLoader.GetSprite(name + "-team-enemy", true);
+
             topSprite = AssetLoader.GetSprite(name + "-top", true);
             bottomSprite = AssetLoader.GetSprite(name + "-bottom", true);
             this.type = type;
@@ -855,6 +846,25 @@ namespace Frontiers.Content {
 
             canGetOnFire = false;
             maximumFires = 3;
+        }
+
+        public void SetTeamRenderer(SpriteRenderer spriteRenderer, byte team) {
+            bool localTeam = TeamUtilities.GetLocalTeam() == team;
+
+            if (localTeam && localTeamSprite) {
+                spriteRenderer.sprite = localTeamSprite;
+                spriteRenderer.color = Color.white;
+                return;
+            }
+
+            if (!localTeam && enemyTeamSprite) {
+                spriteRenderer.sprite = enemyTeamSprite;
+                spriteRenderer.color = Color.white;
+                return;
+            }
+
+            spriteRenderer.sprite = teamSprite;
+            spriteRenderer.color = TeamUtilities.GetTeamColor(team);
         }
     }
 

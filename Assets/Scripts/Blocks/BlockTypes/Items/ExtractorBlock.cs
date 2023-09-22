@@ -30,7 +30,7 @@ public class ExtractorBlock : ItemBlock {
 
     public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
         base.Set(position, rotation, type, id, teamCode);
-        animator = new MovementAnimator(Type.name, "Blocks", 3, transform, Type.drillAnimations);
+        animator = new MovementAnimator(Type.name, "Blocks", 2, transform, Type.drillAnimations);
         drillFX = EffectPlayer.CreateEffect(transform, Type.drillFX, Vector2.zero, Quaternion.identity, 1f);
     }
 
