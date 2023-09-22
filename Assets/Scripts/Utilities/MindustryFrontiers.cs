@@ -1125,7 +1125,7 @@ namespace Frontiers.Content {
             copperWall, copperWallLarge,
 
             // Cores / storage
-            coreShard, container,
+            coreShard, container, coref,
 
             // Landing pads
             landingPad, landingPadLarge,
@@ -1154,6 +1154,11 @@ namespace Frontiers.Content {
             oilRefinery, atmosphericCollector, rotatoryPump, fuelMixer;
 
         public static void Load() {
+            coref = new BlockType("core-f", typeof(Block), 2) {
+                health = 5600,
+                size = 4,
+            };
+
             geodeMiner = new ExtractorBlockType("geode-miner", typeof(ExtractorBlock), 3) {
                 //-1.175
                 size = 4,
