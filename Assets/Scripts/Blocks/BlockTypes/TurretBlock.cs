@@ -34,7 +34,7 @@ public class TurretBlock : ItemBlock, IArmed {
 
     public override void ReciveItems(Item item, int amount = 1, int orientation = 0) {
         if (item != Type.ammoItem) return;
-        ammo = Mathf.Clamp(amount, 0f, Type.ammoAmount);
+        ammo = Mathf.Clamp(ammo + amount, 0f, Type.ammoAmount);
     }
 
     public Weapon GetWeaponByID(byte id) {

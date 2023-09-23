@@ -1046,9 +1046,11 @@ namespace Frontiers.Content {
     }
 
     public class TurretBlockType : ItemBlockType {
+        public Sprite heatSprite, heatEffectSprite;
+
         public WeaponMount mount;
         public Item ammoItem = Items.copper;
-        public float ammoAmount = 1f;
+        public float ammoAmount = 10f;
 
         public TurretBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             updates = true;
