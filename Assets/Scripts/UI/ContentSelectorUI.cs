@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Collections;
 
 public class ContentSelectorUI : MonoBehaviour {
-    public Transform contentBar1;
-    public Transform contentBar2;
+    public Transform contentBar;
+    public Transform typesBar;
 
     private readonly List<ContentListItem>[] contentButtonLists = new List<ContentListItem>[3] { new List<ContentListItem>(), new List<ContentListItem>(), new List<ContentListItem>() };
     private GameObject contentButtonPrefab;
@@ -23,7 +23,7 @@ public class ContentSelectorUI : MonoBehaviour {
 
     private void InstantiateContentButtons<T>(List<ContentListItem> addToList) where T : Content{
         T[] contentArray = ContentLoader.GetContentByType<T>();
-        foreach (T content in contentArray) if (!content.hidden) addToList.Add(AddContent(contentBar1, content));
+        foreach (T content in contentArray) if (!content.hidden) addToList.Add(AddContent(contentBar, content));
     }
 
     private ContentListItem AddContent(Transform parent, Content content) {

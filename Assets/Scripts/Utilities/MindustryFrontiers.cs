@@ -313,6 +313,7 @@ namespace Frontiers.Pooling {
 
         public void Return(GameObject gameObject) {
             gameObject.SetActive(false);
+            gameObject.transform.parent = null;
 
             if (CanReturn()) { 
                 pooledGameObjects.Enqueue(gameObject); 
@@ -1133,7 +1134,7 @@ namespace Frontiers.Content {
             landingPad, landingPadLarge,
 
             // Turrets
-            tempest, windstorm, stinger, path, spread, cyclone,
+            tempest, windstorm, stinger, path, spread, cyclone, lasert,
 
             // Unit factories
             airFactory,
@@ -1365,6 +1366,16 @@ namespace Frontiers.Content {
 
                 health = 512f,
                 size = 3,
+
+                canGetOnFire = true,
+            };
+
+            lasert = new TurretBlockType("lasert", typeof(TurretBlock), 2) {
+                buildCost = ItemStack.With(Items.copper, 125, Items.graphite, 55, Items.silicon, 35),
+                mount = new WeaponMount(Weapons.lasertWeapon, Vector2.zero),
+
+                health = 215f,
+                size = 2,
 
                 canGetOnFire = true,
             };
@@ -2197,14 +2208,14 @@ namespace Frontiers.Content {
             outlineSprite = AssetLoader.GetSprite(name + "-outline", true);
         }
 
-        public float Range { get => bulletType.Range; }
+        public float Range { get => bulletType.GetRange(); }
     }
 
     public class Weapons {
         public const Weapon none = null;
 
         // Base weapons
-        public static WeaponType smallAutoWeapon, tempestWeapon, windstormWeapon, stingerWeapon, pathWeapon, spreadWeapon, cycloneWeapon;
+        public static WeaponType smallAutoWeapon, tempestWeapon, windstormWeapon, stingerWeapon, pathWeapon, spreadWeapon, cycloneWeapon, lasertWeapon;
 
         //Unit weapons
         public static WeaponType 
@@ -2319,7 +2330,7 @@ namespace Frontiers.Content {
 
             tempestWeapon = new WeaponType("tempest-weapon") {
                 bulletType = Bullets.basicBullet,
-                shootOffset = new Vector2(0, 0.5f),
+                shootOffset = new Vector2(0, 1f),
 
                 independent = true,
                 recoil = 0.1f,
@@ -2434,6 +2445,28 @@ namespace Frontiers.Content {
                 casingFXOffset = -1.5f,
             };
 
+            lasertWeapon = new WeaponType("lasert-weapon") {
+                bulletType = new BeamBulletType() {
+                    damage = 200f,
+                    buildingDamageMultiplier = 2f,
+                    velocity = 5f,
+                    lifeTime = 3f,
+                    size = 1f,
+                    beamLength = 10f,
+                    burns = true,
+                },
+
+                shootOffset = new Vector2(0, 1f),
+
+                independent = true,
+                recoil = 0f,
+                returnSpeed = 1f,
+                clipSize = 1,
+                shootTime = 4.9f,
+                reloadTime = 10f,
+                rotateSpeed = 45f,
+            };
+
             missileRack = new WeaponType("missileRack") {
                 bulletType = Bullets.missileBullet,
                 shootOffset = new Vector2(0, 0.5f),
@@ -2461,8 +2494,6 @@ namespace Frontiers.Content {
 
         public bool explodeOnDespawn = false;
 
-        public float Range { get => velocity * lifeTime; }
-
         public Effect hitFX = Effects.bulletHit, despawnFX = Effects.despawn;
 
         public BulletType(string name = null) {
@@ -2472,7 +2503,11 @@ namespace Frontiers.Content {
             sprite = AssetLoader.GetSprite(name, true);
 
             pool = GetPool();
-            pool.OnGameObjectCreated += OnPoolObjectCreated;        
+            if (pool != null) pool.OnGameObjectCreated += OnPoolObjectCreated;        
+        }
+
+        public virtual float GetRange() {
+            return velocity * lifeTime;
         }
 
         public virtual GameObjectPool GetPool() {
@@ -2556,6 +2591,35 @@ namespace Frontiers.Content {
             SpriteRenderer renderer = shadow.GetComponent<SpriteRenderer>();
             renderer.sprite = sprite;
             renderer.color = new Color(0, 0, 0, 0.5f);
+        }
+    }
+
+    public class BeamBulletType : BulletType {
+        /* Beam bullet info:
+         * 
+         * Velocity is used as the beam's expand/retract velocity
+         * The lifetime is the total time the beam stays active
+         * 
+         * The blast damage is calculated from the closest point to the beam line
+         * Size is the beam's width
+         */
+        public float beamLength = 10f;
+        public bool burns = false;
+
+        public BeamBulletType(string name = null) : base(name) {
+
+        }
+
+        public override float GetRange() {
+            return beamLength;
+        }
+
+        public override Bullet NewBullet(Weapon weapon, Transform transform) {
+            return new BeamBullet(weapon, transform);
+        }
+
+        public override GameObjectPool GetPool() {
+            return PoolManager.GetOrCreatePool(AssetLoader.GetPrefab("beam-prefab"), 100);
         }
     }
 

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using Frontiers.Content;
 using Frontiers.Teams;
@@ -25,13 +26,15 @@ public class Bullet {
         mask = TeamUtilities.GetEnemyTeamMask(weapon.parentEntity.GetTeam());
 
         startPosition = transform.position;
-        hitPosition = (Vector2)transform.up * Type.Range + startPosition;
+        hitPosition = (Vector2)transform.up * Type.GetRange() + startPosition;
 
         distance = Vector2.Distance(startPosition, hitPosition);
         startingDistance = distance;
 
         if (transform.TryGetComponent(out TrailRenderer trail)) trail.Clear();
         active = true;
+
+        weapon.parentEntity.OnDestroyed += OnWeaponDestroyed;
     }
 
     public virtual void Update() {
@@ -48,6 +51,12 @@ public class Bullet {
         return distance <= 0;
     }
 
+    public void End() {
+        weapon.parentEntity.OnDestroyed -= OnWeaponDestroyed;
+        active = false;
+        BulletManager.ReturnBullet(this);
+    }
+
     public virtual void Return(Entity entity) {
         if (entity) {
             EffectPlayer.PlayEffect(Type.hitFX, transform.position, 1f);
@@ -59,8 +68,11 @@ public class Bullet {
         // If explodes on despawn or hit something, explode
         if ((Type.explodeOnDespawn || entity) && Type.Explodes()) Client.Explosion(Type, GetPosition(), mask);
 
-        active = false;
-        BulletManager.ReturnBullet(this);
+        End();
+    }
+
+    public virtual void OnWeaponDestroyed(object sender, Entity.EntityArg e) {
+
     }
 
     public Vector2 GetPosition() {
@@ -126,13 +138,113 @@ public class BombBullet : Bullet {
         shadow.position = -Vector3.one * (height * 0.2f) + transform.position;
 
         if (ShouldDespawn()) {
-   
             Return(null);
         }
     }
 
     protected override bool ShouldDespawn() {
         return height <= 0f;
+    }
+}
+
+public class BeamBullet : Bullet {
+    float length;
+    float lastDamageTick;
+
+    readonly float lifeTime;
+    readonly float expandTime;
+
+    readonly Transform endTransform;
+    readonly LineRenderer beamRenderer;
+
+    // The time in second between each damage tick
+    public const float DamageTickSpacing = 0.75f;
+
+    public BeamBullet(Weapon weapon, Transform transform) : base(weapon, transform) {
+        transform.parent = weapon.transform;
+        transform.up = weapon.transform.up;
+
+        // Calculate lifetime
+        expandTime = Type.GetRange() / Type.velocity;
+        lifeTime = Time.time + Type.lifeTime + (expandTime * 2f);
+        lastDamageTick = Time.time;
+
+        // Get transforms
+        Transform startTransform = transform.GetChild(0);
+        endTransform = transform.GetChild(1);
+
+        // Setup start effect
+        ParticleSystem particleSystem = startTransform.GetComponent<ParticleSystem>();
+        ParticleSystem.MainModule mainModule = particleSystem.main;
+        mainModule.duration = lifeTime;
+        particleSystem.Play();
+
+        // Setup end effect
+        particleSystem = endTransform.GetComponent<ParticleSystem>();
+        mainModule = particleSystem.main;
+        mainModule.duration = lifeTime;
+        particleSystem.Play();
+
+        // Setup beam renderer
+        beamRenderer = transform.GetComponent<LineRenderer>();
+        beamRenderer.useWorldSpace = false;
+        beamRenderer.positionCount = 2;
+        beamRenderer.SetPosition(0, Vector3.zero);
+        beamRenderer.SetPosition(1, Vector3.zero);
+    }
+
+    public override void Update() {
+        // Should start retracting?
+        bool shouldRetract = Time.time >= lifeTime - expandTime; 
+
+        // Calculate expand/retract amount
+        float deltaIncrease = Type.velocity * Time.deltaTime;
+        if (shouldRetract) deltaIncrease *= -1f;
+
+        // Apply amount to length
+        length = Mathf.Clamp(length + deltaIncrease, 0f, Type.GetRange());
+
+        // Visuals
+        Vector3 endPosition = Vector3.up * length;
+        beamRenderer.SetPosition(1, endPosition);
+        endTransform.localPosition = endPosition;
+
+        // Do damage every "DamageTickSpacing" seconds 
+        if (Time.time >= lastDamageTick) {
+            lastDamageTick += DamageTickSpacing;
+
+            // Calculate collision
+            RaycastHit2D[] collisions = Physics2D.CircleCastAll(transform.position, Type.size, transform.up, length, mask);
+            foreach (RaycastHit2D collision in collisions) {
+
+                if (collision.transform.TryGetComponent(out IDamageable damageable)) {
+                    // Damage multiplier to buildings
+                    float buildMultiplier = damageable.IsBuilding() ? Type.buildingDamageMultiplier : 1f;
+
+                    // Multiply by Damage tick spacing to keep the dps ratio
+                    damageable.Damage(Type.damage * buildMultiplier * DamageTickSpacing);
+                }
+            }
+
+            if (((BeamBulletType)Type).burns) FireController.CreateFire(Vector2Int.FloorToInt(endTransform.position));
+        }
+
+        // Despawn bullet if total lifetime ended
+        if (ShouldDespawn()) {
+            Return(null);
+        }
+    }
+
+    protected override bool ShouldDespawn() {
+        return Time.time >= lifeTime;
+    }
+
+    public override void Return(Entity entity) {
+        End();
+    }
+
+    public override void OnWeaponDestroyed(object sender, Entity.EntityArg e) {
+        Return(null);
     }
 }
 
