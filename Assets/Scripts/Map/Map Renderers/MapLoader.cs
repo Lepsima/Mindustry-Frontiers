@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Frontiers.Content.Maps {
     public class MapLoader {
         public const int TilesPerString = 1000;
-        public static string[] mapNames;
+        public static MapFile[] foundMaps;
 
         public static event EventHandler<MapLoadedEventArgs> OnMapLoaded;
 
@@ -18,35 +18,33 @@ namespace Frontiers.Content.Maps {
             public Map loadedMap;
         }
 
-        public static void GenerateDefaultMaps() {
-            MapFile[] maps = GetMaps();
+        public static void GenerateDefaultMapFiles() {
+            // Get all found maps, and instantiate the default maps
+            MapFile[] maps = FindMaps();
+            DefaultMaps.Load();
             
-            if (Contains("Default Map 02")) {
-
+            foreach(DefaultMaps.JsonMapData jsonMapData in DefaultMaps.maps) {
+                // If map file does not exist, create file
+                if (!Contains(jsonMapData.name)) QuickSaveRaw.SaveString(Path.Combine("Maps", jsonMapData.name + ".json"), jsonMapData.data);
             }
-            
+
             bool Contains(string name) {
                 foreach(MapFile map in maps) if (map.name == name) return true;
                 return false;
             }
         }
 
-        public static MapFile[] GetMaps() {
+        public static MapFile[] FindMaps() {
             DirectoryInfo dir = new(Directories.maps);
             FileInfo[] info = dir.GetFiles("*.json");
-            MapFile[] maps = new MapFile[info.Length];
+            foundMaps = new MapFile[info.Length];
 
             for (int i = 0; i < info.Length; i++) {
                 string name = Path.GetFileNameWithoutExtension(info[i].Name);
-                maps[i] = new MapFile(name, info[i].FullName);
+                foundMaps[i] = new MapFile(name, info[i].FullName);
             }
 
-            return maps;
-        }
-
-        public static void RefreshMapNames() {
-            string[] mapDirectories = Directory.GetDirectories(Directories.maps);
-            for (int i = 0; i < mapDirectories.Length; i++) mapNames[i] = Path.GetDirectoryName(mapDirectories[i]);
+            return foundMaps;
         }
 
         public static void ReciveMap(string name, Vector2 size, string[] tileData) {

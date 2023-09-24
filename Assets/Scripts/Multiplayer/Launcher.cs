@@ -14,7 +14,7 @@ using Frontiers.Teams;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class Launcher : MonoBehaviourPunCallbacks {
-    const string VERSION = "v0.2d";
+    const string VERSION = "v0.3d";
     public static Launcher Instance;
     private static Dictionary<string, RoomInfo> cachedRoomList = new();
 
@@ -56,9 +56,10 @@ public class Launcher : MonoBehaviourPunCallbacks {
         SetState("Connecting To Master...");
         PhotonNetwork.ConnectUsingSettings();
 
-        GameObject discordGameObject = new("Discord rich presence", typeof(DiscordController));
-        DontDestroyOnLoad(discordGameObject);
+        SetState("Generating Default Map Files");
+        MapLoader.GenerateDefaultMapFiles();
 
+        DontDestroyOnLoad(new GameObject("Discord rich presence", typeof(DiscordController)));
         DiscordActivities.SetState(DiscordActivities.State.MainMenu);
     }
 
@@ -132,8 +133,8 @@ public class Launcher : MonoBehaviourPunCallbacks {
         startGameButton.SetActive(PhotonNetwork.IsMasterClient);
     }
 
-    public void RefreshMapList() {
-        allMaps = MapLoader.GetMaps();
+    public void RefreshMapList() {  
+        allMaps = MapLoader.FindMaps();
         foreach (Transform transform in mapListContent) Destroy(transform.gameObject);
 
         for (int i = 0; i < allMaps.Length; i++) {

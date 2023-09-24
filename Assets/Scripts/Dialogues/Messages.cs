@@ -7,7 +7,7 @@ public static class UnitMessages {
     public static StatusEvent
          Waiting = new(0, 3f, true, "Waiting for orders.", "Awaiting orders.", "Ready.", "Awaiting further instructions.", "Awaiting instructions.", "Standby for orders."),
          Moving = new(1, 2.5f, true, "On the way.", "Moving to objective.", "On the move.", "Advancing to position.", "Moving out"),
-         Fleeing = new(2, 3.5f, false, "Moving away from objective.", "Moving away.", "Retreating!", "Evacuating!"),
+         Refuel = new(2, 3.5f, false, "Fuel low, coming back", "Going to refuel!", "Low fuel, going to refuel"),
          TakingOff = new(0, 2f, true, "Taking off.", "Leaving landing pad.", "Engaging thrusters.", "Clear for takeoff."),
          Landing = new(2, 3.5f, true, "Landing.", "Returned to base.", "On the landing zone.", "Touching down safely.", "Back on solid ground."),
          InTarget = new(1, 2f, true, "On target.", "Arrived.", "Arrived to destination.", "On station."),

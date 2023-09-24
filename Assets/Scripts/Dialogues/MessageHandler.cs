@@ -7,7 +7,7 @@ using Frontiers.Assets;
 using System.Linq;
 
 public class MessageHandler : MonoBehaviour {
-    public struct StatusEvent {
+    public class StatusEvent {
         public string[] dialogues;
         public int priority;
         public float displayTime;
@@ -52,8 +52,11 @@ public class MessageHandler : MonoBehaviour {
         public bool IsValid() => Time.time < validTimeSpan;
     }
 
+    public static MessageHandler Instance;
+
     public int channels;
     public GameObject displayerPrefab;
+    public Transform channelParent;
 
     // An array with all the avilable message displayers
     MessageDisplayerUI[] displayers;
@@ -62,12 +65,14 @@ public class MessageHandler : MonoBehaviour {
     List<Message> messages = new();
 
     public void Awake() {
+        Instance = this;
+
         // Initialize array
         displayers = new MessageDisplayerUI[channels];
 
         // Create displayers
         for (int i = 0; i < channels; i++) { 
-            displayers[i] = Instantiate(displayerPrefab, transform.parent).GetComponent<MessageDisplayerUI>();
+            displayers[i] = Instantiate(displayerPrefab, channelParent).GetComponent<MessageDisplayerUI>();
             displayers[i].gameObject.SetActive(false);
         }
     }
@@ -103,6 +108,8 @@ public class MessageHandler : MonoBehaviour {
             // Remove used
             messages.RemoveAt(0);
             channelPriority.RemoveAt(0);
+
+            if (messages.Count == 0) break;
         }
     }
 

@@ -10,7 +10,7 @@ using Frontiers.Content.Upgrades;
 using Frontiers.Squadrons;
 using Action = Frontiers.Squadrons.Action;
 
-public abstract class Unit : Entity, IArmed {
+public abstract class Unit : Entity, IArmed, IMessager {
 
     public new UnitType Type { protected set; get; }
 
@@ -86,10 +86,12 @@ public abstract class Unit : Entity, IArmed {
         isLanded, // Wether this unit is landed to a landpad/somewhere else or not
         isTakingOff, // Wether this unit is taking off from the previous land point
         areWeaponsActive, // Wether the weapons of the unit are active or not
-        canLoseTarget = true; //Wether to update the target lost timer, used to not lose the current target when doing long maneuvers
+        canLoseTarget = true, //Wether to update the target lost timer, used to not lose the current target when doing long maneuvers
+        inTargetMessageShown = false; // Whether if this unit has shown the "in target" message, resets for every action
 
     // Timers
     protected float
+        damagedMessageTimer, // The next time the unit can show the "damaged" message
         targetSearchTimer, // The next time the unit can search for a target
         landPadSearchTimer, // The next time the unit can search for a landing pad
         constructionSearchTimer, // The next time the unit can search for an unfinished building
@@ -186,6 +188,11 @@ public abstract class Unit : Entity, IArmed {
     public void SetAction(Action action) {
         this.action = action;
         Mode = action.ToMode();
+
+        if (Mode == UnitMode.Idling) Message(UnitMessages.Waiting);
+        else Message(UnitMessages.Moving);
+
+        inTargetMessageShown = false;
     }
 
     public void EnterTemporalMode(UnitMode mode) {
@@ -243,9 +250,10 @@ public abstract class Unit : Entity, IArmed {
 
     protected virtual void Update() {
         teamSpriteRenderer.color = CellColor();
-        if (shadow)
-            shadow.SetDistance(height);
+        if (shadow) shadow.SetDistance(height);
         FloorTile = GetGroundTile();
+
+        if (statusEventTimer <= Time.time) ShowMessage();
 
         if (deactivateWeaponsTimer <= Time.time) {
             if (deactivateWeaponsTimer != 0f) {
@@ -272,10 +280,6 @@ public abstract class Unit : Entity, IArmed {
         enginePower = CalculateEnginePower();
         HandleBehaviour();
         HandlePhysics();
-    }
-
-    public override string GetName() {
-        return squadronName;
     }
 
     protected override void ApplyUpgrageMultiplier(UpgradeType upgrade) {
@@ -460,8 +464,7 @@ public abstract class Unit : Entity, IArmed {
                 break;
         }
 
-        if (!Target)
-            SetWeaponsActive(false);
+        if (!Target) SetWeaponsActive(false);
 
         UpdateBehaviour(_position);
         HandleHeight();
@@ -472,26 +475,29 @@ public abstract class Unit : Entity, IArmed {
 
     #region - Behaviours -
     protected virtual void AttackBehaviour() {
-        if (unarmed)
-            EnterTemporalMode(UnitMode.Return);
+        if (unarmed) EnterTemporalMode(UnitMode.Return);
         HandleTargeting();
 
         if (!Target) {
-            if (action.ToMode() != UnitMode.Attack)
-                ExitTemporalMode();
-            else
-                SetBehaviourPosition(action.position);
+            // If has lost it's target and this is not the main mode, return to original mode
+            if (action.ToMode() != UnitMode.Attack) ExitTemporalMode();
+
+            // Else go to action position
+            else SetBehaviourPosition(action.position);
             return;
         }
 
         SetBehaviourPosition(Target.GetPosition());
 
-        if (InRange(_position) && StopsToShoot())
-            _move = false;
+        if (InRange(_position) && StopsToShoot()) _move = false;
+
+        if (!inTargetMessageShown && InRange(action.position)) { 
+            Message(UnitMessages.TargetLost);
+            inTargetMessageShown = true;
+        }
 
         bool canShoot = InShootRange(_position, weapons[0].Type.maxTargetDeviation);
-        if (canShoot != areWeaponsActive)
-            SetWeaponsActive(canShoot);
+        if (canShoot != areWeaponsActive) SetWeaponsActive(canShoot);
     }
 
     protected virtual void PatrolBehaviour() {
@@ -523,8 +529,7 @@ public abstract class Unit : Entity, IArmed {
             LandPadBlock targetLandPad = MapManager.Map.GetBestAvilableLandPad(this);
 
             // Confirm target change
-            if (targetLandPad)
-                Target = targetLandPad;
+            if (targetLandPad) Target = targetLandPad;
         }
 
         // If couldnt't find any landpads, continue as patrol mode
@@ -539,8 +544,7 @@ public abstract class Unit : Entity, IArmed {
             bool canLand = landPad.CanLand(this);
 
             // Try to land
-            if (isInDistance && isFlyingLow && isMovingSlow && canLand)
-                Land();
+            if (isInDistance && isFlyingLow && isMovingSlow && canLand) Land();
 
             //Move towards target
             SetBehaviourPosition(Target.GetPosition());
@@ -564,6 +568,7 @@ public abstract class Unit : Entity, IArmed {
 
     public void TakeOff() {
         Client.UnitTakeOff(this);
+        Message(UnitMessages.TakingOff);
     }
 
     public virtual void OnTakeOff() {
@@ -581,8 +586,7 @@ public abstract class Unit : Entity, IArmed {
     }
 
     public virtual void Land() {
-        if (!Target)
-            Crash();
+        if (!Target) Crash();
 
         LandPadBlock landpad = Target as LandPadBlock;
 
@@ -590,13 +594,13 @@ public abstract class Unit : Entity, IArmed {
         bool isNear = Vector2.Distance(Target.GetPosition(), transform.position) < Target.size * 0.65f;
         bool canDock = isLandpad && landpad.CanLand(this);
 
-        if (isNear && canDock)
-            Dock(landpad);
-        else
-            Crash();
+        if (isNear && canDock) Dock(landpad);
+        else Crash();     
     }
 
     public virtual void Dock(LandPadBlock landpad) {
+        Message(UnitMessages.Landing);
+
         landpad.Land(this);
         currentLandPadBlock = landpad;
 
@@ -615,12 +619,14 @@ public abstract class Unit : Entity, IArmed {
     ///  - Target lost timer which the unit still remembers the target for a few seconds
     ///  - Optional default target enemy core
     /// </summary>
-    /// <param name="useEnemyCoreAsDefault">Enables the default target</param>
     protected void HandleTargeting() {
         if (Target) {
             // Check if target is still valid
             bool inRange = (Target as Unit) == null ? InSearchRange(Target.GetPosition()) : InShootRange(Target.GetPosition(), fov);
             targetLostTimer = inRange || canLoseTarget ? 0 : targetLostTimer + Time.deltaTime;
+
+            // If the target is lost, message
+            if (targetLostTimer > 2f) Message(UnitMessages.TargetLost);
         }
 
         if ((Target == null && targetSearchTimer < Time.time) || targetLostTimer > 2f) {
@@ -630,6 +636,7 @@ public abstract class Unit : Entity, IArmed {
 
             // Find target or get closest 
             Target = GetTarget(Type.priorityList);
+            if (Target != null) Message(UnitMessages.TargetAdquired);
         }
     }
 
@@ -720,12 +727,14 @@ public abstract class Unit : Entity, IArmed {
         UpdateCurrentMass();
 
         // If only 10s of fuel left, enable return mode
-        if (fuel / fuelConsumption < Type.fuelLeftToReturn)
+        if (fuel / fuelConsumption < Type.fuelLeftToReturn) { 
             EnterTemporalMode(UnitMode.Return);
+            Message(UnitMessages.Refuel);
+        }
     }
 
     public virtual void UpdateCurrentMass() {
-        float fuelMass = fuel * this.fuelDensity;
+        float fuelMass = fuel * fuelDensity;
         currentMass = emptyMass + cargoMass + fuelMass;
     }
 
@@ -778,12 +787,45 @@ public abstract class Unit : Entity, IArmed {
     #endregion
 
 
+    #region - Messages - 
+
+    protected float statusEventTimer;
+    protected MessageHandler.StatusEvent statusEvent;
+
+    public void Message(MessageHandler.StatusEvent statusEvent) {
+        if (this.statusEvent != null && this.statusEvent.priority >= statusEvent.priority) return;
+        else this.statusEvent = statusEvent;
+    }
+
+    public void ShowMessage() {
+        // If there is no message, wait a bit until next
+        if (statusEvent == null) { 
+            statusEventTimer = Time.time + 2f;
+            return;
+        }
+
+        // Send message to message handler
+        statusEventTimer = Time.time + statusEvent.displayTime;
+        MessageHandler.Instance.HandleEvent(statusEvent, this);
+
+        // This message has been shown, wait for next one
+        statusEvent = null;
+    }
+
+    public override string GetName() {
+        return squadronName;
+    }
+
+    #endregion
+
+
     #region - Shooting -    
 
     public override void OnDestroy() {
         if (!gameObject.scene.isLoaded)
             return;
 
+        Message(UnitMessages.Destroyed);
         EffectPlayer.PlayEffect(Type.deathFX, transform.position, size);
 
         GameObject explosionBlastGameObject = Instantiate(AssetLoader.GetPrefab("ExplosionBlastPrefab"), GetPosition(), Quaternion.Euler(0f, 0f, UnityEngine.Random.Range(0f, 360f)));
@@ -793,6 +835,15 @@ public abstract class Unit : Entity, IArmed {
         Client.syncObjects.Remove(SyncID);
 
         base.OnDestroy();
+    }
+
+    protected override void OnHealthChange() {
+        base.OnHealthChange();
+
+        if (damagedMessageTimer <= Time.time) {
+            damagedMessageTimer = Time.time + 5f;
+            Message(UnitMessages.Damaged);
+        }
     }
 
     public void MaintainWeaponsActive(float time) {

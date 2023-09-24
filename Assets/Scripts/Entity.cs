@@ -133,7 +133,7 @@ public abstract class Entity : SyncronizableObject, IDamageable, IMessager {
         OnHealthChange();
     }
 
-    private void OnHealthChange() {
+    protected virtual void OnHealthChange() {
         if (health <= 0) {
             if (this is Unit unit) Client.DestroyUnit(unit, true);
             else if (this is Block block) Client.DestroyBlock(block, true);
