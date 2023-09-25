@@ -1,19 +1,14 @@
-using UnityEngine;
+using Frontiers.Assets;
 using Frontiers.Content;
 using Frontiers.Content.Maps;
-using Frontiers.Assets;
-using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
 using Frontiers.Settings;
+using UnityEngine;
+using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
 
 public class MapEditor : MonoBehaviour {
-    [Header("Load base map")]
-    public string loadName;
-    public bool loadsMap;
+    public MapEditorCamera editorCamera;
 
-    [Header("Main Settings")]
-    public string saveName;
     public int regionSize = 32;
-    public Vector2Int size = new(512, 512);
 
     [Header("Editor Layers")]
     public MapEditorLayer[] layers;
@@ -31,12 +26,10 @@ public class MapEditor : MonoBehaviour {
     public MapLayer noiseLayer;
 
     public bool overrideIfNull;
-    public int tile1;
-    public int tile2;
+    public int mainTile;
+    public int secTile;
 
     TileType[] loadedTiles;
-    int tileIndex;
-    int otherTileIndex;
 
     int currentLayer;
     public bool placeEnabled = false;
@@ -44,7 +37,7 @@ public class MapEditor : MonoBehaviour {
     Tilemap tilemap;
     Map map;
 
-    private void Start() {
+    private void Awake() {
         AssetLoader.LoadAssets();
         ContentLoader.LoadContents();
 
@@ -52,75 +45,72 @@ public class MapEditor : MonoBehaviour {
         MapDisplayer.SetupAtlas();
 
         MapLoader.OnMapLoaded += OnMapLoaded;
-
-        if (loadsMap) { 
-            MapLoader.LoadMap(loadName);
-        } else {
-            tilemap = new(size, Vector2Int.one * Main.Map_RegionSize);
-            map = new Map(saveName, size.x, size.y, tilemap);
-        }
-
         loadedTiles = TileLoader.GetLoadedTiles();
+    }
+
+    public void LoadMap(string mapName) {
+        MapLoader.LoadMap(mapName);
+    }
+
+    public void CreateMap(string mapName, Vector2Int size) {
+        tilemap = new(size, Vector2Int.one * Main.Map_RegionSize);
+        map = new Map(mapName, size.x, size.y, tilemap);
     }
 
     private void OnMapLoaded(object sender, MapLoader.MapLoadedEventArgs e) {
         map = e.loadedMap;
+        editorCamera.transform.position = (Vector2)map.size / 2f;
     }
 
     private void Update() {
         if (map == null) return;
         Vector2Int mouseGridPos = Vector2Int.FloorToInt(Camera.main.ScreenToWorldPoint(Input.mousePosition));
 
-        if (Input.GetKeyDown(KeyCode.X)) {
-            placeEnabled = !placeEnabled;
-        }
+        if (placeEnabled) {
+            if (Input.GetMouseButtonDown(0)) {
+                map.PlaceTile((MapLayer)currentLayer, mouseGridPos, loadedTiles[mainTile]);
+            }
 
-        if (Input.GetKeyDown(KeyCode.L)) {
-            ExecuteAllLayers();
-        }
-
-        if (Input.GetKeyDown(KeyCode.K)) {
-            SaveMap();
-        }
-
-        if (!placeEnabled) {
-            return;
-        }
-
-        if (Input.GetKeyDown(KeyCode.R)) {
-            ChangeTile(1);
-        }
-
-        if (Input.GetKeyDown(KeyCode.F)) {
-            ChangeTile(-1);
-        }
-
-        if (Input.GetKeyDown(KeyCode.T)) {
-            ChangeOtherTile(1);
-        }
-
-        if (Input.GetKeyDown(KeyCode.G)) {
-            ChangeOtherTile(-1);
-        }
-
-        if (Input.GetKeyDown(KeyCode.N)) {
-            map.tilemap.HoldMeshUpdate(true);
-            ApplyNoise();
-            map.tilemap.HoldMeshUpdate(false);
-        }
-
-        if (Input.GetMouseButtonDown(0)) {
-            map.PlaceTile((MapLayer)currentLayer, mouseGridPos, loadedTiles[tileIndex]);
-        }
-
-        if (Input.GetMouseButtonDown(1)) {
-            map.PlaceTile((MapLayer)currentLayer, mouseGridPos, null);
+            if (Input.GetMouseButtonDown(1)) {
+                map.PlaceTile((MapLayer)currentLayer, mouseGridPos, null);
+            }
         }
     }
 
     public void SaveMap() {
         map.Save();
         MapLoader.SaveMap(map);
+    }
+
+    public void ChangeLayer(int layer) {
+        this.currentLayer = layer;
+    }
+
+    public void ChangeTile(int tile) {
+        mainTile = tile;
+    }
+
+    public void Noise(string tile1Name, string tile2Name, float scale, float threshold, int octaves, float persistance, float lacunarity, float riverWidth, float shoreWidth) {
+        map.tilemap.HoldMeshUpdate(true);
+
+        mainTile = GetByName(tile1Name);
+        secTile = GetByName(tile2Name);
+
+        this.scale = scale;
+        this.threshold = threshold;
+        this.octaves = octaves;
+        this.persistance = persistance;
+        this.lacunarity = lacunarity;
+
+        bool isRiver = riverWidth != -1f;
+        minThreshold = isRiver ? threshold - riverWidth : -1;
+        shoreThreshold = shoreWidth;
+
+        overrideIfNull = (MapLayer)currentLayer == MapLayer.Ore && secTile == -1;
+
+        ApplyNoise(-1);
+
+        map.tilemap.HoldMeshUpdate(false);
     }
 
     public void ExecuteAllLayers() {
@@ -133,8 +123,8 @@ public class MapEditor : MonoBehaviour {
             lacunarity = mapLayer.lacunarity;
             noiseLayer = mapLayer.noiseLayer;
             overrideIfNull = mapLayer.overrideIfNull;
-            tile1 = GetByName(mapLayer.tile1Name);
-            tile2 = GetByName(mapLayer.tile2Name);
+            mainTile = GetByName(mapLayer.tile1Name);
+            secTile = GetByName(mapLayer.tile2Name);
             minThreshold = mapLayer.layerAction == MapEditorLayer.LayerAction.River ? threshold - mapLayer.riverWidth : -1;
             shoreThreshold = mapLayer.shoreWidth;
 
@@ -148,9 +138,14 @@ public class MapEditor : MonoBehaviour {
         return -1;
     }
 
+    public int GetByType(TileType type) {
+        for (int i = 0; i < loadedTiles.Length; i++) if (loadedTiles[i] == type) return i;
+        return -1;
+    }
+
     public void ApplyNoise(int seed = -1) {
-        TileType tile1 = this.tile1 == -1 ? null : loadedTiles[this.tile1];
-        TileType tile2 = this.tile2 == -1 ? null : loadedTiles[this.tile2];
+        TileType tile1 = this.mainTile == -1 ? null : loadedTiles[this.mainTile];
+        TileType tile2 = this.secTile == -1 ? null : loadedTiles[this.secTile];
 
         seed = seed == -1 ? Random.Range(0, 999999) : seed;
 
@@ -188,7 +183,7 @@ public class MapEditor : MonoBehaviour {
                 }
          
                 if (!overrideIfNull && tileType == null) continue;
-                map.PlaceTile(noiseLayer, new Vector2Int(x, y), tileType);
+                map.PlaceTile((MapLayer)currentLayer, new Vector2Int(x, y), tileType);
             }
         }
     }
@@ -210,39 +205,5 @@ public class MapEditor : MonoBehaviour {
         }
 
         return perlinValue;
-    }
-
-
-    public void ChangeTile(int delta) {
-        tileIndex += delta > 0 ? 1 : -1;
-
-        if (tileIndex < 0) tileIndex = loadedTiles.Length - 1;
-        else if (tileIndex >= loadedTiles.Length) tileIndex = 0;
-
-        tile1 = tileIndex;
-    }
-
-    public void ChangeOtherTile(int delta) {
-        otherTileIndex += delta > 0 ? 1 : -1;
-
-        if (otherTileIndex < 0) otherTileIndex = loadedTiles.Length - 1;
-        else if (otherTileIndex >= loadedTiles.Length) otherTileIndex = 0;
-
-        tile2 = otherTileIndex;
-    }
-
-    public void ChangeLayer(int delta) {
-        currentLayer += delta > 0 ? 1 : -1;
-
-        if (currentLayer < 0) currentLayer = (int)MapLayer.Total - 1;
-        else if (currentLayer >= (int)MapLayer.Total) currentLayer = 0;
-    }
-
-    public void PlaceTile() {
-
-    }
-
-    public void RemoveTile() {
-
     }
 }
