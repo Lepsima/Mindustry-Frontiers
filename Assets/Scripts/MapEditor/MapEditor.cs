@@ -82,10 +82,12 @@ public class MapEditor : MonoBehaviour {
         MapLoader.SaveMap(map);
     }
 
+    // Change the editing layer
     public void ChangeLayer(int layer) {
-        this.currentLayer = layer;
+        currentLayer = layer;
     }
 
+    // Change the place tile
     public void ChangeTile(int tile) {
         mainTile = tile;
     }
@@ -143,9 +145,32 @@ public class MapEditor : MonoBehaviour {
         return -1;
     }
 
+    public void ApplyReplace() {
+        TileType targetTile = mainTile == -1 ? null : loadedTiles[mainTile];
+        TileType replaceTile = secTile == -1 ? null : loadedTiles[secTile];
+
+        if (targetTile == null) {
+            Debug.LogWarning("Target tile not found for replace action");
+            return;
+        }
+
+        bool replaceMode = replaceTile != null;
+
+        for (int x = 0; x < map.size.x; x++) {
+            for (int y = 0; y < map.size.y; y++) {
+                Vector2Int position = new(x, y);
+                bool isTargetTile = map.GetMapTileTypeAt((MapLayer)currentLayer, position) == targetTile;
+
+                if (!isTargetTile) {
+                    continue;
+                }
+            }
+        }
+    }
+
     public void ApplyNoise(int seed = -1) {
-        TileType tile1 = this.mainTile == -1 ? null : loadedTiles[this.mainTile];
-        TileType tile2 = this.secTile == -1 ? null : loadedTiles[this.secTile];
+        TileType tile1 = mainTile == -1 ? null : loadedTiles[mainTile];
+        TileType tile2 = secTile == -1 ? null : loadedTiles[secTile];
 
         seed = seed == -1 ? Random.Range(0, 999999) : seed;
 
