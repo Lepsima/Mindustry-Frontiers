@@ -28,12 +28,15 @@ namespace Frontiers.Content.Maps {
             Total = 3
         }
 
-        public Map(string name, int width, int height, Tilemap tilemap) {
+        public Map(string name, int width, int height) {
             // Create a map
             this.name = name;
-            this.tilemap = tilemap;
             size = new(width, height);
 
+            // Create an empty tilemap
+            tilemap = new(size, Vector2Int.one * Main.Map_RegionSize);
+
+            // End loading
             loaded = true;
         }
 

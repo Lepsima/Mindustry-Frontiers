@@ -181,7 +181,7 @@ namespace Frontiers.Content.Maps {
             this.regionSize = regionSize;
 
             // Create the region array
-            regionCount = new(size.x / regionSize.x, size.y / regionSize.y);
+            regionCount = new(Mathf.CeilToInt((float)size.x / regionSize.x), Mathf.CeilToInt((float)size.y / regionSize.y));
             regions = new Region[regionCount.x, regionCount.y];
 
 

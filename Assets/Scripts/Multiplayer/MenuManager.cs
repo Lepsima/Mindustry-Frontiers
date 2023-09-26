@@ -7,6 +7,10 @@ public class MenuManager : MonoBehaviour {
     public static MenuManager Instance;
 
     [SerializeField] Menu[] menus;
+
+    [Space] 
+
+    [SerializeField] bool hasAnimations = false;
     [SerializeField] Animator backgroundAnimator;
 
     private void Awake() {
@@ -20,7 +24,7 @@ public class MenuManager : MonoBehaviour {
     public void OpenMenu(Menu menu) {
         for (int i = 0; i < menus.Length; i++) { 
             if (menus[i].isOpen) CloseMenu(menus[i]); 
-            if (menus[i] == menu) backgroundAnimator.SetInteger("state", i);    
+            if (menus[i] == menu && hasAnimations) backgroundAnimator.SetInteger("state", i);    
         }
         menu.Open();
     }

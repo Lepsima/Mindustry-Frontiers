@@ -13,16 +13,6 @@ public class MapEditor : MonoBehaviour {
     [Header("Editor Layers")]
     public MapEditorLayer[] layers;
 
-    [Header("Noise Settings")]
-    public float scale = 3.25f;
-    [Range(0f, 1f)] public float threshold = 0.5f;
-    float minThreshold = -1f;
-    float shoreThreshold = -1f;
-
-    [Range(0, 10)] public int octaves = 4;
-    [Range(0f, 1f)] public float persistance = 0.5f;
-    public float lacunarity = 1f;
-
     public MapLayer noiseLayer;
 
     public bool overrideIfNull;
@@ -34,7 +24,6 @@ public class MapEditor : MonoBehaviour {
     int currentLayer;
     public bool placeEnabled = false;
 
-    Tilemap tilemap;
     Map map;
 
     private void Awake() {
@@ -53,8 +42,7 @@ public class MapEditor : MonoBehaviour {
     }
 
     public void CreateMap(string mapName, Vector2Int size) {
-        tilemap = new(size, Vector2Int.one * Main.Map_RegionSize);
-        map = new Map(mapName, size.x, size.y, tilemap);
+        map = new Map(mapName, size.x, size.y);
     }
 
     private void OnMapLoaded(object sender, MapLoader.MapLoadedEventArgs e) {
@@ -92,45 +80,83 @@ public class MapEditor : MonoBehaviour {
         mainTile = tile;
     }
 
-    public void Noise(string tile1Name, string tile2Name, float scale, float threshold, int octaves, float persistance, float lacunarity, float riverWidth, float shoreWidth) {
+    public void ApplyNoise(TileType mainTile, TileType secTile, float scale, float threshold, int octaves, float persistance, float lacunarity, float riverWidth, float shoreWidth) {
         map.tilemap.HoldMeshUpdate(true);
-
-        mainTile = GetByName(tile1Name);
-        secTile = GetByName(tile2Name);
-
-        this.scale = scale;
-        this.threshold = threshold;
-        this.octaves = octaves;
-        this.persistance = persistance;
-        this.lacunarity = lacunarity;
 
         bool isRiver = riverWidth != -1f;
-        minThreshold = isRiver ? threshold - riverWidth : -1;
-        shoreThreshold = shoreWidth;
+        float minThreshold = isRiver ? threshold - riverWidth : -1;
+        float shoreThreshold = shoreWidth;
 
-        overrideIfNull = (MapLayer)currentLayer == MapLayer.Ore && secTile == -1;
+        bool replaceIfNull = (MapLayer)currentLayer == MapLayer.Ore && secTile == null;
 
-        ApplyNoise(-1);
+        int seed = Random.Range(0, 999999);
+
+        float maxValue = float.MinValue;
+        float minValue = float.MaxValue;
+
+        float[,] values = new float[map.size.x, map.size.y];
+        Vector2Int size = map.size;
+
+        for (int x = 0; x < size.x; x++) {
+            for (int y = 0; y < size.y; y++) {
+                float value = CalculateNoiseTile(x + seed, y + seed);
+
+                if (value > maxValue) maxValue = value;
+                if (value < minValue) minValue = value;
+
+                values[x, y] = value;
+            }
+        }
+
+        for (int x = 0; x < size.x; x++) {
+            for (int y = 0; y < size.y; y++) {
+                values[x, y] = Mathf.InverseLerp(minValue, maxValue, values[x, y]);
+
+                bool isTile1 = minThreshold == -1 ? values[x, y] > threshold : values[x, y] < threshold && values[x, y] > minThreshold;
+                bool isTile2 = (!isTile1 && (values[x, y] < threshold + shoreThreshold && values[x, y] > minThreshold - shoreThreshold));
+
+                TileType tileType = isTile1 ? mainTile : (minThreshold == -1 || isTile2) ? secTile : null;
+                
+                if (!replaceIfNull && tileType == null) continue;
+                map.PlaceTile((MapLayer)currentLayer, new Vector2Int(x, y), tileType);
+            }
+        }
 
         map.tilemap.HoldMeshUpdate(false);
+
+        float CalculateNoiseTile(int x, int y) {
+            float perlinValue = 0f;
+            float amplitude = 1f;
+            float frequency = 1f;
+
+            for (int i = 0; i < octaves; i++) {
+                float xCoord = x / scale * frequency;
+                float yCoord = y / scale * frequency;
+
+                float value = Mathf.PerlinNoise(xCoord, yCoord) * 2f - 1f;
+                perlinValue += value * amplitude;
+
+                amplitude *= persistance;
+                frequency *= lacunarity;
+            }
+
+            return perlinValue;
+        }
     }
 
-    public void ExecuteAllLayers() {
+    public void ApplyReplace(TileType targetTile, TileType replaceTile) {
         map.tilemap.HoldMeshUpdate(true);
-        foreach (MapEditorLayer mapLayer in layers) {
-            scale = mapLayer.scale;
-            threshold = mapLayer.threshold;
-            octaves = mapLayer.octaves;
-            persistance = mapLayer.persistance;
-            lacunarity = mapLayer.lacunarity;
-            noiseLayer = mapLayer.noiseLayer;
-            overrideIfNull = mapLayer.overrideIfNull;
-            mainTile = GetByName(mapLayer.tile1Name);
-            secTile = GetByName(mapLayer.tile2Name);
-            minThreshold = mapLayer.layerAction == MapEditorLayer.LayerAction.River ? threshold - mapLayer.riverWidth : -1;
-            shoreThreshold = mapLayer.shoreWidth;
 
-            ApplyNoise(mapLayer.seed);
+        if (targetTile == null) {
+            Debug.LogWarning("Target tile not found for replace action");
+            return;
+        }
+
+        for (int x = 0; x < map.size.x; x++) {
+            for (int y = 0; y < map.size.y; y++) {
+                Vector2Int position = new(x, y);
+                if (map.GetMapTileTypeAt((MapLayer)currentLayer, position) == targetTile) map.PlaceTile((MapLayer)currentLayer, position, replaceTile);
+            }
         }
 
         map.tilemap.HoldMeshUpdate(false);
@@ -144,86 +170,5 @@ public class MapEditor : MonoBehaviour {
     public int GetByType(TileType type) {
         for (int i = 0; i < loadedTiles.Length; i++) if (loadedTiles[i] == type) return i;
         return -1;
-    }
-
-    public void ApplyReplace() {
-        TileType targetTile = mainTile == -1 ? null : loadedTiles[mainTile];
-        TileType replaceTile = secTile == -1 ? null : loadedTiles[secTile];
-
-        if (targetTile == null) {
-            Debug.LogWarning("Target tile not found for replace action");
-            return;
-        }
-
-        for (int x = 0; x < map.size.x; x++) {
-            for (int y = 0; y < map.size.y; y++) {
-                Vector2Int position = new(x, y);
-                if (map.GetMapTileTypeAt((MapLayer)currentLayer, position) == targetTile) map.PlaceTile((MapLayer)currentLayer, position, replaceTile);
-            }
-        }
-    }
-
-    public void ApplyNoise(int seed = -1) {
-        TileType tile1 = mainTile == -1 ? null : loadedTiles[mainTile];
-        TileType tile2 = secTile == -1 ? null : loadedTiles[secTile];
-
-        seed = seed == -1 ? Random.Range(0, 999999) : seed;
-
-        float maxValue = float.MinValue;
-        float minValue = float.MaxValue;
-
-        float[,] values = new float[map.size.x, map.size.y];
-
-        for (int x = 0; x < map.size.x; x++) {
-            for (int y = 0; y < map.size.y; y++) {
-                float value = CalculateNoiseTile(x + seed, y + seed);
-                
-                if (value > maxValue) maxValue = value; 
-                if (value < minValue) minValue = value;          
-
-                values[x, y] = value;
-            }
-        }
-
-        for (int x = 0; x < map.size.x; x++) {
-            for (int y = 0; y < map.size.y; y++) {
-                values[x, y] = Mathf.InverseLerp(minValue, maxValue, values[x, y]);
-
-                bool isTile1 = minThreshold == -1 ? values[x, y] > threshold : values[x, y] < threshold && values[x, y] > minThreshold;
-
-                bool isTile2 = (!isTile1 && (values[x, y] < threshold + shoreThreshold && values[x, y] > minThreshold - shoreThreshold));
-
-                TileType tileType = null;
-
-                if (minThreshold == -1) {
-                    tileType = isTile1 ? tile1 : tile2;
-                } else {
-                    if (isTile1) tileType = tile1;
-                    else if (isTile2) tileType = tile2;
-                }
-         
-                if (!overrideIfNull && tileType == null) continue;
-                map.PlaceTile((MapLayer)currentLayer, new Vector2Int(x, y), tileType);
-            }
-        }
-    }
-
-    public float CalculateNoiseTile(int x, int y) {
-        float perlinValue = 0f;
-        float amplitude = 1f;
-        float frequency = 1f;
-
-        for (int i = 0; i < octaves; i++) {
-            float xCoord = x / scale * frequency;
-            float yCoord = y / scale * frequency;
-
-            float value = Mathf.PerlinNoise(xCoord, yCoord) * 2f - 1f;
-            perlinValue += value * amplitude;
-
-            amplitude *= persistance;
-            frequency *= lacunarity;
-        }
-
-        return perlinValue;
     }
 }
