@@ -87,7 +87,7 @@ public class MapEditor : MonoBehaviour {
         currentLayer = layer;
     }
 
-    // Change the place tile
+    // Change the place tile3w
     public void ChangeTile(int tile) {
         mainTile = tile;
     }
@@ -132,6 +132,7 @@ public class MapEditor : MonoBehaviour {
 
             ApplyNoise(mapLayer.seed);
         }
+
         map.tilemap.HoldMeshUpdate(false);
     }
 
@@ -154,16 +155,10 @@ public class MapEditor : MonoBehaviour {
             return;
         }
 
-        bool replaceMode = replaceTile != null;
-
         for (int x = 0; x < map.size.x; x++) {
             for (int y = 0; y < map.size.y; y++) {
                 Vector2Int position = new(x, y);
-                bool isTargetTile = map.GetMapTileTypeAt((MapLayer)currentLayer, position) == targetTile;
-
-                if (!isTargetTile) {
-                    continue;
-                }
+                if (map.GetMapTileTypeAt((MapLayer)currentLayer, position) == targetTile) map.PlaceTile((MapLayer)currentLayer, position, replaceTile);
             }
         }
     }

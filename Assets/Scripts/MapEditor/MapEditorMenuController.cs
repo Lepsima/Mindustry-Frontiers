@@ -11,11 +11,18 @@ public class MapEditorMenuController : MonoBehaviour {
 
     [Space]
 
-    public Slider scaleSlider;
-    public Slider thresholdSlider;
-    public Slider octaveSlider;
-    public Slider persistanceSlider;
+    public Dropdown n_mainTile;
+    public Dropdown n_secTile;
+    public Slider n_scaleSlider;
+    public Slider n_thresholdSlider;
+    public Slider n_octaveSlider;
+    public Slider n_persistanceSlider;
     public Slider lacunaritySlider;
+
+    [Space]
+
+    public Dropdown r_mainTile;
+    public Dropdown r_secTile;
 
     public void StartEditor() {
         bool loadMap = !string.IsNullOrEmpty(mapLoadName.text);
@@ -25,5 +32,13 @@ public class MapEditorMenuController : MonoBehaviour {
         } else {
 
         }
+    }
+
+    public void ConfirmNoise() {
+
+    }
+
+    public void ConfirmReplace() {
+
     }
 }
