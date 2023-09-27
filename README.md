@@ -3,8 +3,6 @@
 
 A Mindustry fangame, that aims to give a "cinematic" experience 
 
-Some sprites, specially enviroment ones are currently copy-pasted from Mindustry
-
 # About
 
 My goal with this is to focus in low-scale and low-tier battles in large maps, with a total unit count in a battle no higher than 20 (aprox) per team and with the best tier that could be 
