@@ -2,6 +2,7 @@
 ![logo](Assets/Resources/Sprites/UI/logo.png)
 
 A Mindustry fangame, that aims to give a "cinematic" experience 
+
 Some sprites, specially enviroment ones are currently copy-pasted from Mindustry
 
 # About
