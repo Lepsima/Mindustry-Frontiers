@@ -10628,6 +10628,7 @@ MonoBehaviour:
   - {fileID: 1906713167}
   - {fileID: 293146686}
   - {fileID: 593425371}
+  hasAnimations: 0
   backgroundAnimator: {fileID: 398889520}
 --- !u!1 &1355855251
 GameObject:
