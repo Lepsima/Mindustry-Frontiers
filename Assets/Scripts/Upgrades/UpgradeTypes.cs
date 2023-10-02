@@ -577,6 +577,7 @@ namespace Frontiers.Content.Upgrades {
     }
 
     public class BlockUpgradeMultipliers : EntityUpgradeMultipliers {
+        public float powerUsage, powerStorage;
         public float drill_hardness, drill_rate;
         public float crafter_craftTime, crafter_craftCost, crafter_craftReturn;
         public float conveyor_itemSpeed;
@@ -584,6 +585,8 @@ namespace Frontiers.Content.Upgrades {
         public override void ApplyMult(float mult) {
             base.ApplyMult(mult);
 
+            powerUsage *= mult;
+            powerStorage *= mult;
             drill_hardness *= mult;
             drill_rate *= mult;
             crafter_craftTime *= mult;
@@ -596,6 +599,8 @@ namespace Frontiers.Content.Upgrades {
             BlockUpgradeMultipliers mult = upgradeMultipliers as BlockUpgradeMultipliers;
             base.CopyTo(mult);
 
+            mult.powerUsage = powerUsage;
+            mult.powerStorage = powerStorage;
             mult.drill_hardness = drill_hardness;
             mult.drill_rate = drill_rate;
             mult.crafter_craftTime = crafter_craftTime;

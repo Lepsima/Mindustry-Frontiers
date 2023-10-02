@@ -26,3 +26,29 @@ public interface IArmed {
 public interface IMessager {
     public string GetName();
 }
+
+public interface IPowerable {
+    public bool ConsumesPower();
+
+    public bool GeneratesPower();
+
+    public bool StoresPower();
+
+    public float GetPowerConsumption();
+
+    public float GetPowerGeneration();
+
+    public float GetPowerCapacity();
+
+    public float GetStoredPower();
+
+    public float GetMaxStorage();
+
+    public void ChargePower(float amount);
+
+    public void DischargePower(float amount);
+
+    public void SetPowerPercent(float amount);
+
+    public IPowerable GetConnections();
+}
