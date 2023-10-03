@@ -20,6 +20,11 @@ namespace Frontiers.Content.Maps {
         public Vector2Int size;
         public bool loaded;
 
+        public event EventHandler<Unit> OnUnitCreated;
+        public event EventHandler<Unit> OnUnitRemoved;
+        public event EventHandler<Block> OnBlockCreated;
+        public event EventHandler<Block> OnBlockRemoved;
+
         // All the layers on the map, the last enum should have as number the amount of layers without counting itself
         public enum MapLayer {
             Ground = 0,
@@ -350,36 +355,6 @@ namespace Frontiers.Content.Maps {
             tilemap.SetTile(tile, position, layer);
         }
 
-        public void PlaceBlock(Block block, Vector2Int position) {
-            // Set the given block to all the tiles it occupies
-            int size = block.Type.size;
-
-            for (int x = 0; x < size; x++) {
-                for (int y = 0; y < size; y++) {
-                    Vector2Int sizePosition = position + new Vector2Int(x, y);
-
-                    // Link position and tile to the given block
-                    blockPositions.Add(sizePosition, block);
-                    tilemap.SetBlock(sizePosition, block);
-                }
-            }
-        }
-
-        public void RemoveBlock(Block block, Vector2Int position) {
-            // Set null the block to all the tiles it occupied
-            int size = block.Type.size;
-
-            for (int x = 0; x < size; x++) {
-                for (int y = 0; y < size; y++) {
-                    Vector2Int sizePosition = position + new Vector2Int(x, y);
-
-                    // Remove the position and tile link of the given block
-                    blockPositions.Remove(sizePosition);
-                    tilemap.SetBlock(sizePosition, null);
-                }
-            }
-        }
-
         public void CreateUnitFromString(string data) {
             // Not now, please
         }
@@ -541,15 +516,15 @@ namespace Frontiers.Content.Maps {
             return blockPositions.TryGetValue(position, out Block block) ? block : null;
         }
 
-        public (List<ItemBlock>, List<int>) GetAdjacentBlocks(ItemBlock itemBlock) {
+        public (List<ItemBlock>, List<int>) GetAdjacentItemBlocks(ItemBlock from) {
             // Create the adjacent block list
             List<ItemBlock> adjacentBlocks = new();
             List<int> adjacentBlockOrientations = new();
 
-            int size = (int)itemBlock.size;
+            int size = (int)from.size;
 
             // Get the block's position
-            Vector2Int position = itemBlock.GetGridPosition();
+            Vector2Int position = from.GetGridPosition();
 
             // Check for adjacent blocks in all 4 sides
             for (int y = 0; y < size; y++) Handle(-1, y, 2);
@@ -562,7 +537,7 @@ namespace Frontiers.Content.Maps {
                 Vector2Int offset = new(x, y);
 
                 if (GetBlockAt(offset + position) is ItemBlock block) {
-                    if (block == null || itemBlock == block || adjacentBlocks.Contains(block)) return;
+                    if (block == null || from == block || adjacentBlocks.Contains(block)) return;
                     adjacentBlocks.Add(block);
                     adjacentBlockOrientations.Add(o);
                 }
@@ -571,14 +546,54 @@ namespace Frontiers.Content.Maps {
             return (adjacentBlocks, adjacentBlockOrientations);
         }
 
+        public List<IPowerable> GetAdjacentPowerBlocks(Block from) {
+            // Create the adjacent block list
+            List<IPowerable> adjacentBlocks = new();
+            int size = (int)from.size;
+
+            // Get the block's position
+            Vector2Int position = from.GetGridPosition();
+
+            // Check for adjacent blocks in all 4 sides
+            for (int y = 0; y < size; y++) Handle(-1, y);
+            for (int y = 0; y < size; y++) Handle(size, y);
+            for (int x = 0; x < size; x++) Handle(x, -1);
+            for (int x = 0; x < size; x++) Handle(x, size);
+
+            // Check if a block exists in (x, y)
+            void Handle(int x, int y) {
+                Block block = GetBlockAt(new Vector2Int(x, y) + position);
+
+                bool validBlock = !(block == null || from == block || adjacentBlocks.Contains(block));
+                bool validConnection = from.TransfersPower() || block.TransfersPower();
+
+                if (validBlock && validConnection) adjacentBlocks.Add(block);
+            }
+
+            return adjacentBlocks;
+        }
+
         public void AddBlock(Block block) {
             // Add block to all lists
             blocks.Add(block);
             loadedEntities.Add(block);
             Client.syncObjects.Add(block.SyncID, block);
 
-            // Place the block
-            PlaceBlock(block, block.GetGridPosition());
+            // Set the given block to all the tiles it occupies
+            int size = block.Type.size;
+            Vector2Int position = block.GetGridPosition();
+
+            for (int x = 0; x < size; x++) {
+                for (int y = 0; y < size; y++) {
+                    Vector2Int sizePosition = position + new Vector2Int(x, y);
+
+                    // Link position and tile to the given block
+                    blockPositions.Add(sizePosition, block);
+                    tilemap.SetBlock(sizePosition, block);
+                }
+            }
+
+            OnBlockCreated?.Invoke(this, block);
         }
 
         public void RemoveBlock(Block block) {
@@ -587,8 +602,21 @@ namespace Frontiers.Content.Maps {
             loadedEntities.Remove(block);
             Client.syncObjects.Remove(block.SyncID);
 
-            // Remove the block
-            RemoveBlock(block, block.GetGridPosition());
+            // Set null the block to all the tiles it occupied
+            int size = block.Type.size;
+            Vector2Int position = block.GetGridPosition();
+
+            for (int x = 0; x < size; x++) {
+                for (int y = 0; y < size; y++) {
+                    Vector2Int sizePosition = position + new Vector2Int(x, y);
+
+                    // Remove the position and tile link of the given block
+                    blockPositions.Remove(sizePosition);
+                    tilemap.SetBlock(sizePosition, null);
+                }
+            }
+
+            OnBlockRemoved?.Invoke(this, block);
         }
 
         #endregion
@@ -598,11 +626,13 @@ namespace Frontiers.Content.Maps {
         public void AddUnit(Unit unit) {
             units.Add(unit);
             loadedEntities.Add(unit);
+            OnUnitCreated?.Invoke(this, unit);
         }
 
         public void RemoveUnit(Unit unit) {
             units.Remove(unit);
             loadedEntities.Remove(unit);
+            OnUnitRemoved?.Invoke(this, unit);
         }
 
         #endregion

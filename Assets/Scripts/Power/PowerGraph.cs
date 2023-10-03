@@ -7,11 +7,32 @@ public class PowerGraph {
     public List<IPowerable> powerConsumers = new();
     public List<IPowerable> powerGenerators = new();
     public List<IPowerable> powerStorages = new();
+    public List<IPowerable> all = new();
+
+    public PowerGraph() { 
+    
+    }
+
+    public PowerGraph(IPowerable powerable) {
+        Handle(powerable);
+    }
 
     public void Handle(IPowerable powerable) {
         if (powerable.ConsumesPower()) powerConsumers.Add(powerable);
         if (powerable.GeneratesPower()) powerGenerators.Add(powerable);
         if (powerable.StoresPower()) powerStorages.Add(powerable);
+        all.Add(powerable);
+    }
+
+    public void Handle(PowerGraph other) {
+        powerConsumers.AddRange(other.powerConsumers);
+        powerGenerators.AddRange(other.powerGenerators);
+        powerStorages.AddRange(other.powerStorages);
+        all.AddRange(other.all);
+    }
+
+    public bool Contains(IPowerable powerable) {
+        return all.Contains(powerable);
     }
 
     public void Update() {
@@ -27,7 +48,7 @@ public class PowerGraph {
             generated += DischargeStorages(needed - generated);
         }
 
-        // Haha, conditional tower
+        // Haha conditional tower
         float coverage = generated == 0 && needed == 0 ? 0 : needed == 0 ? 1f : Mathf.Min(1, generated / needed);
 
         foreach (IPowerable powerable in powerConsumers) {

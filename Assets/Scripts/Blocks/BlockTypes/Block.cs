@@ -24,8 +24,8 @@ public class Block : Entity, IPowerable {
     private bool glows = false;
     private float glowSpriteOffset;
 
-    private float powerPercent; // The current amount of power usage given to this block
-    private float powerStored; // The current amount of power stored
+    protected float powerPercent; // The current amount of power usage given to this block
+    protected float powerStored; // The current amount of power stored
 
     static readonly Vector2Int[] adjacentPositions = new Vector2Int[4] { new Vector2Int(1, 0), new Vector2Int(0, 1), new Vector2Int(-1, 0), new Vector2Int(0, -1) };
 
@@ -237,6 +237,10 @@ public class Block : Entity, IPowerable {
         return powerStorage > 0;
     }
 
+    public bool TransfersPower() {
+        return Type.transfersPower;
+    }
+
     public float GetPowerConsumption() {
         // Invert because consumption is stored as negative but operated as positive
         return -powerUsage;
@@ -272,8 +276,8 @@ public class Block : Entity, IPowerable {
         powerPercent = amount;
     }
 
-    public IPowerable GetConnections() {
-        return null;
+    public virtual List<IPowerable> GetConnections() {
+        return MapManager.Map.GetAdjacentPowerBlocks(this);
     }
 
     #endregion

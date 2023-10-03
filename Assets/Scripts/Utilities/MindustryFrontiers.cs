@@ -818,8 +818,9 @@ namespace Frontiers.Content {
         public bool updates = false, syncs = true, breakable = true, solid = true;
         public int size = 1;
 
-        public bool usesPower = false;
-        public float powerUsage = 0f, powerStorage = 0f;
+        public bool usesPower = false, transfersPower = false;
+        public float powerUsage = 0f, powerStorage = 0f, powerConnectionRange = 0f;
+        public int maxPowerConnections = 0;
 
         public BlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             teamSprite = AssetLoader.GetSprite(name + "-team", true);

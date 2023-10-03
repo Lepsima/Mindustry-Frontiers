@@ -135,7 +135,7 @@ public abstract class ItemBlock : Block, IInventory {
     }
 
     public virtual void GetAdjacentBlocks() {
-        (List<ItemBlock> adjacentBlockList, List<int> adjacentBlockOrientations) = MapManager.Map.GetAdjacentBlocks(this);
+        (List<ItemBlock> adjacentBlockList, List<int> adjacentBlockOrientations) = MapManager.Map.GetAdjacentItemBlocks(this);
 
         List<ItemBlock> recivers = new();
         List<int> reciverOrientations = new();

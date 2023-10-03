@@ -1,5 +1,6 @@
 using Frontiers.Content;
 using Photon.Pun;
+using System.Collections.Generic;
 
 public interface IDamageable {
     public void Damage(float amount);
@@ -34,6 +35,8 @@ public interface IPowerable {
 
     public bool StoresPower();
 
+    public bool TransfersPower();
+
     public float GetPowerConsumption();
 
     public float GetPowerGeneration();
@@ -50,5 +53,5 @@ public interface IPowerable {
 
     public void SetPowerPercent(float amount);
 
-    public IPowerable GetConnections();
+    public List<IPowerable> GetConnections();
 }
