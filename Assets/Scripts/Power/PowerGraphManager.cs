@@ -3,16 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Frontiers.Content.Maps;
 
-public class PowerGraphManager {
+public static class PowerGraphManager {
     public static List<PowerGraph> graphs = new();
-    public static PowerGraphManager Instance;
-
-    public PowerGraphManager(Map map) {
-        Instance = this;
-
-        map.OnBlockCreated += OnBlockCreated;
-        map.OnBlockRemoved += OnBlockRemoved;
-    }
 
     public static void HandleIPowerable(IPowerable powerable) {
         List<IPowerable> connections = powerable.GetConnections();
@@ -43,24 +35,11 @@ public class PowerGraphManager {
                 mainGraph.Handle(graph);
                 graphs.Remove(graph);
             }
-
         }
     }
 
     public static PowerGraph GetPowerGraphFrom(IPowerable powerable) {
         foreach(PowerGraph graph in graphs) if (graph.Contains(powerable)) return graph;
         return null;
-    }
-
-    public void OnBlockCreated(object sender, Block block) {
-        if (block == null) return;
-
-
-    }
-
-    public void OnBlockRemoved(object sender, Block block) {
-        if (block == null) return;
-
-
     }
 }

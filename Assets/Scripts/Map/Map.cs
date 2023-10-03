@@ -403,6 +403,68 @@ namespace Frontiers.Content.Maps {
             return closestEntity;
         }
 
+        public List<Entity> GetAllEntitiesInRange(Vector2 position, float range) {
+            List<Entity> entities = new();
+
+            foreach (Entity entity in loadedEntities) {
+                //If distance is lower than previous closest distance, set this as the closest content
+                if (Vector2.Distance(position, entity.GetPosition()) <= range) entities.Add(entity);
+            }
+
+            return entities;
+        }
+
+        public List<Entity> GetAllEntitiesInRange(Vector2 position, float range, Type type) {
+            List<Entity> entities = new();
+
+            foreach (Entity entity in loadedEntities) {
+                //If content doesn't match the filter, skip
+                if (!TypeEquals(entity.GetType(), type)) continue;
+
+                //Get distance to content
+                float distance = Vector2.Distance(position, entity.GetPosition());
+
+                //If distance is lower than previous closest distance, set this as the closest content
+                if (distance <= range) entities.Add(entity);
+            }
+
+            return entities;
+        }
+
+        public List<Entity> GetAllEntitiesInRange(Vector2 position, float range, byte teamCode) {
+            List<Entity> entities = new();
+
+            foreach (Entity entity in loadedEntities) {
+                //If content doesn't match the filter, skip
+                if (entity.GetTeam() != teamCode) continue;
+
+                //Get distance to content
+                float distance = Vector2.Distance(position, entity.GetPosition());
+
+                //If distance is lower than previous closest distance, set this as the closest content
+                if (distance <= range) entities.Add(entity);
+            }
+
+            return entities;
+        }
+
+        public List<Entity> GetAllEntitiesInRange(Vector2 position, float range, Type type, byte teamCode) {
+            List<Entity> entities = new();
+
+            foreach (Entity entity in loadedEntities) {
+                //If content doesn't match the filter, skip
+                if (entity.GetTeam() != teamCode || !TypeEquals(entity.GetType(), type)) continue;
+
+                //Get distance to content
+                float distance = Vector2.Distance(position, entity.GetPosition());
+
+                //If distance is lower than previous closest distance, set this as the closest content
+                if (distance <= range) entities.Add(entity);
+            }
+
+            return entities;
+        }
+
         public Entity GetClosestEntityStrict(Vector2 position, Type type, byte teamCode) {
             Entity closestEntity = null;
             float closestDistance = 99999f;
