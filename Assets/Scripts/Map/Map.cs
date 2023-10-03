@@ -626,7 +626,7 @@ namespace Frontiers.Content.Maps {
             void Handle(int x, int y) {
                 Block block = GetBlockAt(new Vector2Int(x, y) + position);
 
-                bool validBlock = !(block == null || from == block || adjacentBlocks.Contains(block));
+                bool validBlock = !(block == null || from == block || !block.UsesPower() || adjacentBlocks.Contains(block));
                 bool validConnection = from.TransfersPower() || block.TransfersPower();
 
                 if (validBlock && validConnection) adjacentBlocks.Add(block);
@@ -656,6 +656,8 @@ namespace Frontiers.Content.Maps {
             }
 
             OnBlockCreated?.Invoke(this, block);
+
+            if (block.UsesPower()) PowerGraphManager.HandleIPowerable(block);
         }
 
         public void RemoveBlock(Block block) {

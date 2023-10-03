@@ -124,7 +124,6 @@ public class Block : Entity, IPowerable {
 
             glows = true;
         }
-
     }
 
     protected virtual void Update() {
@@ -225,6 +224,10 @@ public class Block : Entity, IPowerable {
 
     #region - Power Section -
 
+    public bool UsesPower() {
+        return powerUsage != 0 || powerStorage != 0;
+    }
+
     public bool ConsumesPower() {
         return powerUsage < 0;
     }
@@ -277,7 +280,11 @@ public class Block : Entity, IPowerable {
     }
 
     public virtual List<IPowerable> GetConnections() {
-        return MapManager.Map.GetAdjacentPowerBlocks(this);
+        List<IPowerable> connections = MapManager.Map.GetAdjacentPowerBlocks(this);
+        List<Entity> rangedConnections = Type.powerConnectionRange > 0 ? MapManager.Map.GetAllEntitiesInRange(GetPosition(), Type.powerConnectionRange) : null;
+
+        foreach(Entity entity in rangedConnections) if (entity is Block block && block.UsesPower()) connections.Add(block);
+        return connections;
     }
 
     #endregion

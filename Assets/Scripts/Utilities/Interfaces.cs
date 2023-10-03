@@ -29,6 +29,8 @@ public interface IMessager {
 }
 
 public interface IPowerable {
+    public bool UsesPower();
+
     public bool ConsumesPower();
 
     public bool GeneratesPower();
