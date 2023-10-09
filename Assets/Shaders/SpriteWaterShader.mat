@@ -49,6 +49,14 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 36922f3a49732e24c839d61803b829cb, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Noise:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -67,8 +75,30 @@ Material:
     m_Ints: []
     m_Floats:
     - Vector1_d086c74219c04197aaae1444ac2e0736: 0.01
+    - _CameraSize: 0
+    - _Lerp: 1
+    - _QueueControl: 0
+    - _QueueOffset: 0
+    - _ReflectionCameraIntensity: 0.0035
+    - _ReflectionIntensity: 0.2
+    - _ReflectionOffset: 0
+    - _ReflectionZoom: 2
+    - _Scale: 3
+    - _Strength: 0.1
+    - _Threshold: 0.5
+    - _xd: 0.006625
     m_Colors:
     - Vector3_011610b5ee4146389a55758d3f24142d: {r: 1, g: 1, b: 0, a: 0}
     - Vector3_1583b703bf4943649c683e1451c11ec1: {r: 1, g: 1, b: 0, a: 0}
     - Vector3_5af2dcc350fe416b994de5b484b4ddbc: {r: 1, g: 1, b: 0, a: 0}
+    - _NoiseDirection: {r: 0, g: 0, b: 0, a: 0}
+    - _NormalDirection: {r: 0, g: 0, b: 0, a: 0}
+    - _Offset: {r: 0, g: 0, b: 0, a: 0}
+    - _Power: {r: 2, g: 2, b: 0, a: 0}
+    - _ReflectionOffset_1: {r: 0, g: 0, b: 0, a: 0}
+    - _ReflectionRatio: {r: 0.02, g: 0.2, b: 0, a: 0}
+    - _ReflectionSize: {r: 3, g: 3.72, b: 0, a: 0}
+    - _Size: {r: 100, g: 100, b: 0, a: 0}
+    - _Some_value: {r: 0, g: 0, b: 0, a: 0}
+    - _Speed: {r: 0.1, g: 0.1, b: 0, a: 0}
   m_BuildTextureStacks: []

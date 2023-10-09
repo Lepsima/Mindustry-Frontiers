@@ -19,14 +19,7 @@ namespace Frontiers.Content {
     }
 
     public class Items {
-        // Minerals
-        public static Item copper, lead, titanium, thorium, coal, sand, sulfur;
-
-        // Materials
-        public static Item metaglass, graphite, silicon;
-
-        // Synthetic
-        public static Item basicAmmo;
+        public static Item coal, cocaine, copper, depletedThorium, gold, graphite, heavyAlloy, iron, lightAlloy, lithium, magnesium, nickel, plastanium, quartz, reflectiveFabric, resistor, salt, sand, silicon, superconductor, thoriumDust, thoriumFuel, thorium;
 
         public static void Load() {
             copper = new Item("copper") {

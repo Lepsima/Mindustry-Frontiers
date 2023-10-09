@@ -97,14 +97,35 @@ public class MapEditor : MonoBehaviour {
         float[,] values = new float[map.size.x, map.size.y];
         Vector2Int size = map.size;
 
+        System.Random prng = new(seed);
+        Vector2[] octaveOffsets = new Vector2[octaves];
+        for (int i = 0; i < octaves; i++) {
+            float offX = prng.Next(-100000, 100000);
+            float offY = prng.Next(-100000, 100000);
+            octaveOffsets[i] = new Vector2(offX, offY);
+        }
+
         for (int x = 0; x < size.x; x++) {
             for (int y = 0; y < size.y; y++) {
-                float value = CalculateNoiseTile(x + seed, y + seed);
+                float perlinValue = 0f;
+                float amplitude = 1f;
+                float frequency = 1f;
 
-                if (value > maxValue) maxValue = value;
-                if (value < minValue) minValue = value;
+                for (int i = 0; i < octaves; i++) {
+                    float xCoord = x / scale * frequency * octaveOffsets[i].x;
+                    float yCoord = y / scale * frequency * octaveOffsets[i].y;
 
-                values[x, y] = value;
+                    float value = Mathf.PerlinNoise(xCoord, yCoord) * 2f - 1f;
+                    perlinValue += value * amplitude;
+
+                    amplitude *= persistance;
+                    frequency *= lacunarity;
+                }
+
+                if (perlinValue > maxValue) maxValue = perlinValue;
+                if (perlinValue < minValue) minValue = perlinValue;
+
+                values[x, y] = perlinValue;
             }
         }
 
@@ -123,25 +144,6 @@ public class MapEditor : MonoBehaviour {
         }
 
         map.tilemap.HoldMeshUpdate(false);
-
-        float CalculateNoiseTile(int x, int y) {
-            float perlinValue = 0f;
-            float amplitude = 1f;
-            float frequency = 1f;
-
-            for (int i = 0; i < octaves; i++) {
-                float xCoord = x / scale * frequency;
-                float yCoord = y / scale * frequency;
-
-                float value = Mathf.PerlinNoise(xCoord, yCoord) * 2f - 1f;
-                perlinValue += value * amplitude;
-
-                amplitude *= persistance;
-                frequency *= lacunarity;
-            }
-
-            return perlinValue;
-        }
     }
 
     public void ApplyReplace(TileType targetTile, TileType replaceTile) {

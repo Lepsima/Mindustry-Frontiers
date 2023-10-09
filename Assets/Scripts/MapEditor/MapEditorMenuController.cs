@@ -30,7 +30,7 @@ public class MapEditorMenuController : MonoBehaviour {
     public TMP_InputField scaleInputField;
     public Slider thresholdSlider;
     public Slider octaveSlider;
-    public TMP_InputField persistanceInputField;
+    public Slider persistanceSlider;
     public TMP_InputField lacunarityInputField;
 
     // River inputs
@@ -65,7 +65,7 @@ public class MapEditorMenuController : MonoBehaviour {
             float.Parse(scaleInputField.text), 
             thresholdSlider.value, 
             (int)octaveSlider.value, 
-            float.Parse(persistanceInputField.text),
+            persistanceSlider.value,
             float.Parse(lacunarityInputField.text),
             isRiver ? float.Parse(riverWidthInputField.text) : -1f,
             isRiver ? float.Parse(shoreWidthInputField.text) : -1f

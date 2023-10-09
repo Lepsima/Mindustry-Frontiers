@@ -1240,8 +1240,6 @@ namespace Frontiers.Content {
             };
 
             coreShard = new CoreBlockType("core-shard", typeof(CoreBlock), 1) {
-                buildCost = ItemStack.With(Items.copper, 1000, Items.lead, 500, Items.titanium, 100),
-
                 hidden = true,
                 breakable = false,
                 health = 1600,
@@ -1253,8 +1251,6 @@ namespace Frontiers.Content {
             };
 
             container = new StorageBlockType("container", typeof(StorageBlock), 2) {
-                buildCost = ItemStack.With(Items.copper, 100, Items.titanium, 25),
-
                 health = 150,
                 size = 2,
                 itemCapacity = 200,
@@ -1263,8 +1259,6 @@ namespace Frontiers.Content {
             };
 
             landingPad = new LandPadBlockType("landingPad", typeof(LandPadBlock), 2) {
-                buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 75),
-
                 health = 250,
                 size = 3,
                 solid = false,
@@ -1290,8 +1284,6 @@ namespace Frontiers.Content {
             };
 
             landingPadLarge = new LandPadBlockType("landingPad-large", typeof(LandPadBlock), 3) {
-                buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 75),
-
                 health = 300,
                 size = 3,
                 solid = false,
@@ -1314,7 +1306,6 @@ namespace Frontiers.Content {
             };
 
             tempest = new TurretBlockType("tempest", typeof(TurretBlock), 1) {
-                buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 75),
                 mount = new WeaponMount(Weapons.tempestWeapon, Vector2.zero),
 
                 health = 230f,
@@ -1324,7 +1315,6 @@ namespace Frontiers.Content {
             };
 
             windstorm = new TurretBlockType("windstorm", typeof(TurretBlock), 2) {
-                buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 75),
                 mount = new WeaponMount(Weapons.windstormWeapon, Vector2.zero),
 
                 health = 540f,
@@ -1335,7 +1325,6 @@ namespace Frontiers.Content {
             };
 
             stinger = new TurretBlockType("stinger", typeof(TurretBlock), 1) {
-                buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 75),
                 mount = new WeaponMount(Weapons.stingerWeapon, Vector2.zero),
 
                 health = 320f,
@@ -1355,7 +1344,6 @@ namespace Frontiers.Content {
             };
 
             spread = new TurretBlockType("spread", typeof(TurretBlock), 3) {
-                buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 65, Items.silicon, 80),
                 mount = new WeaponMount(Weapons.spreadWeapon, Vector2.zero),
 
                 health = 245f,
@@ -1385,8 +1373,6 @@ namespace Frontiers.Content {
             };
 
             airFactory = new UnitFactoryBlockType("air-factory", typeof(UnitFactoryBlock), 2) {
-                buildCost = ItemStack.With(Items.copper, 250, Items.titanium, 75),
-
                 unitPlan = new UnitPlan(Units.flare, 4f, new ItemStack[1] {
                     new ItemStack(Items.silicon, 20)
                 }),
@@ -1399,8 +1385,6 @@ namespace Frontiers.Content {
             };
 
             siliconSmelter = new CrafterBlockType("silicon-smelter", typeof(CrafterBlock), 1) {
-                buildCost = ItemStack.With(Items.copper, 50, Items.lead, 45),
-
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.silicon, 1), null),
                     consumption = new MaterialList(ItemStack.With(Items.sand, 2, Items.coal, 1), null),
@@ -1417,8 +1401,6 @@ namespace Frontiers.Content {
             };
 
             graphitePress = new CrafterBlockType("graphite-press", typeof(CrafterBlock), 1) {
-                buildCost = ItemStack.With(Items.copper, 75, Items.lead, 25),
-
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.graphite, 1), null),
                     consumption = new MaterialList(ItemStack.With(Items.coal, 2), null),
@@ -1433,11 +1415,11 @@ namespace Frontiers.Content {
             };
 
             kiln = new CrafterBlockType("kiln", typeof(CrafterBlock), 2) {
-                buildCost = ItemStack.With(Items.copper, 100, Items.lead, 35, Items.graphite, 15),
+                buildCost = ItemStack.With(Items.copper, 100, Items.graphite, 15),
 
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(ItemStack.With(Items.metaglass, 1), null),
-                    consumption = new MaterialList(ItemStack.With(Items.sand, 1, Items.lead, 1), null),
+                    production = new MaterialList(ItemStack.With(Items.cocaine, 1), null),
+                    consumption = new MaterialList(ItemStack.With(Items.sand, 1, Items.cocaine, 1), null),
                     craftTime = 0.5f
                 },
 
@@ -1658,7 +1640,7 @@ namespace Frontiers.Content {
             };
 
             oilRefinery = new CrafterBlockType("oil-refinery", typeof(CrafterBlock)) {
-                buildCost = ItemStack.With(Items.copper, 50, Items.lead, 45),
+                buildCost = ItemStack.With(Items.copper, 45),
 
                 health = 325,
                 size = 3,
@@ -1688,7 +1670,7 @@ namespace Frontiers.Content {
             };
 
             fuelMixer = new CrafterBlockType("fuel-mixer", typeof(CrafterBlock)) {
-                buildCost = ItemStack.With(Items.copper, 50, Items.lead, 45),
+                buildCost = ItemStack.With(Items.copper, 50),
 
                 health = 325,
                 size = 3,
