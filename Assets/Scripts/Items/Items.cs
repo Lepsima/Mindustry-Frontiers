@@ -28,12 +28,6 @@ namespace Frontiers.Content {
                 cost = 0.5f
             };
 
-            lead = new Item("lead") {
-                color = new Color(0x8c, 0x7f, 0xa9),
-                hardness = 1,
-                cost = 0.7f
-            };
-
             titanium = new Item("titanium") {
                 color = new Color(0x8d, 0xa1, 0xe3),
                 hardness = 3,
