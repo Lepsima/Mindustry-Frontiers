@@ -2674,8 +2674,6 @@ namespace Frontiers.Content {
     #region - Items -
 
     public class Element : Content {
-        public Color color;
-
         public float density = 1f;
         public float explosiveness = 0f, flammability = 0f, radioactivity = 0f, charge = 0f;
 

@@ -172,8 +172,8 @@ namespace Frontiers.Content.Upgrades {
                 flags = new Flag[] { FlagTypes.wall },
                 incopmatibleFlags = new Flag[0],
 
-                installCost = ItemStack.With(Items.titanium, 6),
-                researchCost = ItemStack.With(Items.titanium, 120),
+                installCost = ItemStack.With(Items.cocaine, 6),
+                researchCost = ItemStack.With(Items.cocaine, 120),
 
                 previousUpgrade = wallDurability[0],
 
@@ -263,8 +263,8 @@ namespace Frontiers.Content.Upgrades {
                 flags = new Flag[] { FlagTypes.aircraft, FlagTypes.fighter },
                 incopmatibleFlags = new Flag[] { FlagTypes.heavy, FlagTypes.heavyArmored },
 
-                installCost = ItemStack.With(Items.silicon, 12, Items.titanium, 5),
-                researchCost = ItemStack.With(Items.silicon, 160, Items.titanium, 35),
+                installCost = ItemStack.With(Items.silicon, 12, Items.cocaine, 5),
+                researchCost = ItemStack.With(Items.silicon, 160, Items.cocaine, 35),
 
                 previousUpgrade = heavyFighterArmor[1],
 
@@ -382,8 +382,8 @@ namespace Frontiers.Content.Upgrades {
                 flags = new Flag[0],
                 incopmatibleFlags = new Flag[0],
 
-                installCost = ItemStack.With(Items.lead, 10),
-                researchCost = ItemStack.With(Items.copper, 90, Items.metaglass, 30),
+                installCost = ItemStack.With(Items.cocaine, 10),
+                researchCost = ItemStack.With(Items.copper, 90, Items.cocaine, 30),
 
                 previousUpgrade = null,
 
@@ -398,8 +398,8 @@ namespace Frontiers.Content.Upgrades {
                 flags = new Flag[0],
                 incopmatibleFlags = new Flag[0],
 
-                installCost = ItemStack.With(Items.lead, 10),
-                researchCost = ItemStack.With(Items.copper, 90, Items.metaglass, 30),
+                installCost = ItemStack.With(Items.cocaine, 10),
+                researchCost = ItemStack.With(Items.copper, 90, Items.cocaine, 30),
 
                 previousUpgrade = fuelCapacity[0],
 
@@ -415,8 +415,8 @@ namespace Frontiers.Content.Upgrades {
                 flags = new Flag[0],
                 incopmatibleFlags = new Flag[] { FlagTypes.light },
 
-                installCost = ItemStack.With(Items.lead, 10),
-                researchCost = ItemStack.With(Items.copper, 90, Items.metaglass, 30),
+                installCost = ItemStack.With(Items.cocaine, 10),
+                researchCost = ItemStack.With(Items.copper, 90, Items.cocaine, 30),
 
                 previousUpgrade = fuelCapacity[1],
 
@@ -435,8 +435,8 @@ namespace Frontiers.Content.Upgrades {
                 flags = new Flag[0],
                 incopmatibleFlags = new Flag[0],
 
-                installCost = ItemStack.With(Items.lead, 10),
-                researchCost = ItemStack.With(Items.copper, 90, Items.metaglass, 30),
+                installCost = ItemStack.With(Items.cocaine, 10),
+                researchCost = ItemStack.With(Items.copper, 90, Items.cocaine, 30),
 
                 previousUpgrade = fuelCapacity[0],
 
@@ -453,8 +453,8 @@ namespace Frontiers.Content.Upgrades {
                 flags = new Flag[0],
                 incopmatibleFlags = new Flag[0],
 
-                installCost = ItemStack.With(Items.lead, 15, Items.metaglass, 5),
-                researchCost = ItemStack.With(Items.silicon, 50, Items.metaglass, 50),
+                installCost = ItemStack.With(Items.cocaine, 15, Items.cocaine, 5),
+                researchCost = ItemStack.With(Items.silicon, 50, Items.cocaine, 50),
 
                 previousUpgrade = fuelEfficiency[0],
 
@@ -474,8 +474,8 @@ namespace Frontiers.Content.Upgrades {
                 flags = new Flag[0],
                 incopmatibleFlags = new Flag[0],
 
-                installCost = ItemStack.With(Items.lead, 10),
-                researchCost = ItemStack.With(Items.copper, 90, Items.metaglass, 30),
+                installCost = ItemStack.With(Items.cocaine, 10),
+                researchCost = ItemStack.With(Items.copper, 90, Items.cocaine, 30),
 
                 previousUpgrade = fuelCapacity[0],
 
@@ -490,8 +490,8 @@ namespace Frontiers.Content.Upgrades {
                 flags = new Flag[0],
                 incopmatibleFlags = new Flag[0],
 
-                installCost = ItemStack.With(Items.lead, 10),
-                researchCost = ItemStack.With(Items.copper, 90, Items.metaglass, 30),
+                installCost = ItemStack.With(Items.cocaine, 10),
+                researchCost = ItemStack.With(Items.copper, 90, Items.cocaine, 30),
 
                 previousUpgrade = fuelDensity[0],
 

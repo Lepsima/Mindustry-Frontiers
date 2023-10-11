@@ -7,6 +7,8 @@ using System;
 
 namespace Frontiers.FluidSystem {
     public class Fluid : Element {
+        public Color color;
+
         // The atmospheres needed to half the volume (1 = neutral)
         public float compressionRatio = 1f;
 
@@ -147,7 +149,7 @@ namespace Frontiers.FluidSystem {
                 maxCompression = 1.1f,
             };
 
-            petroleum = new Fluid("fluid-petroleum", Element.With(Items.coal, 7f, hydrogen, 1.5f, Items.sulfur, 1f, nitrogen, 0.3f, oxigen, 0.2f)) {
+            petroleum = new Fluid("fluid-petroleum", Element.With(Items.coal, 7f, hydrogen, 1.5f, Items.cocaine, 1f, nitrogen, 0.3f, oxigen, 0.2f)) {
                 returnAmount = 10f,
 
                 color = new Color(0x31, 0x31, 0x31),

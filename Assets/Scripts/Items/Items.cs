@@ -19,71 +19,126 @@ namespace Frontiers.Content {
     }
 
     public class Items {
-        public static Item coal, cocaine, copper, depletedThorium, gold, graphite, heavyAlloy, iron, lightAlloy, lithium, magnesium, nickel, plastanium, quartz, reflectiveFabric, resistor, salt, sand, silicon, superconductor, thoriumDust, thoriumFuel, thorium;
+        public static Item
+            coal, cocaine, copper, depletedThorium, gold, graphite, 
+            heavyAlloy, iron, lightAlloy, lithium, magnesium, nickel, 
+            plastanium, quartz, reflectiveFabric, resistor, salt, sand, 
+            silicon, superconductor, thoriumDust, thoriumFuel, thorium;
 
         public static void Load() {
-            copper = new Item("copper") {
-                color = new Color(0xD9, 0x9D, 0x73),
-                hardness = 1,
-                cost = 0.5f
-            };
-
-            titanium = new Item("titanium") {
-                color = new Color(0x8d, 0xa1, 0xe3),
-                hardness = 3,
-                cost = 1f
-            };
-
-            thorium = new Item("thorium") {
-                color = new Color(0xf9, 0xa3, 0xc7),
-                explosiveness = 0.2f,
-                hardness = 4,
-                radioactivity = 1f,
-                cost = 1.1f
-            };
-
-            coal = new Item("coal") {
-                color = new Color(0x27, 0x27, 0x27),
-                explosiveness = 0.2f,
-                flammability = 1f,
-                hardness = 2,
-                buildable = false
-            };
-
-            sand = new Item("sand") {
-                color = new Color(0xf7, 0xcb, 0xa4),
-                lowPriority = true,
-                buildable = false
-            };
-
-            sulfur = new Item("sulfur") {
-                color = new Color(0xf3, 0xe9, 0x79),
-                explosiveness = 0.3f,
-                flammability = 0.3f,
-                hardness = 1.5f,
+            coal = new("coal-item") {
+                hardness = 0,
                 cost = 1f,
-                buildable = false
             };
 
-            metaglass = new Item("metaglass", Element.With(sand, 1f, lead, 1f)) {
-                color = new Color(0xeb, 0xee, 0xf5),
-                cost = 1.5f
+            cocaine = new("cocaine-item") {
+                hardness = 0,
+                cost = 1f,
             };
 
-            graphite = new Item("graphite", Element.With(coal, 2f)) {
-                color = new Color(0xb2, 0xc6, 0xd2),
-                cost = 1f
+            copper = new("copper-item") {
+                hardness = 1,
+                cost = 1.5f,
             };
 
-            silicon = new Item("silicon", Element.With(coal, 1f, sand, 2f)) {
-                color = new Color(0x53, 0x56, 0x5c),
-                cost = 0.8f
+            depletedThorium = new("depletedThorium-item") {
+                hardness = 3,
+                cost = 3f,
             };
 
-            basicAmmo = new Item("basicAmmo", Element.With(sulfur, 1f, copper, 2f)) {
-                color = new Color(0xD9, 0x9D, 0x73),
-                flammability = 0.1f,
-                buildable = false
+            gold = new("gold-item") {
+                hardness = 3,
+                cost = 4f,
+            };
+
+            graphite = new("graphite-item") {
+                hardness = 2,
+                cost = 2f,
+            };
+
+            heavyAlloy = new("heavyAlloy-item") {
+                hardness = 4,
+                cost = 2.5f,
+            };
+
+            iron = new("iron-item") {
+                hardness = 2,
+                cost = 2f,
+            };
+
+            lightAlloy = new("lightAlloy-item") {
+                hardness = 3,
+                cost = 1.75f,
+            };
+
+            lithium = new("lithium-item") {
+                hardness = 2,
+                cost = 2f,
+            };
+
+            magnesium = new("magnesium-item") {
+                hardness = 2,
+                cost = 2f,
+            };
+
+            nickel = new("nickel-item") {
+                hardness = 2,
+                cost = 2f,
+            };
+
+            plastanium = new("plastanium-item") {
+                hardness = 3,
+                cost = 3f,
+            };
+
+            quartz = new("quartz-item") {
+                hardness = 4,
+                cost = 4f,
+            };
+
+            reflectiveFabric = new("reflectiveFabric-item") {
+                hardness = 3,
+                cost = 4f,
+            };
+
+            resistor = new("resistor-item") {
+                hardness = 3,
+                cost = 3f,
+            };
+
+            salt = new("salt-item") {
+                hardness = 0,
+                cost = 1f,
+            };
+
+            sand = new("sand-item") {
+                hardness = 0,
+                cost = 1f,
+            };
+
+            silicon = new("silicon-item") {
+                hardness = 1,
+                cost = 1.5f,
+            };
+
+            superconductor = new("superconductor-item") {
+                hardness = 3,
+                cost = 4f,
+            };
+
+            thoriumDust = new("thoriumDust-item") {
+                hardness = 1,
+                cost = 2f,
+            };
+
+            thoriumFuel = new("thoriumFuel-item") {
+                hardness = 3,
+                cost = 3f,
+            };
+
+            thorium = new("thorium-item") {
+                hardness = 3,
+                cost = 2.5f,
             };
         }
     }
