@@ -163,9 +163,9 @@ namespace Frontiers.Content.Maps {
 
             copperOre = new OreTileType("ore-copper", 3, Items.copper);
 
-            leadOre = new OreTileType("ore-lead", 3, Items.lead);
+            leadOre = new OreTileType("ore-lead", 3, Items.cocaine);
 
-            titaniumOre = new OreTileType("ore-titanium", 3, Items.titanium);
+            titaniumOre = new OreTileType("ore-titanium", 3, Items.cocaine);
 
             coalOre = new OreTileType("ore-coal", 3, Items.coal);
 

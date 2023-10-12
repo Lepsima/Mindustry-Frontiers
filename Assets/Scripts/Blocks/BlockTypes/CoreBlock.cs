@@ -13,7 +13,7 @@ public class CoreBlock : StorageBlock {
         TeamUtilities.AddCoreBlock(this);
 
         inventory.Add(Items.copper, 325);
-        inventory.Add(Items.titanium, 125);
+        inventory.Add(Items.cocaine, 125);
 
         if (IsLocalTeam()) {
             // Hide until animation ends

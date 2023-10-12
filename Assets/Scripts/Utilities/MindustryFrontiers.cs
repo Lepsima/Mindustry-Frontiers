@@ -1126,10 +1126,38 @@ namespace Frontiers.Content {
 
     public class Blocks {
         public const BlockType none = null;
-        public static BlockType
 
-            // Walls
-            copperWall, copperWallLarge,
+        public static BlockType // Walls
+            copperWall, copperWallLarge, graphiteWall, graphiteWallLarge, 
+            heavyWall, heavyWallLarge, lightWall, lightWallLarge, reflectiveWall, 
+            reflectiveWallLarge, siliconWall, siliconWallLarge, thoriumWall, thoriumWallLarge;
+
+        public static BlockType // Turrets
+            // Anti tank turrets
+            cyclone, windstorm, //2x2, 4x4
+
+            // Anti air turrets
+            spread, deviation, //3x3
+
+            // Multi purpose turrets
+            tempest; //2x2, 3x3
+
+        public static BlockType // Item factories
+            siliconSmelter, graphitePress, crystalizer, resistorAssembler, superconductorAssembler,
+            reflectiveFabricWeaver, alloyForge, thoriumCrusher, thoriumCentrifuge, thoriumReprocessor;
+
+        public static BlockType // Fluid factories
+            oilDestilator, oilCompressor, coalLiquidator, plastaniumPress, waterElectrolyzer,
+            carbonElectrolyzer, bitumenMixer;
+
+        public static BlockType // Power generators
+            combustionGenerator, combustionGeneratorLarge, turbineGenerator, turbineGeneratorLarge,
+            pistonGeneratorSmall, pistonGenerator, fissionReactor, fissionReactorLarge;
+
+        public static BlockType
+            conveyor, router, junction, sorter, overflowGate;
+
+        public static BlockType
 
             // Cores / storage
             coreShard, container, coref,
@@ -1137,17 +1165,8 @@ namespace Frontiers.Content {
             // Landing pads
             landingPad, landingPadLarge,
 
-            // Turrets
-            tempest, windstorm, stinger, path, spread, cyclone, lasert,
-
             // Unit factories
             airFactory,
-
-            // Crafters
-            graphitePress, siliconSmelter, kiln,
-
-            // Distribution
-            conveyor, router, junction, sorter, overflowGate,
 
             // Drills
             mechanicalDrill, pneumaticDrill,
@@ -1324,25 +1343,6 @@ namespace Frontiers.Content {
                 maximumFires = 2,
             };
 
-            stinger = new TurretBlockType("stinger", typeof(TurretBlock), 1) {
-                mount = new WeaponMount(Weapons.stingerWeapon, Vector2.zero),
-
-                health = 320f,
-                size = 2,
-
-                canGetOnFire = true,
-            };
-
-            path = new TurretBlockType("path", typeof(TurretBlock), 3) {
-                buildCost = ItemStack.With(Items.copper, 125, Items.graphite, 55, Items.silicon, 35),
-                mount = new WeaponMount(Weapons.pathWeapon, Vector2.zero),
-
-                health = 275f,
-                size = 2,
-
-                canGetOnFire = true,
-            };
-
             spread = new TurretBlockType("spread", typeof(TurretBlock), 3) {
                 mount = new WeaponMount(Weapons.spreadWeapon, Vector2.zero),
 
@@ -1358,16 +1358,6 @@ namespace Frontiers.Content {
 
                 health = 512f,
                 size = 3,
-
-                canGetOnFire = true,
-            };
-
-            lasert = new TurretBlockType("lasert", typeof(TurretBlock), 2) {
-                buildCost = ItemStack.With(Items.copper, 125, Items.graphite, 55, Items.silicon, 35),
-                mount = new WeaponMount(Weapons.lasertWeapon, Vector2.zero),
-
-                health = 215f,
-                size = 2,
 
                 canGetOnFire = true,
             };
@@ -1410,24 +1400,6 @@ namespace Frontiers.Content {
                 health = 95,
                 size = 2,
                 itemCapacity = 10,
-
-                canGetOnFire = true,
-            };
-
-            kiln = new CrafterBlockType("kiln", typeof(CrafterBlock), 2) {
-                buildCost = ItemStack.With(Items.copper, 100, Items.graphite, 15),
-
-                craftPlan = new CraftPlan() {
-                    production = new MaterialList(ItemStack.With(Items.cocaine, 1), null),
-                    consumption = new MaterialList(ItemStack.With(Items.sand, 1, Items.cocaine, 1), null),
-                    craftTime = 0.5f
-                },
-
-                loopSound = Sounds.smelter,
-
-                health = 120,
-                size = 2,
-                itemCapacity = 16,
 
                 canGetOnFire = true,
             };
