@@ -1037,9 +1037,18 @@ namespace Frontiers.Content {
 
     public class CrafterBlockType : ItemBlockType {
         public CraftPlan craftPlan;
-        public Effect craftEffect = null;
+        public Effect craftEffect = null, enabledEffect = null;
+        public MovementAnimation[] crafterAnimations;
 
         public CrafterBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
+            updates = true;
+        }
+    }
+
+    public class ForgeBlockType : CrafterBlockType {
+        public CraftPlan[] craftPlans;
+
+        public ForgeBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             updates = true;
         }
     }
@@ -1146,7 +1155,7 @@ namespace Frontiers.Content {
             siliconSmelter, graphitePress, crystalizer, resistorAssembler, superconductorAssembler,
             reflectiveFabricWeaver, alloyForge, thoriumCrusher, thoriumCentrifuge, thoriumReprocessor;
 
-        public static BlockType // Fluid factories
+        public static BlockType // Fluid processing
             oilDestilator, oilCompressor, coalLiquidator, plastaniumPress, waterElectrolyzer,
             carbonElectrolyzer, bitumenMixer;
 
@@ -1154,36 +1163,172 @@ namespace Frontiers.Content {
             combustionGenerator, combustionGeneratorLarge, turbineGenerator, turbineGeneratorLarge,
             pistonGeneratorSmall, pistonGenerator, fissionReactor, fissionReactorLarge;
 
-        public static BlockType
+        public static BlockType // Distribution
             conveyor, router, junction, sorter, overflowGate;
 
-        public static BlockType
+        public static BlockType // Power blocks
+            powerNode, powerNodeLarge, battery, batteryLarge;
 
-            // Cores / storage
-            coreShard, container, coref,
+        public static BlockType // Unit blocks, S = small units, M = medium units, L = large units
+            landingPadS, landingPadSLarge, landingPadM, landingPadL, landingPadLLarge;
 
-            // Landing pads
-            landingPad, landingPadLarge,
+        public static BlockType // Item drills / Fluid collectors
+            mechanicalDrill, pneumaticDrill, geodeMiner,
+            atmosphericCollector, rotatoryPump, fuelMixer;
 
-            // Unit factories
-            airFactory,
+        public static BlockType // Cores / storage
+            coreShard, container, coreFoundation;
 
-            // Drills
-            mechanicalDrill, pneumaticDrill,
-
-            blockAssembler, geodeMiner,
-
-            // Fluid distribution
-            lowPressurePipe, highPressurePipe, liquidContainer, fluidFilter, fluidExhaust,
-            
-            // Fluid processing 
-            oilRefinery, atmosphericCollector, rotatoryPump, fuelMixer;
+        public static BlockType // Fluid distribution
+            lowPressurePipe, highPressurePipe, liquidContainer, fluidFilter, fluidExhaust;     
 
         public static void Load() {
-            coref = new BlockType("core-f", typeof(Block), 2) {
+            // Walls
+            copperWall = new BlockType("copper-wall", typeof(Block), 1) {
+                buildCost = ItemStack.With(Items.copper, 6),
+                flags = new Flag[] { FlagTypes.wall },
+
+                health = 100,
+            };
+
+            copperWallLarge = new BlockType("copper-wall-large", typeof(Block), 1) {
+                buildCost = ItemStack.With(Items.copper, 24),
+                flags = new Flag[] { FlagTypes.wall },
+
+                health = 400,
+                size = 2
+            };
+
+            graphiteWall = new BlockType("graphite-wall", typeof(Block), 1) {
+                buildCost = ItemStack.With(Items.graphite, 6),
+                flags = new Flag[] { FlagTypes.wall },
+
+                health = 150,
+            };
+
+            graphiteWallLarge = new BlockType("graphite-wall-large", typeof(Block), 1) {
+                buildCost = ItemStack.With(Items.graphite, 24),
+                flags = new Flag[] { FlagTypes.wall },
+
+                health = 600,
+                size = 2
+            };
+
+            heavyWall = new BlockType("heavy-wall", typeof(Block), 2) {
+                buildCost = ItemStack.With(Items.heavyAlloy, 6),
+                flags = new Flag[] { FlagTypes.wall },
+
+                health = 250,
+            };
+
+            heavyWallLarge = new BlockType("heavy-wall-large", typeof(Block), 2) {
+                buildCost = ItemStack.With(Items.heavyAlloy, 24),
+                flags = new Flag[] { FlagTypes.wall },
+
+                health = 1000,
+                size = 2
+            };
+
+            lightWall = new BlockType("light-wall", typeof(Block), 2) {
+                buildCost = ItemStack.With(Items.lightAlloy, 6),
+                flags = new Flag[] { FlagTypes.wall },
+
+                health = 130,
+            };
+
+            lightWallLarge = new BlockType("light-wall-large", typeof(Block), 2) {
+                buildCost = ItemStack.With(Items.lightAlloy, 24),
+                flags = new Flag[] { FlagTypes.wall },
+
+                health = 520,
+                size = 2
+            };
+
+            reflectiveWall = new BlockType("reflective-wall", typeof(Block), 3) {
+                buildCost = ItemStack.With(Items.reflectiveFabric, 6),
+                flags = new Flag[] { FlagTypes.wall },
+
+                health = 175,
+            };
+
+            reflectiveWallLarge = new BlockType("reflective-wall-large", typeof(Block), 3) {
+                buildCost = ItemStack.With(Items.reflectiveFabric, 24),
+                flags = new Flag[] { FlagTypes.wall },
+
+                health = 700,
+                size = 2
+            };
+
+            siliconWall = new BlockType("silicon-wall", typeof(Block), 1) {
+                buildCost = ItemStack.With(Items.silicon, 6),
+                flags = new Flag[] { FlagTypes.wall },
+
+                health = 175,
+            };
+
+            siliconWallLarge = new BlockType("silicon-wall-large", typeof(Block), 1) {
+                buildCost = ItemStack.With(Items.silicon, 24),
+                flags = new Flag[] { FlagTypes.wall },
+
+                health = 700,
+                size = 2
+            };
+
+            thoriumWall = new BlockType("thorium-wall", typeof(Block), 3) {
+                buildCost = ItemStack.With(Items.thorium, 6),
+                flags = new Flag[] { FlagTypes.wall },
+
+                health = 300,
+            };
+
+            thoriumWallLarge = new BlockType("thorium-wall-large", typeof(Block), 3) {
+                buildCost = ItemStack.With(Items.thorium, 24),
+                flags = new Flag[] { FlagTypes.wall },
+
+                health = 1200,
+                size = 2
+            };
+
+
+            // Cores
+            coreShard = new CoreBlockType("core-shard", typeof(CoreBlock), 1) {
+                buildCost = ItemStack.With(Items.copper, 530, Items.graphite, 300, Items.heavyAlloy, 240, Items.silicon, 275),
+                flags = new Flag[] { FlagTypes.core},
+
+                hidden = true,
+                breakable = false,
+                health = 1600,
+                size = 3,
+
+                itemCapacity = 2000,
+
+                canGetOnFire = true,
+            };
+      
+            coreFoundation = new BlockType("core-foundation", typeof(Block), 2) {
+                buildCost = ItemStack.With(Items.copper, 950, Items.silicon, 560, Items.iron, 250, Items.nickel, 340, Items.thorium, 250),
+                flags = new Flag[] { FlagTypes.core },
+
+                hidden = true,
+                breakable = false,
                 health = 5600,
                 size = 4,
+
+                itemCapacity = 5000,
+
+                canGetOnFire = true,
             };
+
+            container = new StorageBlockType("container", typeof(StorageBlock), 2) {
+                buildCost = ItemStack.With(Items.heavyAlloy, 120, Items.graphite, 40),
+                health = 150,
+                size = 2,
+                itemCapacity = 120,
+
+                canGetOnFire = true,
+            };
+
+
 
             geodeMiner = new ExtractorBlockType("geode-miner", typeof(ExtractorBlock), 3) {
                 //-1.175
@@ -1241,43 +1386,7 @@ namespace Frontiers.Content {
                 updates = true,
             };
 
-            copperWall = new BlockType("copper-wall", typeof(Block), 1) {
-                buildCost = ItemStack.With(Items.copper, 6),
-
-                flags = new Flag[] { FlagTypes.wall }, 
-
-                health = 140,
-            };
-
-            copperWallLarge = new BlockType("copper-wall-large", typeof(Block), 1) {
-                buildCost = ItemStack.With(Items.copper, 24),
-
-                flags = new Flag[] { FlagTypes.wall },
-
-                health = 600,
-                size = 2
-            };
-
-            coreShard = new CoreBlockType("core-shard", typeof(CoreBlock), 1) {
-                hidden = true,
-                breakable = false,
-                health = 1600,
-                size = 3,
-
-                itemCapacity = 1000,
-
-                canGetOnFire = true,
-            };
-
-            container = new StorageBlockType("container", typeof(StorageBlock), 2) {
-                health = 150,
-                size = 2,
-                itemCapacity = 200,
-
-                canGetOnFire = true,
-            };
-
-            landingPad = new LandPadBlockType("landingPad", typeof(LandPadBlock), 2) {
+            landingPadS = new LandPadBlockType("landingPad", typeof(LandPadBlock), 2) {
                 health = 250,
                 size = 3,
                 solid = false,
@@ -1302,7 +1411,7 @@ namespace Frontiers.Content {
                 }
             };
 
-            landingPadLarge = new LandPadBlockType("landingPad-large", typeof(LandPadBlock), 3) {
+            landingPadSLarge = new LandPadBlockType("landingPad-large", typeof(LandPadBlock), 3) {
                 health = 300,
                 size = 3,
                 solid = false,
@@ -1362,7 +1471,7 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };
 
-            airFactory = new UnitFactoryBlockType("air-factory", typeof(UnitFactoryBlock), 2) {
+            /*airFactory = new UnitFactoryBlockType("air-factory", typeof(UnitFactoryBlock), 2) {
                 unitPlan = new UnitPlan(Units.flare, 4f, new ItemStack[1] {
                     new ItemStack(Items.silicon, 20)
                 }),
@@ -1372,18 +1481,19 @@ namespace Frontiers.Content {
                 itemCapacity = 50,
 
                 canGetOnFire = true,
-            };
+            };*/
 
             siliconSmelter = new CrafterBlockType("silicon-smelter", typeof(CrafterBlock), 1) {
+                buildCost = ItemStack.With(Items.copper, 45, Items.graphite, 25),
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(ItemStack.With(Items.silicon, 1), null),
-                    consumption = new MaterialList(ItemStack.With(Items.sand, 2, Items.coal, 1), null),
-                    craftTime = 0.66f
+                    production = new MaterialList(ItemStack.With(Items.silicon, 2), null),
+                    consumption = new MaterialList(ItemStack.With(Items.sand, 3, Items.coal, 2), null),
+                    craftTime = 1f
                 },
 
                 loopSound = Sounds.smelter,
 
-                health = 125,
+                health = 95,
                 size = 2,
                 itemCapacity = 30,
 
@@ -1391,6 +1501,7 @@ namespace Frontiers.Content {
             };
 
             graphitePress = new CrafterBlockType("graphite-press", typeof(CrafterBlock), 1) {
+                buildCost = ItemStack.With(Items.copper, 55),
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.graphite, 1), null),
                     consumption = new MaterialList(ItemStack.With(Items.coal, 2), null),
@@ -1399,10 +1510,84 @@ namespace Frontiers.Content {
 
                 health = 95,
                 size = 2,
-                itemCapacity = 10,
+                itemCapacity = 20,
 
                 canGetOnFire = true,
             };
+
+            alloyForge = new ForgeBlockType("alloy-forge", typeof(CrafterBlock), 2) {
+                buildCost = ItemStack.With(Items.iron, 95, Items.nickel, 50, Items.graphite, 25),
+
+                craftPlans = new CraftPlan[] {
+                    // Light alloy
+                    new CraftPlan() {
+                        production = new MaterialList(ItemStack.With(Items.lightAlloy, 3), null),
+                        consumption = new MaterialList(ItemStack.With(Items.copper, 3, Items.nickel, 2), null),
+                        craftTime = 2.5f
+                    },
+
+                    // Heavy alloy
+                    new CraftPlan() {
+                        production = new MaterialList(ItemStack.With(Items.heavyAlloy, 4), null),
+                        consumption = new MaterialList(ItemStack.With(Items.copper, 3, Items.graphite, 2, Items.iron, 4), null),
+                        craftTime = 4f
+                    },
+                },
+
+                health = 210,
+                size = 3,
+                itemCapacity = 30,
+
+                canGetOnFire = true,
+            };
+
+            resistorAssembler = new CrafterBlockType("resistor-assembler", typeof(CrafterBlock), 3) {
+                buildCost = ItemStack.With(Items.iron, 125, Items.silicon, 65, Items.lithium, 25),
+                craftPlan = new CraftPlan() {
+                    production = new MaterialList(ItemStack.With(Items.resistor, 3), null),
+                    consumption = new MaterialList(ItemStack.With(Items.copper, 2, Items.silicon, 3, Items.lithium, 4), null),
+                    craftTime = 3.5f
+                },
+
+                health = 560,
+                size = 4,
+                itemCapacity = 30,
+
+                canGetOnFire = true,
+            };
+
+            superconductorAssembler = new CrafterBlockType("superconductor-assembler", typeof(CrafterBlock), 3) {
+                buildCost = ItemStack.With(Items.iron, 125, Items.silicon, 65, Items.lithium, 35),
+                craftPlan = new CraftPlan() {
+                    production = new MaterialList(ItemStack.With(Items.resistor, 2), null),
+                    consumption = new MaterialList(ItemStack.With(Items.lithium, 1, Items.gold, 2), null),
+                    craftTime = 1.5f
+                },
+
+                health = 350,
+                size = 3,
+                itemCapacity = 20,
+
+                canGetOnFire = true,
+            };
+
+            thoriumCrusher = new CrafterBlockType("thorium-crusher", typeof(CrafterBlock), 3) {
+                buildCost = ItemStack.With(Items.iron, 125, Items.silicon, 65, Items.lithium, 35),
+                craftPlan = new CraftPlan() {
+                    production = new MaterialList(ItemStack.With(Items.resistor, 2), null),
+                    consumption = new MaterialList(ItemStack.With(Items.lithium, 1, Items.gold, 2), null),
+                    craftTime = 1.5f
+                },
+
+                health = 350,
+                size = 3,
+                itemCapacity = 20,
+
+                canGetOnFire = true,
+            };
+
+            crystalizer, resistorAssembler, superconductorAssembler,
+            reflectiveFabricWeaver, thoriumCrusher, thoriumCentrifuge, thoriumReprocessor
 
             conveyor = new ConveyorBlockType("conveyor", typeof(ConveyorBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 2),
