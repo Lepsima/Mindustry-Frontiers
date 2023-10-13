@@ -18,7 +18,6 @@ public class Weapon : MonoBehaviour {
 
     public Entity parentEntity, target;
     public IArmed iArmed;
-    public byte weaponID;
 
     private Barrel[] barrels;
 
@@ -42,7 +41,7 @@ public class Weapon : MonoBehaviour {
         }
 
         if (isActive && IsAvilable()) {
-            Client.WeaponShoot(this);
+            Shoot();
         }
 
         // If is charged and can but not shooting, start to lose charge progress
@@ -140,7 +139,7 @@ public class Weapon : MonoBehaviour {
         return null;
     }
 
-    public virtual void Set(Entity parentEntity, byte weaponID, WeaponType weaponType, bool mirrored = false, bool onTop = false) {
+    public virtual void Set(Entity parentEntity, WeaponType weaponType, bool mirrored = false, bool onTop = false) {
         iArmed = parentEntity as IArmed;
 
         if (iArmed == null) {
@@ -149,7 +148,6 @@ public class Weapon : MonoBehaviour {
         }
 
         this.parentEntity = parentEntity;
-        this.weaponID = weaponID;
         this.mirrored = mirrored;
         Type = weaponType;
 

@@ -111,19 +111,6 @@ public class Client : MonoBehaviourPunCallbacks {
 
 
 
-    public static void WeaponShoot(Weapon weapon) {
-        // If is host, send shoot command to all players
-        if (!PhotonNetwork.IsMasterClient) return;
-        local.photonView.RPC(nameof(RPC_WeaponShoot), RpcTarget.All, weapon.parentEntity.SyncID, weapon.weaponID);
-    }
-
-    [PunRPC]
-    public void RPC_WeaponShoot(short syncID, byte weaponID) {
-        // As a player, shoot weapon
-        if (isRecivingMap) return;
-        ((IArmed)syncObjects[syncID]).GetWeaponByID(weaponID).Shoot();
-    }
-
     public static void UnitTakeOff(Unit unit) {
         if (!PhotonNetwork.IsMasterClient) return;
         local.photonView.RPC(nameof(RPC_UnitTakeoff), RpcTarget.All, unit.SyncID);

@@ -54,6 +54,4 @@ public interface IPowerable {
     public void DischargePower(float amount);
 
     public void SetPowerPercent(float amount);
-
-    public List<IPowerable> GetConnections();
 }

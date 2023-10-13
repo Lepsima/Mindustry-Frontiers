@@ -81,6 +81,7 @@ public class Block : Entity, IPowerable {
 
         // Add this block to the map lists
         MapManager.Map.AddBlock(this);
+        if (UsesPower()) PowerGraphManager.HandleIPowerable(this);
     }
 
     protected override void SetSprites() {

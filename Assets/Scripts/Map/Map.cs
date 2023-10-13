@@ -656,8 +656,6 @@ namespace Frontiers.Content.Maps {
             }
 
             OnBlockCreated?.Invoke(this, block);
-
-            if (block.UsesPower()) PowerGraphManager.HandleIPowerable(block);
         }
 
         public void RemoveBlock(Block block) {

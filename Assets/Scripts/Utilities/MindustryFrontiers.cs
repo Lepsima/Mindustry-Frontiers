@@ -1096,6 +1096,36 @@ namespace Frontiers.Content {
         }
     }
 
+    public class PowerGeneratorBlockType : ItemBlockType {
+        public MaterialList consumption;
+        public MovementAnimation[] animations;
+
+        public Effect loopEffect = null, generateEffect = null;
+
+        public PowerGeneratorBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
+            updates = true;
+            canGetOnFire = true;
+            usesPower = true;
+            transfersPower = true;
+        }
+    }
+
+    public class PowerBankBlockType : BlockType {
+        public PowerBankBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
+            canGetOnFire = true;
+            usesPower = true;
+            transfersPower = true;
+        }
+    }
+
+    public class PowerNodeBlockType : BlockType {
+        public PowerNodeBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
+            canGetOnFire = true;
+            usesPower = true;
+            transfersPower = true;
+        }
+    }
+
     public class AtmosphericCollectorBlockType : ItemBlockType {
         public AtmosphericCollectorBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             hasFluidInventory = true;
@@ -1153,7 +1183,7 @@ namespace Frontiers.Content {
             reflectiveFabricWeaver, alloyForge, thoriumCrusher, thoriumCentrifuge, thoriumReprocessor;
 
         public static BlockType // Fluid processing
-            oilDestilator, oilCompressor, coalLiquidator, plastaniumPress, waterElectrolyzer,
+            oilDestillator, oilCompressor, coalLiquidator, plastaniumPress, waterElectrolyzer,
             carbonElectrolyzer, bitumenMixer;
 
         public static BlockType // Power generators
@@ -1629,7 +1659,7 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.heavyAlloy, 200, Items.lightAlloy, 125, Items.nickel, 80, Items.superconductor, 55, Items.resistor, 15),
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.reflectiveFabric, 3), null),
-                    consumption = new MaterialList(ItemStack.With(Items.resistor, 2, Items.gold, 1), FluidStack.With(Fluids.oxigen, 4)),
+                    consumption = new MaterialList(ItemStack.With(Items.resistor, 2, Items.gold, 1), FluidStack.With(Fluids.oxigen, 4f)),
                     craftTime = 5f
                 },
 
@@ -1738,7 +1768,7 @@ namespace Frontiers.Content {
                 maxFluids = 1,
             };
 
-            oilDestilator = new CrafterBlockType("oil-destilator", typeof(CrafterBlock), 2) {
+            oilDestillator = new CrafterBlockType("oil-destillator", typeof(CrafterBlock), 2) {
                 buildCost = ItemStack.With(Items.graphite, 60, Items.iron, 35, Items.nickel, 40),
 
                 craftPlan = new CraftPlan() {
@@ -2147,38 +2177,6 @@ namespace Frontiers.Content {
 
                 loopSound = Sounds.smelter,
             };*/
-
-            fuelMixer = new CrafterBlockType("fuel-mixer", typeof(CrafterBlock)) {
-                buildCost = ItemStack.With(Items.copper, 50),
-
-                health = 325,
-                size = 3,
-
-                itemCapacity = 30,
-
-                canGetOnFire = true,
-                hasFluidInventory = true,
-                hasItemInventory = true,
-
-                craftPlan = new CraftPlan() {
-                    production = MaterialList.Multiply(new MaterialList(null, new FluidStack[] { Fluids.fuel.ReturnStack() }), 3f),
-                    consumption = MaterialList.Multiply(new MaterialList(Fluids.fuel.CompositionToStacks()), 3f),
-                    craftTime = 1f
-                },
-
-                maxInput = 20f,
-                maxOutput = 20f,
-                maxVolume = 300f,
-
-                maxPressure = -1f,
-                minHealthPressurizable = 0.7f,
-                pressurizable = false,
-
-                maxFluids = 2,
-                fixedSpace = true,
-
-                loopSound = Sounds.smelter,
-            };
         }
     }
 

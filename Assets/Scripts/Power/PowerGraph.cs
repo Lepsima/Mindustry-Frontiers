@@ -25,10 +25,16 @@ public class PowerGraph {
     }
 
     public void Handle(PowerGraph other) {
+        if (other.all.Count > all.Count) {
+            other.Handle(this);
+            return;
+        }
+
         powerConsumers.AddRange(other.powerConsumers);
         powerGenerators.AddRange(other.powerGenerators);
         powerStorages.AddRange(other.powerStorages);
         all.AddRange(other.all);
+        PowerGraphManager.graphs.Remove(other);
     }
 
     public bool Contains(IPowerable powerable) {
