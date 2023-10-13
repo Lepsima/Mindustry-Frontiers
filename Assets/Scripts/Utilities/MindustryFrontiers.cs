@@ -1149,7 +1149,7 @@ namespace Frontiers.Content {
             tempest; //2x2, 3x3
 
         public static BlockType // Item factories
-            siliconSmelter, graphitePress, crystalizer, resistorAssembler, superconductorAssembler,
+            siliconSmelter, graphitePress, crystalizer, componentAssembler, superconductorAssembler,
             reflectiveFabricWeaver, alloyForge, thoriumCrusher, thoriumCentrifuge, thoriumReprocessor;
 
         public static BlockType // Fluid processing
@@ -1482,12 +1482,19 @@ namespace Frontiers.Content {
                 itemCapacity = 30,
             };
 
-            resistorAssembler = new CrafterBlockType("resistor-assembler", typeof(CrafterBlock), 3) {
+            componentAssembler = new CrafterBlockType("component-assembler", typeof(CrafterBlock), 2) {
                 buildCost = ItemStack.With(Items.iron, 125, Items.silicon, 65, Items.lithium, 25),
-                craftPlan = new CraftPlan() {
-                    production = new MaterialList(ItemStack.With(Items.resistor, 3), null),
-                    consumption = new MaterialList(ItemStack.With(Items.copper, 2, Items.silicon, 3, Items.lithium, 4), null),
-                    craftTime = 3.5f
+                craftPlans = new CraftPlan[] {
+                    new CraftPlan() {
+                        production = new MaterialList(ItemStack.With(Items.resistor, 3), null),
+                        consumption = new MaterialList(ItemStack.With(Items.copper, 2, Items.silicon, 3, Items.lithium, 4), null),
+                        craftTime = 3.5f
+                    },
+                    new CraftPlan() {
+                        production = new MaterialList(ItemStack.With(Items.resistor, 2), null),
+                        consumption = new MaterialList(ItemStack.With(Items.lithium, 1, Items.gold, 2), null),
+                        craftTime = 1.5f
+                    },
                 },
 
                 arms = new ArmData[2] {
@@ -1525,57 +1532,9 @@ namespace Frontiers.Content {
                     }
                 },
 
-                health = 225,
+                health = 255,
                 size = 2,
                 itemCapacity = 30,
-            };
-
-            superconductorAssembler = new CrafterBlockType("superconductor-assembler", typeof(CrafterBlock), 3) {
-                buildCost = ItemStack.With(Items.iron, 125, Items.silicon, 65, Items.lithium, 35),
-                craftPlan = new CraftPlan() {
-                    production = new MaterialList(ItemStack.With(Items.resistor, 2), null),
-                    consumption = new MaterialList(ItemStack.With(Items.lithium, 1, Items.gold, 2), null),
-                    craftTime = 1.5f
-                },
-
-                arms = new ArmData[2] {
-                    new ArmData("assembler") {
-                        idlePosition = new Vector2(0.34375f, 0),
-                        minPosition = new Vector2(0.34375f, -0.34375f),
-                        maxPosition = new Vector2(0.34375f, 0.34375f),
-
-                        middleArmOffset = new Vector2(0.4f, 0f),
-                        maxTargetOffset = new Vector2(0.25f, 0.25f),
-
-                        idleAngle = 0f,
-                        minBaseAngle = -90f,
-                        maxBaseAngle = 90f,
-                        minTime = 1.5f,
-                        maxTime = 3.5f,
-
-                        effect = Effects.weldSparks
-                    },
-                    new ArmData("assembler") {
-                        idlePosition = new Vector2(-0.34375f, 0),
-                        minPosition = new Vector2(-0.34375f, -0.34375f),
-                        maxPosition = new Vector2(-0.34375f, 0.34375f),
-
-                        middleArmOffset = new Vector2(0.4f, 0f),
-                        maxTargetOffset = new Vector2(0.25f, 0.25f),
-
-                        idleAngle = 180f,
-                        minBaseAngle = 90f,
-                        maxBaseAngle = 270f,
-                        minTime = 1.5f,
-                        maxTime = 3.5f,
-
-                        effect = Effects.weldSparks
-                    }
-                },
-
-                health = 250,
-                size = 2,
-                itemCapacity = 20,
             };
 
             thoriumCrusher = new CrafterBlockType("thorium-crusher", typeof(CrafterBlock), 2) {
@@ -1680,6 +1639,94 @@ namespace Frontiers.Content {
             };
 
 
+
+            // Fluid factories
+            coalLiquidator = new CrafterBlockType("coal-liquidator", typeof(CrafterBlock), 2) {
+                buildCost = ItemStack.With(Items.copper, 60, Items.iron, 25),
+
+                craftPlan = new CraftPlan() {
+                    production = new MaterialList(null, FluidStack.With(Fluids.petroleum, 6)),
+                    consumption = new MaterialList(ItemStack.With(Items.coal, 2), FluidStack.With(Fluids.co2, 0.5f)),
+                    craftTime = 1f
+                },
+
+                health = 175,
+                size = 2,
+
+                hasFluidInventory = true,
+                hasItemInventory = true,
+
+                itemCapacity = 20,
+
+                maxInput = 1f,
+                maxOutput = 12f,
+                maxVolume = 200f,
+
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
+
+                maxFluids = 2,
+                fixedSpace = true,
+            };
+
+            oilCompressor = new CrafterBlockType("oil-compressor", typeof(CrafterBlock), 2) {
+                buildCost = ItemStack.With(Items.copper, 70, Items.nickel, 15),
+
+                craftPlan = new CraftPlan() {
+                    production = new MaterialList(ItemStack.With(Items.coal, 4), null),
+                    consumption = new MaterialList(null, FluidStack.With(Fluids.petroleum, 12f)),
+                    craftTime = 2.5f
+                },
+
+                health = 225,
+                size = 2,
+
+                hasFluidInventory = true,
+                hasItemInventory = true,
+
+                itemCapacity = 40,
+
+                maxInput = 1f,
+                maxOutput = 12f,
+                maxVolume = 200f,
+
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
+
+                maxFluids = 2,
+                fixedSpace = true,
+            };
+
+            plastaniumPress = new CrafterBlockType("plastanium-press", typeof(CrafterBlock), 2) {
+                buildCost = ItemStack.With(Items.iron, 65, Items.lithium, 25),
+
+                craftPlan = new CraftPlan() {
+                    production = new MaterialList(ItemStack.With(Items.plastanium, 6), null),
+                    consumption = new MaterialList(ItemStack.With(Items.sand, 12), FluidStack.With(Fluids.petroleum, 24f)),
+                    craftTime = 9f
+                },
+
+                health = 225,
+                size = 2,
+
+                hasFluidInventory = true,
+                hasItemInventory = true,
+                fluidInputOnly = true,
+
+                itemCapacity = 48,
+
+                maxInput = 32f,
+                maxVolume = 240f,
+
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
+
+                maxFluids = 2,
+                fixedSpace = true,
+            };
 
             // Distribution
             conveyor = new ConveyorBlockType("conveyor", typeof(ConveyorBlock), 1) {
@@ -1948,7 +1995,7 @@ namespace Frontiers.Content {
                 maxFluids = 1,
             };
 
-            oilRefinery = new CrafterBlockType("oil-refinery", typeof(CrafterBlock)) {
+            /*oilRefinery = new CrafterBlockType("oil-refinery", typeof(CrafterBlock)) {
                 buildCost = ItemStack.With(Items.copper, 45),
 
                 health = 325,
@@ -1976,7 +2023,7 @@ namespace Frontiers.Content {
                 fixedSpace = true,
 
                 loopSound = Sounds.smelter,
-            };
+            };*/
 
             fuelMixer = new CrafterBlockType("fuel-mixer", typeof(CrafterBlock)) {
                 buildCost = ItemStack.With(Items.copper, 50),

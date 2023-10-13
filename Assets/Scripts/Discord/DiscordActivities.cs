@@ -81,8 +81,8 @@ public class DiscordActivities {
                     LargeImage = largeImage,
                     LargeText = largeText,
                     SmallImage = "unity-logo",
-                    SmallText = "In Editor"
-                },
+                    SmallText = "In Editor"               
+                },        
             };
         }
     }
