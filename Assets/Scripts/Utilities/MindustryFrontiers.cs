@@ -1659,8 +1659,8 @@ namespace Frontiers.Content {
                 itemCapacity = 20,
 
                 maxInput = 1f,
-                maxOutput = 12f,
-                maxVolume = 200f,
+                maxOutput = 10f,
+                maxVolume = 100f,
 
                 maxPressure = -1f,
                 minHealthPressurizable = 0.7f,
@@ -1684,23 +1684,22 @@ namespace Frontiers.Content {
 
                 hasFluidInventory = true,
                 hasItemInventory = true,
+                fluidInputOnly = true,
 
                 itemCapacity = 40,
 
-                maxInput = 1f,
-                maxOutput = 12f,
-                maxVolume = 200f,
+                maxInput = 8f,
+                maxVolume = 100f,
 
                 maxPressure = -1f,
                 minHealthPressurizable = 0.7f,
                 pressurizable = false,
 
-                maxFluids = 2,
-                fixedSpace = true,
+                maxFluids = 1,
             };
 
             plastaniumPress = new CrafterBlockType("plastanium-press", typeof(CrafterBlock), 2) {
-                buildCost = ItemStack.With(Items.iron, 65, Items.lithium, 25),
+                buildCost = ItemStack.With(Items.copper, 25, Items.iron, 65, Items.lithium, 25),
 
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.plastanium, 6), null),
@@ -1717,8 +1716,34 @@ namespace Frontiers.Content {
 
                 itemCapacity = 48,
 
-                maxInput = 32f,
-                maxVolume = 240f,
+                maxInput = 10f,
+                maxVolume = 120f,
+
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
+
+                maxFluids = 1,
+            };
+
+            oilDestilator = new CrafterBlockType("oil-destilator", typeof(CrafterBlock), 2) {
+                buildCost = ItemStack.With(Items.graphite, 60, Items.iron, 35, Items.nickel, 40),
+
+                craftPlan = new CraftPlan() {
+                    production = new MaterialList(null, FluidStack.With(Fluids.kerosene, 4)),
+                    consumption = new MaterialList(null, FluidStack.With(Fluids.petroleum, 3)),
+                    craftTime = 0.75f
+                },
+
+                health = 355,
+                size = 3,
+
+                hasFluidInventory = true,
+                hasItemInventory = false,
+
+                maxInput = 6f,
+                maxOutput = 10f,
+                maxVolume = 200f,
 
                 maxPressure = -1f,
                 minHealthPressurizable = 0.7f,
@@ -1727,6 +1752,92 @@ namespace Frontiers.Content {
                 maxFluids = 2,
                 fixedSpace = true,
             };
+
+            waterElectrolyzer = new CrafterBlockType("water-electrolyzer", typeof(CrafterBlock), 2) {
+                buildCost = ItemStack.With(Items.copper, 60, Items.silicon, 25, Items.graphite, 20),
+
+                craftPlan = new CraftPlan() {
+                    production = new MaterialList(null, FluidStack.With(Fluids.hydrogen, 30, Fluids.oxigen, 15)),
+                    consumption = new MaterialList(ItemStack.With(Items.salt, 1), FluidStack.With(Fluids.water, 15)),
+                    craftTime = 3f
+                },
+
+                health = 310,
+                size = 3,
+
+                hasFluidInventory = true,
+                hasItemInventory = true,
+
+                itemCapacity = 10,
+
+                maxInput = 15f,
+                maxOutput = 20f,
+                maxVolume = 300f,
+
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
+
+                maxFluids = 3,
+                fixedSpace = true,
+            };
+
+            fuelMixer = new CrafterBlockType("fuel-mixer", typeof(CrafterBlock), 3) {
+                buildCost = ItemStack.With(Items.copper, 60, Items.silicon, 25, Items.graphite, 20),
+
+                craftPlan = new CraftPlan() {
+                    production = new MaterialList(null, FluidStack.With(Fluids.fuel, 3.5f)),
+                    consumption = new MaterialList(null, FluidStack.With(Fluids.nitrogen, 1, Fluids.kerosene, 3)),
+                    craftTime = 1
+                },
+
+                health = 290,
+                size = 2,
+
+                hasFluidInventory = true,
+                hasItemInventory = false,
+
+                itemCapacity = 10,
+
+                maxInput = 25f,
+                maxOutput = 7f,
+                maxVolume = 140f,
+
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
+
+                maxFluids = 3,
+                fixedSpace = true,
+            };
+
+            // TODO, also the bitumen mixer
+            /*carbonElectrolyzer = new CrafterBlockType("carbon-electrolyzer", typeof(CrafterBlock), 2) {
+                buildCost = ItemStack.With(Items.copper, 60, Items.lightAlloy, 35, Items.graphite, 20),
+
+                craftPlan = new CraftPlan() {
+                    production = new MaterialList(null, FluidStack.With(Fluids.oxigen, 10)),
+                    consumption = new MaterialList(null, FluidStack.With(Fluids.co2, 5)),
+                    craftTime = 2f
+                },
+
+                health = 210,
+                size = 2,
+
+                hasFluidInventory = true,
+                hasItemInventory = false,
+
+                maxInput = 10f,
+                maxOutput = 20f,
+                maxVolume = 100f,
+
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
+
+                maxFluids = 2,
+                fixedSpace = true,
+            };*/
 
             // Distribution
             conveyor = new ConveyorBlockType("conveyor", typeof(ConveyorBlock), 1) {
