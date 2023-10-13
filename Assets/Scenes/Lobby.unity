@@ -2142,7 +2142,7 @@ Transform:
   m_GameObject: {fileID: 288792908}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 28.02156, y: -8.900106, z: 0}
+  m_LocalPosition: {x: 28.02156, y: -8.86, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7865,7 +7865,7 @@ GameObject:
   - component: {fileID: 988708720}
   - component: {fileID: 988708719}
   m_Layer: 10
-  m_Name: SmokeFX
+  m_Name: FactorySmokeFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7880,11 +7880,11 @@ Transform:
   m_GameObject: {fileID: 988708717}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.051434994, y: -0.03219378, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2141038260}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!199 &988708719
 ParticleSystemRenderer:
@@ -21711,7 +21711,7 @@ ParticleSystem:
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 0
-  looping: 1
+  looping: 0
   prewarm: 0
   playOnAwake: 0
   useUnscaledTime: 0
@@ -26491,7 +26491,7 @@ Transform:
   m_GameObject: {fileID: 1540528528}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 26.366, y: -9.298, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -29978,7 +29978,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!199 &1995853245
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -30066,7 +30066,7 @@ ParticleSystem:
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 0
-  looping: 1
+  looping: 0
   prewarm: 0
   playOnAwake: 0
   useUnscaledTime: 0
@@ -36368,11 +36368,10 @@ Transform:
   m_GameObject: {fileID: 2141038258}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 20.5, y: -8.84, z: 0}
+  m_LocalPosition: {x: 26.8, y: -6.64, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 988708718}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2142363480
@@ -41318,7 +41317,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &6129697935455775488
 GameObject:
   m_ObjectHideFlags: 0
@@ -41480,7 +41479,7 @@ ParticleSystem:
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 0
-  looping: 1
+  looping: 0
   prewarm: 0
   playOnAwake: 0
   useUnscaledTime: 0
@@ -46355,7 +46354,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!199 &8245536598580867009
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -46444,8 +46443,9 @@ SceneRoots:
   - {fileID: 7362607920146656041}
   - {fileID: 1995853247}
   - {fileID: 250178498949880990}
+  - {fileID: 1540528531}
+  - {fileID: 988708718}
   - {fileID: 2141038260}
   - {fileID: 596614093}
   - {fileID: 1063068665}
   - {fileID: 288792910}
-  - {fileID: 1540528531}

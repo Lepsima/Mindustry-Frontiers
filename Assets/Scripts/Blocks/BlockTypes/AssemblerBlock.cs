@@ -7,13 +7,13 @@ using Frontiers.Assets;
 using Frontiers.Content.VisualEffects;
 
 namespace Frontiers.Content {
-    public class AssemblerBlockType : BlockType {
+    public class BlockAssemblerBlockType : BlockType {
         public int minBuildSize = 1, maxBuildSize = 1;
         public Sprite thrusterSprite, fairingSprite;
 
         public ArmData[] arms;
 
-        public AssemblerBlockType(string name, Type type, int tier) : base(name, type, tier) {
+        public BlockAssemblerBlockType(string name, Type type, int tier) : base(name, type, tier) {
             thrusterSprite = AssetLoader.GetSprite(name + "-thruster");
             fairingSprite = AssetLoader.GetSprite(name + "-fairing");
         }
@@ -35,7 +35,7 @@ namespace Frontiers.Content {
 }
 
 public class AssemblerBlock : Block {
-    public new AssemblerBlockType Type { get => (AssemblerBlockType)base.Type; protected set => base.Type = value; }
+    public new BlockAssemblerBlockType Type { get => (BlockAssemblerBlockType)base.Type; protected set => base.Type = value; }
 
     CoreBlock linkedCore;
     ArmAnimationController armAnimationController;

@@ -1037,19 +1037,16 @@ namespace Frontiers.Content {
 
     public class CrafterBlockType : ItemBlockType {
         public CraftPlan craftPlan;
+        public CraftPlan[] craftPlans;
+
         public Effect craftEffect = null, enabledEffect = null;
+
         public MovementAnimation[] crafterAnimations;
+        public ArmData[] arms;
 
         public CrafterBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             updates = true;
-        }
-    }
-
-    public class ForgeBlockType : CrafterBlockType {
-        public CraftPlan[] craftPlans;
-
-        public ForgeBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
-            updates = true;
+            canGetOnFire = true;
         }
     }
 
@@ -1290,6 +1287,7 @@ namespace Frontiers.Content {
             };
 
 
+
             // Cores
             coreShard = new CoreBlockType("core-shard", typeof(CoreBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 530, Items.graphite, 300, Items.heavyAlloy, 240, Items.silicon, 275),
@@ -1330,62 +1328,7 @@ namespace Frontiers.Content {
 
 
 
-            geodeMiner = new ExtractorBlockType("geode-miner", typeof(ExtractorBlock), 3) {
-                //-1.175
-                size = 4,
-                health = 750f,
-
-                drillFX = Effects.smallExplosion,
-                drillAnimations = new MovementAnimation[] {
-                    new MovementAnimation(
-                        // Stats
-                        "hammer", 1f, MovementAnimation.Repeat.Loop, new Vector2(-1.175f, 0f), 0f,
-
-                        // Animation keys
-                        new (Vector2, float)[] {
-                            new(new(-1.175f, 0f), 0f),
-                            new(new(-0.7f, 0f), 0.1f),
-                            new(new(-1.175f, 0f), 1f),
-                        }),
-
-                    new MovementAnimation(
-                        // Stats
-                        "hammer", 1f, MovementAnimation.Repeat.Loop, new Vector2(0f, -1.175f), 90f,
-
-                        // Animation keys
-                        new (Vector2, float)[] {
-                            new(new(0f, -1.175f), 0f),
-                            new(new(0f, -0.7f), 0.1f),
-                            new(new(0f, -1.175f), 1f),
-                        }),
-                    
-                    new MovementAnimation(
-                        // Stats
-                        "hammer", 1f, MovementAnimation.Repeat.Loop, new Vector2(1.175f, 0f), 180f,
-
-                        // Animation keys
-                        new (Vector2, float)[] {
-                            new(new(1.175f, 0f), 0f),
-                            new(new(0.7f, 0f), 0.1f),
-                            new(new(1.175f, 0f), 1f),
-                        }),
-
-                    new MovementAnimation(
-                        // Stats
-                        "hammer", 1f, MovementAnimation.Repeat.Loop, new Vector2(0f, 1.175f), 270f,
-
-                        // Animation keys
-                        new (Vector2, float)[] {
-                            new(new(0f, 1.175f), 0f),
-                            new(new(0f, 0.7f), 0.1f),
-                            new(new(0f, 1.175f), 1f),
-                        }),
-                },
-
-                itemCapacity = 50,
-                updates = true,
-            };
-
+            // Landing pads
             landingPadS = new LandPadBlockType("landingPad", typeof(LandPadBlock), 2) {
                 health = 250,
                 size = 3,
@@ -1433,6 +1376,9 @@ namespace Frontiers.Content {
                 }
             };
 
+
+
+            // Turrets
             tempest = new TurretBlockType("tempest", typeof(TurretBlock), 1) {
                 mount = new WeaponMount(Weapons.tempestWeapon, Vector2.zero),
 
@@ -1483,6 +1429,7 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };*/
 
+            // Item Factories
             siliconSmelter = new CrafterBlockType("silicon-smelter", typeof(CrafterBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 45, Items.graphite, 25),
                 craftPlan = new CraftPlan() {
@@ -1496,8 +1443,6 @@ namespace Frontiers.Content {
                 health = 95,
                 size = 2,
                 itemCapacity = 30,
-
-                canGetOnFire = true,
             };
 
             graphitePress = new CrafterBlockType("graphite-press", typeof(CrafterBlock), 1) {
@@ -1511,11 +1456,9 @@ namespace Frontiers.Content {
                 health = 95,
                 size = 2,
                 itemCapacity = 20,
-
-                canGetOnFire = true,
             };
 
-            alloyForge = new ForgeBlockType("alloy-forge", typeof(CrafterBlock), 2) {
+            alloyForge = new CrafterBlockType("alloy-forge", typeof(CrafterBlock), 2) {
                 buildCost = ItemStack.With(Items.iron, 95, Items.nickel, 50, Items.graphite, 25),
 
                 craftPlans = new CraftPlan[] {
@@ -1537,8 +1480,6 @@ namespace Frontiers.Content {
                 health = 210,
                 size = 3,
                 itemCapacity = 30,
-
-                canGetOnFire = true,
             };
 
             resistorAssembler = new CrafterBlockType("resistor-assembler", typeof(CrafterBlock), 3) {
@@ -1549,11 +1490,44 @@ namespace Frontiers.Content {
                     craftTime = 3.5f
                 },
 
-                health = 560,
-                size = 4,
-                itemCapacity = 30,
+                arms = new ArmData[2] {
+                    new ArmData("assembler") {
+                        idlePosition = new Vector2(0.34375f, 0),
+                        minPosition = new Vector2(0.34375f, -0.34375f),
+                        maxPosition = new Vector2(0.34375f, 0.34375f),
 
-                canGetOnFire = true,
+                        middleArmOffset = new Vector2(0.4f, 0f),
+                        maxTargetOffset = new Vector2(0.25f, 0.25f),
+
+                        idleAngle = 0f,
+                        minBaseAngle = -90f,
+                        maxBaseAngle = 90f,
+                        minTime = 1.5f,
+                        maxTime = 3.5f,
+
+                        effect = Effects.weldSparks
+                    },
+                    new ArmData("assembler") {
+                        idlePosition = new Vector2(-0.34375f, 0),
+                        minPosition = new Vector2(-0.34375f, -0.34375f),
+                        maxPosition = new Vector2(-0.34375f, 0.34375f),
+
+                        middleArmOffset = new Vector2(0.4f, 0f),
+                        maxTargetOffset = new Vector2(0.25f, 0.25f),
+
+                        idleAngle = 180f,
+                        minBaseAngle = 90f,
+                        maxBaseAngle = 270f,
+                        minTime = 1.5f,
+                        maxTime = 3.5f,
+
+                        effect = Effects.weldSparks
+                    }
+                },
+
+                health = 225,
+                size = 2,
+                itemCapacity = 30,
             };
 
             superconductorAssembler = new CrafterBlockType("superconductor-assembler", typeof(CrafterBlock), 3) {
@@ -1564,31 +1538,150 @@ namespace Frontiers.Content {
                     craftTime = 1.5f
                 },
 
-                health = 350,
-                size = 3,
-                itemCapacity = 20,
+                arms = new ArmData[2] {
+                    new ArmData("assembler") {
+                        idlePosition = new Vector2(0.34375f, 0),
+                        minPosition = new Vector2(0.34375f, -0.34375f),
+                        maxPosition = new Vector2(0.34375f, 0.34375f),
 
-                canGetOnFire = true,
+                        middleArmOffset = new Vector2(0.4f, 0f),
+                        maxTargetOffset = new Vector2(0.25f, 0.25f),
+
+                        idleAngle = 0f,
+                        minBaseAngle = -90f,
+                        maxBaseAngle = 90f,
+                        minTime = 1.5f,
+                        maxTime = 3.5f,
+
+                        effect = Effects.weldSparks
+                    },
+                    new ArmData("assembler") {
+                        idlePosition = new Vector2(-0.34375f, 0),
+                        minPosition = new Vector2(-0.34375f, -0.34375f),
+                        maxPosition = new Vector2(-0.34375f, 0.34375f),
+
+                        middleArmOffset = new Vector2(0.4f, 0f),
+                        maxTargetOffset = new Vector2(0.25f, 0.25f),
+
+                        idleAngle = 180f,
+                        minBaseAngle = 90f,
+                        maxBaseAngle = 270f,
+                        minTime = 1.5f,
+                        maxTime = 3.5f,
+
+                        effect = Effects.weldSparks
+                    }
+                },
+
+                health = 250,
+                size = 2,
+                itemCapacity = 20,
             };
 
-            thoriumCrusher = new CrafterBlockType("thorium-crusher", typeof(CrafterBlock), 3) {
-                buildCost = ItemStack.With(Items.iron, 125, Items.silicon, 65, Items.lithium, 35),
+            thoriumCrusher = new CrafterBlockType("thorium-crusher", typeof(CrafterBlock), 2) {
+                buildCost = ItemStack.With(Items.heavyAlloy, 65, Items.thorium, 25, Items.lithium, 35),
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(ItemStack.With(Items.resistor, 2), null),
-                    consumption = new MaterialList(ItemStack.With(Items.lithium, 1, Items.gold, 2), null),
+                    production = new MaterialList(ItemStack.With(Items.thoriumDust, 1), null),
+                    consumption = new MaterialList(ItemStack.With(Items.thorium, 2), null),
+                    craftTime = 1.75f
+                },
+
+                health = 250,
+                size = 2,
+                itemCapacity = 10,
+            };
+
+            thoriumCentrifuge = new CrafterBlockType("thorium-centrifuge", typeof(CrafterBlock), 2) {
+                buildCost = ItemStack.With(Items.iron, 45, Items.graphite, 65, Items.thorium, 55, Items.lithium, 25),
+                craftPlan = new CraftPlan() {
+                    production = new MaterialList(ItemStack.With(Items.thoriumFuel, 1), null),
+                    consumption = new MaterialList(ItemStack.With(Items.thoriumDust, 5), FluidStack.With(Fluids.nitrogen, 6)),
                     craftTime = 1.5f
                 },
 
-                health = 350,
+                health = 375,
                 size = 3,
-                itemCapacity = 20,
+                itemCapacity = 50,
 
-                canGetOnFire = true,
+                hasFluidInventory = true,
+                fluidInputOnly = true,
+
+                maxInput = 10f,
+                maxVolume = 60f,
+
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
+
+                maxFluids = 1,
             };
 
-            crystalizer, resistorAssembler, superconductorAssembler,
-            reflectiveFabricWeaver, thoriumCrusher, thoriumCentrifuge, thoriumReprocessor
+            thoriumReprocessor = new CrafterBlockType("thorium-reprocessor", typeof(CrafterBlock), 2) {
+                buildCost = ItemStack.With(Items.iron, 65, Items.thorium, 25, Items.resistor, 30),
+                craftPlan = new CraftPlan() {
+                    production = new MaterialList(ItemStack.With(Items.thoriumDust, 4), null),
+                    consumption = new MaterialList(ItemStack.With(Items.depletedThorium, 2), FluidStack.With(Fluids.water, 12)),
+                    craftTime = 2f
+                },
 
+                health = 275,
+                size = 2,
+                itemCapacity = 20,
+
+                hasFluidInventory = true,
+                fluidInputOnly = true,
+
+                maxInput = 15f,
+                maxVolume = 120f,
+
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
+
+                maxFluids = 1,
+            };
+
+            crystalizer = new CrafterBlockType("crystalizer", typeof(CrafterBlock), 3) {
+                buildCost = ItemStack.With(Items.copper, 125, Items.nickel, 65, Items.magnesium, 40, Items.superconductor, 25, Items.resistor, 30),
+                craftPlan = new CraftPlan() {
+                    production = new MaterialList(ItemStack.With(Items.quartz, 2), null),
+                    consumption = new MaterialList(ItemStack.With(Items.salt, 4, Items.silicon, 2), FluidStack.With(Fluids.oxigen, 8)),
+                    craftTime = 3f
+                },
+
+                health = 405,
+                size = 3,
+                itemCapacity = 40,
+
+                hasFluidInventory = true,
+                fluidInputOnly = true,
+
+                maxInput = 12f,
+                maxVolume = 80f,
+
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
+
+                maxFluids = 1,
+            };
+
+            reflectiveFabricWeaver = new CrafterBlockType("crystalizer", typeof(CrafterBlock), 3) {
+                buildCost = ItemStack.With(Items.heavyAlloy, 200, Items.lightAlloy, 125, Items.nickel, 80, Items.superconductor, 55, Items.resistor, 15),
+                craftPlan = new CraftPlan() {
+                    production = new MaterialList(ItemStack.With(Items.reflectiveFabric, 3), null),
+                    consumption = new MaterialList(ItemStack.With(Items.resistor, 1, Items.nickel, 4, Items.gold, 1), null),
+                    craftTime = 5f
+                },
+
+                health = 580,
+                size = 4,
+                itemCapacity = 20,
+            };
+
+
+
+            // Distribution
             conveyor = new ConveyorBlockType("conveyor", typeof(ConveyorBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 2),
 
@@ -1631,6 +1724,9 @@ namespace Frontiers.Content {
                 inverted = false,
             };
 
+
+
+            // Drills
             mechanicalDrill = new DrillBlockType("mechanical-drill", typeof(DrillBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 16),
 
@@ -1659,6 +1755,62 @@ namespace Frontiers.Content {
                 drillRate = 1.75f,
 
                 canGetOnFire = true,
+            };
+
+            geodeMiner = new ExtractorBlockType("geode-miner", typeof(ExtractorBlock), 3) {
+                //-1.175
+                size = 4,
+                health = 750f,
+
+                drillFX = Effects.smallExplosion,
+                drillAnimations = new MovementAnimation[] {
+                    new MovementAnimation(
+                        // Stats
+                        "hammer", 1f, MovementAnimation.Repeat.Loop, new Vector2(-1.175f, 0f), 0f,
+
+                        // Animation keys
+                        new (Vector2, float)[] {
+                            new(new(-1.175f, 0f), 0f),
+                            new(new(-0.7f, 0f), 0.1f),
+                            new(new(-1.175f, 0f), 1f),
+                        }),
+
+                    new MovementAnimation(
+                        // Stats
+                        "hammer", 1f, MovementAnimation.Repeat.Loop, new Vector2(0f, -1.175f), 90f,
+
+                        // Animation keys
+                        new (Vector2, float)[] {
+                            new(new(0f, -1.175f), 0f),
+                            new(new(0f, -0.7f), 0.1f),
+                            new(new(0f, -1.175f), 1f),
+                        }),
+
+                    new MovementAnimation(
+                        // Stats
+                        "hammer", 1f, MovementAnimation.Repeat.Loop, new Vector2(1.175f, 0f), 180f,
+
+                        // Animation keys
+                        new (Vector2, float)[] {
+                            new(new(1.175f, 0f), 0f),
+                            new(new(0.7f, 0f), 0.1f),
+                            new(new(1.175f, 0f), 1f),
+                        }),
+
+                    new MovementAnimation(
+                        // Stats
+                        "hammer", 1f, MovementAnimation.Repeat.Loop, new Vector2(0f, 1.175f), 270f,
+
+                        // Animation keys
+                        new (Vector2, float)[] {
+                            new(new(0f, 1.175f), 0f),
+                            new(new(0f, 0.7f), 0.1f),
+                            new(new(0f, 1.175f), 1f),
+                        }),
+                },
+
+                itemCapacity = 50,
+                updates = true,
             };
 
             lowPressurePipe = new FluidPipeBlockType("pipe", typeof(FluidPipeBlock), 1) {
@@ -1856,51 +2008,6 @@ namespace Frontiers.Content {
                 fixedSpace = true,
 
                 loopSound = Sounds.smelter,
-            };
-
-            blockAssembler = new AssemblerBlockType("assembler", typeof(AssemblerBlock), 1) {
-                buildCost = ItemStack.With(Items.copper, 24),
-
-                health = 600,
-                size = 2,
-
-                maxBuildSize = 1,
-                minBuildSize = 1,
-
-                arms = new ArmData[2] {
-                    new ArmData("assembler") {
-                        idlePosition = new Vector2(0.34375f, 0),
-                        minPosition = new Vector2(0.34375f, -0.34375f),
-                        maxPosition = new Vector2(0.34375f, 0.34375f),
-
-                        middleArmOffset = new Vector2(0.4f, 0f),
-                        maxTargetOffset = new Vector2(0.25f, 0.25f),
-
-                        idleAngle = 0f,
-                        minBaseAngle = -90f,
-                        maxBaseAngle = 90f,
-                        minTime = 1.5f,
-                        maxTime = 3.5f,
-
-                        effect = Effects.weldSparks
-                    },
-                    new ArmData("assembler") {
-                        idlePosition = new Vector2(-0.34375f, 0),
-                        minPosition = new Vector2(-0.34375f, -0.34375f),
-                        maxPosition = new Vector2(-0.34375f, 0.34375f),
-
-                        middleArmOffset = new Vector2(0.4f, 0f),
-                        maxTargetOffset = new Vector2(0.25f, 0.25f),
-
-                        idleAngle = 180f,
-                        minBaseAngle = 90f,
-                        maxBaseAngle = 270f,
-                        minTime = 1.5f,
-                        maxTime = 3.5f,
-
-                        effect = Effects.weldSparks
-                    }
-                },
             };
         }
     }
