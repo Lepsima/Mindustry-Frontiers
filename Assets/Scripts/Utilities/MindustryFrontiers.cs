@@ -1554,7 +1554,7 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.iron, 45, Items.graphite, 65, Items.thorium, 55, Items.lithium, 25),
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.thoriumFuel, 1), null),
-                    consumption = new MaterialList(ItemStack.With(Items.thoriumDust, 5), FluidStack.With(Fluids.nitrogen, 6)),
+                    consumption = new MaterialList(ItemStack.With(Items.thoriumDust, 5), FluidStack.With(Fluids.nitrogen, 6f)),
                     craftTime = 1.5f
                 },
 
@@ -1579,7 +1579,7 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.iron, 65, Items.thorium, 25, Items.resistor, 30),
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.thoriumDust, 4), null),
-                    consumption = new MaterialList(ItemStack.With(Items.depletedThorium, 2), FluidStack.With(Fluids.water, 12)),
+                    consumption = new MaterialList(ItemStack.With(Items.depletedThorium, 2), FluidStack.With(Fluids.water, 12f)),
                     craftTime = 2f
                 },
 
@@ -1604,7 +1604,7 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.copper, 125, Items.nickel, 65, Items.magnesium, 40, Items.superconductor, 25, Items.resistor, 30),
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.quartz, 2), null),
-                    consumption = new MaterialList(ItemStack.With(Items.salt, 4, Items.silicon, 2), FluidStack.With(Fluids.oxigen, 8)),
+                    consumption = new MaterialList(ItemStack.With(Items.salt, 4, Items.silicon, 2), FluidStack.With(Fluids.oxigen, 8f)),
                     craftTime = 3f
                 },
 
@@ -1625,17 +1625,29 @@ namespace Frontiers.Content {
                 maxFluids = 1,
             };
 
-            reflectiveFabricWeaver = new CrafterBlockType("crystalizer", typeof(CrafterBlock), 3) {
+            reflectiveFabricWeaver = new CrafterBlockType("reflective-fabric-weaver", typeof(CrafterBlock), 3) {
                 buildCost = ItemStack.With(Items.heavyAlloy, 200, Items.lightAlloy, 125, Items.nickel, 80, Items.superconductor, 55, Items.resistor, 15),
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.reflectiveFabric, 3), null),
-                    consumption = new MaterialList(ItemStack.With(Items.resistor, 1, Items.nickel, 4, Items.gold, 1), null),
+                    consumption = new MaterialList(ItemStack.With(Items.resistor, 2, Items.gold, 1), FluidStack.With(Fluids.oxigen, 4)),
                     craftTime = 5f
                 },
 
                 health = 580,
                 size = 4,
                 itemCapacity = 20,
+
+                hasFluidInventory = true,
+                fluidInputOnly = true,
+
+                maxInput = 4f,
+                maxVolume = 120f,
+
+                maxPressure = -1f,
+                minHealthPressurizable = 0.7f,
+                pressurizable = false,
+
+                maxFluids = 1,
             };
 
 
@@ -1645,7 +1657,7 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.copper, 60, Items.iron, 25),
 
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(null, FluidStack.With(Fluids.petroleum, 6)),
+                    production = new MaterialList(null, FluidStack.With(Fluids.petroleum, 6f)),
                     consumption = new MaterialList(ItemStack.With(Items.coal, 2), FluidStack.With(Fluids.co2, 0.5f)),
                     craftTime = 1f
                 },
@@ -1730,8 +1742,8 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.graphite, 60, Items.iron, 35, Items.nickel, 40),
 
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(null, FluidStack.With(Fluids.kerosene, 4)),
-                    consumption = new MaterialList(null, FluidStack.With(Fluids.petroleum, 3)),
+                    production = new MaterialList(null, FluidStack.With(Fluids.kerosene, 4f)),
+                    consumption = new MaterialList(null, FluidStack.With(Fluids.petroleum, 3f)),
                     craftTime = 0.75f
                 },
 
@@ -1757,8 +1769,8 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.copper, 60, Items.silicon, 25, Items.graphite, 20),
 
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(null, FluidStack.With(Fluids.hydrogen, 30, Fluids.oxigen, 15)),
-                    consumption = new MaterialList(ItemStack.With(Items.salt, 1), FluidStack.With(Fluids.water, 15)),
+                    production = new MaterialList(null, FluidStack.With(Fluids.hydrogen, 30f, Fluids.oxigen, 15f)),
+                    consumption = new MaterialList(ItemStack.With(Items.salt, 1), FluidStack.With(Fluids.water, 15f)),
                     craftTime = 3f
                 },
 
@@ -1787,8 +1799,8 @@ namespace Frontiers.Content {
 
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(null, FluidStack.With(Fluids.fuel, 3.5f)),
-                    consumption = new MaterialList(null, FluidStack.With(Fluids.nitrogen, 1, Fluids.kerosene, 3)),
-                    craftTime = 1
+                    consumption = new MaterialList(null, FluidStack.With(Fluids.nitrogen, 1f, Fluids.kerosene, 3f)),
+                    craftTime = 1f
                 },
 
                 health = 290,
@@ -1799,8 +1811,8 @@ namespace Frontiers.Content {
 
                 itemCapacity = 10,
 
-                maxInput = 25f,
-                maxOutput = 7f,
+                maxInput = 5f,
+                maxOutput = 5f,
                 maxVolume = 140f,
 
                 maxPressure = -1f,

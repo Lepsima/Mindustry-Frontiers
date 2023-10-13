@@ -31,6 +31,7 @@ namespace Frontiers.FluidSystem {
             return copy;
         }
 
+        // MAKE SURE TO USE FLOATS, THIS WONT CONVERT INT TO FLOAT          =>         Fluids.With(Fluids.water, 2f)
         public static FluidStack[] With(params object[] items) {
             FluidStack[] stacks = new FluidStack[items.Length / 2];
             for (int i = 0; i < items.Length; i += 2) stacks[i / 2] = new FluidStack((Fluid)items[i], (float)items[i + 1]);
