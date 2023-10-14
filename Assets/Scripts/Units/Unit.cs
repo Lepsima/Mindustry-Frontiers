@@ -76,7 +76,7 @@ public abstract class Unit : Entity, IArmed, IMessager {
         targetPower, // The power percent that the engine should be at
         currentMass, // The current mass of this unit
         fuel, // The current fuel of this unit
-        ammo, // The current ammo amount of this unit
+        ammo = float.MaxValue, // The current ammo amount of this unit
         height, // The current height/altitude of this unit
         cargoMass, // The current mass of the cargo of this unit
         enginePower; // The current power at wich the engine works, based on targetPower and regulated by fuel and/or behaviour parameters
@@ -854,10 +854,6 @@ public abstract class Unit : Entity, IArmed, IMessager {
         foreach (Weapon weapon in weapons)
             weapon.SetActive(value);
         areWeaponsActive = value;
-    }
-
-    public Weapon GetWeaponByID(byte id) {
-        return weapons[id];
     }
 
     public void ConsumeAmmo(float amount) {

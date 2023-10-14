@@ -37,10 +37,6 @@ public class TurretBlock : ItemBlock, IArmed {
         ammo = Mathf.Clamp(ammo + amount, 0f, Type.ammoAmount);
     }
 
-    public Weapon GetWeaponByID(byte id) {
-        return installedWeapon;
-    }
-
     public void ConsumeAmmo(float amount) {
         ammo -= amount;
     }

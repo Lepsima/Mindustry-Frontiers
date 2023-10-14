@@ -17,8 +17,6 @@ public interface IInventory {
 }
 
 public interface IArmed {
-    public Weapon GetWeaponByID(byte ID);
-
     public void ConsumeAmmo(float amount);
 
     public bool CanConsumeAmmo(float amount);

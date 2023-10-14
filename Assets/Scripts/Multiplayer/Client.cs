@@ -142,7 +142,8 @@ public class Client : MonoBehaviourPunCallbacks {
 
     [PunRPC]
     public void RPC_BulletHit(short syncID, short bulletID) {
-        if (isRecivingMap) return;
+        if (isRecivingMap || syncObjects[syncID] == null) return;
+
         Entity entity = (Entity)syncObjects[syncID];
         BulletType bulletType = BulletLoader.loadedBullets[bulletID];
         DamageHandler.BulletHit(bulletType, entity);     

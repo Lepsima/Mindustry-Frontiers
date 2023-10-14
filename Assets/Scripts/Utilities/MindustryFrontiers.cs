@@ -2261,7 +2261,7 @@ namespace Frontiers.Content {
         public static UnitType
             flare, horizon, zenith,  // Assault - air
             poly,                    // Support - air
-            sonar, foton,            // Copter - air
+            foton, pulse,           // Copter - air
             dagger, fortress;        // Assault - ground       
 
         public static EntityType train, turretTrain;
@@ -2426,56 +2426,10 @@ namespace Frontiers.Content {
                 itemPickupDistance = 6f,
             };
 
-            sonar = new CopterUnitType("sonar", typeof(CopterUnit), 2) {
-                rotors = new UnitRotor[1] {
-                    new UnitRotor("sonar-rotor", new(0f, 0.2f), 3f, 0.5f, 0.667f, 1f),
-                },
-
-                weapons = new WeaponMount[1] {
-                    new WeaponMount(Weapons.zenithMissiles, new Vector2(0.9f, 0.35145f), true),
-                },
-
-                flags = new Flag[] { FlagTypes.copter, FlagTypes.slow, FlagTypes.heavyArmored },
-                priorityList = new Type[5] { typeof(MechUnit), typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
-
-                loopSound = Sounds.copterBladeLoop,
-
-                takeoffTime = 6f,
-
-                hasWreck = true,
-                wreckHealth = 125f,
-
-                health = 395f,
-                size = 2.25f,
-                maxVelocity = 7f,
-                itemCapacity = 35,
-                drag = 3f,
-
-                engineSize = 0f,
-
-                rotationSpeed = 80f,
-                bankAmount = 0f,
-
-                range = 12f,
-                searchRange = 17.5f,
-                fov = 160f,
-                groundHeight = 8f,
-
-                fuelCapacity = 260f,
-                fuelConsumption = 3.65f,
-                fuelRefillRate = 18.25f,
-
-                force = 600f,
-                emptyMass = 13.5f,
-                itemMass = 12.25f,
-                //fuelDensity = 0.0275f,
-            };
-
-            foton = new CopterUnitType("foton", typeof(CopterUnit), 3) {
+            foton = new CopterUnitType("sonar", typeof(CopterUnit), 2) {
                 rotors = new UnitRotor[] {
-                    new UnitRotor("foton-rotor", new(0f, 0.5625f), 6f, 1.5f, 1.5f, 2.25f, new UnitRotorBlade[2] {
-                        new UnitRotorBlade(0f, false),
-                        new UnitRotorBlade(0f, true)
+                    new UnitRotor("sonar-blade", new(0f, 0.38f), 8f, 2.4f, 3f, 4.5f, new UnitRotorBlade[1] {
+                        new UnitRotorBlade(0f, false)
                     }),
                 },
 
@@ -2491,8 +2445,8 @@ namespace Frontiers.Content {
                 hasWreck = true,
                 wreckHealth = 225f,
 
-                health = 750f,
-                size = 3.75f,
+                health = 550f,
+                size = 3.5f,
                 maxVelocity = 9f,
                 itemCapacity = 50,
                 drag = 3.5f,
@@ -2514,6 +2468,52 @@ namespace Frontiers.Content {
                 force = 985f,
                 emptyMass = 21.75f,
                 itemMass = 15.25f,
+                //fuelDensity = 0.0275f,
+            };
+
+            pulse = new CopterUnitType("pulse", typeof(CopterUnit), 3) {
+                rotors = new UnitRotor[] {
+                    new UnitRotor("pulse-blade", new(0f, 0.68f), 5f, 1.2f, 2f, 3f, new UnitRotorBlade[2] {
+                        new UnitRotorBlade(0f, false),
+                        new UnitRotorBlade(0f, true)
+                    }),
+                },
+
+                weapons = new WeaponMount[1] {
+                    new WeaponMount(Weapons.fotonWeapon, new Vector2(0.975f, 0.54375f), true),
+                },
+
+                flags = new Flag[] { FlagTypes.copter, FlagTypes.slow, FlagTypes.heavy, FlagTypes.heavyArmored },
+                priorityList = new Type[5] { typeof(MechUnit), typeof(Unit), typeof(TurretBlock), typeof(CoreBlock), typeof(Block) },
+
+                loopSound = Sounds.copterBladeLoop,
+
+                hasWreck = true,
+                wreckHealth = 325f,
+
+                health = 890f,
+                size = 5f,
+                maxVelocity = 7f,
+                itemCapacity = 150,
+                drag = 3.5f,
+
+                engineSize = 0f,
+
+                rotationSpeed = 35f,
+                bankAmount = 0f,
+
+                range = 12f,
+                searchRange = 25.5f,
+                fov = 360f,
+                groundHeight = 15f,
+
+                fuelCapacity = 1550f,
+                fuelConsumption = 7.5f,
+                fuelRefillRate = 42.75f,
+
+                force = 1310f,
+                emptyMass = 28.5f,
+                itemMass = 17.5f,
                 //fuelDensity = 0.0275f,
             };
 
