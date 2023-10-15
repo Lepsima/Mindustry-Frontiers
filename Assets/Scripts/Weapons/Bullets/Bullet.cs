@@ -62,11 +62,10 @@ public class Bullet {
             EffectPlayer.PlayEffect(Type.hitFX, transform.position, 1f);
             Client.BulletHit(entity, Type);
         } else {
+            // If explodes on despawn or hit something, explode
             EffectPlayer.PlayEffect(Type.despawnFX, transform.position, 1f);
+            if (Type.Explodes() && Type.explodeOnDespawn) Client.Explosion(Type, GetPosition(), mask);
         }
-
-        // If explodes on despawn or hit something, explode
-        if ((Type.explodeOnDespawn || entity) && Type.Explodes()) Client.Explosion(Type, GetPosition(), mask);
 
         End();
     }

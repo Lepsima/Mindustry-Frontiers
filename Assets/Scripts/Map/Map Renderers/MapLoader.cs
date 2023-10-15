@@ -10,8 +10,6 @@ namespace Frontiers.Content.Maps {
         public const int TilesPerString = 1000;
         public static MapFile[] foundMaps;
 
-        public static event EventHandler<MapLoadedEventArgs> OnMapLoaded;
-
         public static QuickSaveSettings QuickSaveSettings = new() { CompressionMode = CompressionMode.Gzip };
 
         public class MapLoadedEventArgs {
@@ -22,14 +20,14 @@ namespace Frontiers.Content.Maps {
             // Get all found maps, and instantiate the default maps
             MapFile[] maps = FindMaps();
             DefaultMaps.Load();
-            
-            foreach(DefaultMaps.JsonMapData jsonMapData in DefaultMaps.maps) {
+
+            foreach (DefaultMaps.JsonMapData jsonMapData in DefaultMaps.maps) {
                 // If map file does not exist, create file
                 if (!Contains(jsonMapData.name)) QuickSaveRaw.SaveString(Path.Combine("Maps", jsonMapData.name + ".json"), jsonMapData.data);
             }
 
             bool Contains(string name) {
-                foreach(MapFile map in maps) if (map.name == name) return true;
+                foreach (MapFile map in maps) if (map.name == name) return true;
                 return false;
             }
         }
@@ -50,24 +48,31 @@ namespace Frontiers.Content.Maps {
         public static void ReciveMap(string name, Vector2 size, string[] tileData) {
             MapData mapData = CreateMap(Vector2Int.CeilToInt(size), tileData);
             Map map = new(name, mapData);
-            OnMapLoaded?.Invoke(null, new MapLoadedEventArgs() { loadedMap = map });
+            OnLoadMap(map);
         }
 
         public static void LoadMap(string name) {
             MapData mapData = ReadMap(name);
             Map map = new(name, mapData);
-            OnMapLoaded?.Invoke(null, new MapLoadedEventArgs() { loadedMap = map });
+            OnLoadMap(map);
         }
 
         public static void LoadMap(MapFile mapFile) {
             MapData mapData = mapFile.Read();
             Map map = new(mapFile.name, mapData);
-            OnMapLoaded?.Invoke(null, new MapLoadedEventArgs() { loadedMap = map });
+            OnLoadMap(map);
         }
 
-        public static void LoadMap(string name, Vector2Int size, byte[] tilemap, byte[] blocks, byte[] units) {
-            Map map = new(name, size, tilemap, blocks, units);
-            OnMapLoaded?.Invoke(null, new MapLoadedEventArgs() { loadedMap = map });
+        public static void LoadMap(string name, Vector2Int size, byte[] tilemap) {
+            Map map = new(name, size, tilemap);
+            OnLoadMap(map);
+        }
+
+        public static void OnLoadMap(Map map) {
+            MapManager.Map = map;
+            MapManager.OnMapLoaded(map);
+            Client.OnMapLoaded(map);
+            MapEditor.OnMapLoaded(map);
         }
 
         public static void SaveMap(Map map) {
@@ -92,45 +97,6 @@ namespace Frontiers.Content.Maps {
 
         public static MapData CreateMap(Vector2Int size, string[] tileData) {
             return new MapData(size, tileData);
-        }
-    }
-
-    public class MapAssembler {
-        public byte[] tilemap, blocks, units;
-        public string name;
-        public Vector2Int size;
-
-        public void ReciveTilemap(string name, Vector2Int size, byte[] tilemap) {
-            this.name = name;
-            this.size = size;
-            this.tilemap = tilemap;
-            if (IsReady()) Assemble();
-        }
-
-        public void ReciveBlocks(byte[] blocks) {
-            this.blocks = blocks;
-            if (IsReady()) Assemble();
-        }
-
-        public void ReciveUnits(byte[] units) {
-            this.units = units;
-            if (IsReady()) Assemble();
-        }
-
-        public bool IsReady() {
-            return tilemap != null && blocks != null && units != null;
-        }
-
-        public void Assemble() {
-            MapLoader.LoadMap(name, size, tilemap, blocks, units);
-            Dispose();
-        }
-
-        public void Dispose() {
-            name = null;
-            tilemap = null;
-            blocks = null;
-            units = null;
         }
     }
 

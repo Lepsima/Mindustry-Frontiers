@@ -10,7 +10,7 @@ public static class HostSyncHandler {
 
     static int index;
 
-    public static Client LocalClient => Client.local;
+    public static Client LocalClient => Client.Instance;
 
     public static short nextSyncID;
 

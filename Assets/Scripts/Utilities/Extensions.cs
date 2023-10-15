@@ -14,4 +14,14 @@ public static class MoreExtensions {
     public static bool EqualsOrInherits(this Type type, Type other) {
          return type == other || type.IsSubclassOf(other);
     }
+
+    public static T[] AddRange<T>(this T[] array, T[] other) {
+        if (other == null || other.Length == 0) return array;
+        if (array == null || array.Length == 0) return other;
+
+        T[] result = new T[array.Length + other.Length];
+        for (int i = 0; i < array.Length; i++) result[i] = array[i];
+        for (int i = 0; i < other.Length; i++) result[i + array.Length] = other[i];
+        return result;
+    }
 }

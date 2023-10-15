@@ -11,12 +11,11 @@ using System.Linq;
 using System.IO.Compression;
 
 public class Client : MonoBehaviourPunCallbacks {
-    public static Client local;
+    public static Client Instance;
     public static Dictionary<short, SyncronizableObject> syncObjects = new();
 
     private void Awake() {
-        local = this;
-        MapLoader.OnMapLoaded += OnMapLoaded;
+        Instance = this;
     }
 
     public static bool TypeEquals(Type target, Type reference) => target == reference || target.IsSubclassOf(reference);
@@ -27,7 +26,7 @@ public class Client : MonoBehaviourPunCallbacks {
     }
 
     public static void SendSyncData(int[] data) {
-        local.photonView.RPC(nameof(RPC_ReciveSyncData), RpcTarget.Others, (object)data);
+        Instance.photonView.RPC(nameof(RPC_ReciveSyncData), RpcTarget.Others, (object)data);
     }
 
     [PunRPC]
@@ -43,14 +42,14 @@ public class Client : MonoBehaviourPunCallbacks {
 
     public static void CreateBlock(Vector2 position, int orientation, Content type, byte teamCode) {
         // As a player, send the block data to the host
-        local.photonView.RPC(nameof(MasterRPC_CreateBlock), RpcTarget.MasterClient, position, orientation, type.id, teamCode);
+        Instance.photonView.RPC(nameof(MasterRPC_CreateBlock), RpcTarget.MasterClient, position, orientation, type.id, teamCode);
     }
 
     [PunRPC]
     public void MasterRPC_CreateBlock(Vector2 position, int orientation, short contentID, byte teamCode) {
         // As the host, assign a Sync ID to the new block
         short syncID = HostSyncHandler.GetNewSyncID();
-        local.photonView.RPC(nameof(RPC_CreateBlock), RpcTarget.All, position, orientation, contentID, syncID, teamCode);
+        Instance.photonView.RPC(nameof(RPC_CreateBlock), RpcTarget.All, position, orientation, contentID, syncID, teamCode);
     }
 
     [PunRPC]
@@ -64,7 +63,7 @@ public class Client : MonoBehaviourPunCallbacks {
 
     public static void DestroyBlock(Block block, bool destroyed = false) {
         // As a player, send the remove command to all players
-        local.photonView.RPC(nameof(RPC_DestroyBlock), RpcTarget.MasterClient, block.SyncID, destroyed);
+        Instance.photonView.RPC(nameof(RPC_DestroyBlock), RpcTarget.MasterClient, block.SyncID, destroyed);
     }
 
     [PunRPC]
@@ -78,14 +77,14 @@ public class Client : MonoBehaviourPunCallbacks {
 
     public static void CreateUnit(Vector2 position, float rotation, Content type, byte teamCode) {
         // As a player, send unit creation command to the host
-        local.photonView.RPC(nameof(MasterRPC_CreateUnit), RpcTarget.MasterClient, position, rotation, type.id, teamCode);
+        Instance.photonView.RPC(nameof(MasterRPC_CreateUnit), RpcTarget.MasterClient, position, rotation, type.id, teamCode);
     }
 
     [PunRPC]
     public void MasterRPC_CreateUnit(Vector2 position, float rotation, short contentID, byte teamCode) {
         // As the host, assign a Sync ID to the unit
         short syncID = HostSyncHandler.GetNewSyncID();
-        local.photonView.RPC(nameof(RPC_CreateUnit), RpcTarget.All, position, rotation, contentID, syncID, teamCode);
+        Instance.photonView.RPC(nameof(RPC_CreateUnit), RpcTarget.All, position, rotation, contentID, syncID, teamCode);
     }
 
     [PunRPC]
@@ -99,7 +98,7 @@ public class Client : MonoBehaviourPunCallbacks {
 
     public static void DestroyUnit(Unit unit, bool destroyed = false) {
         // As a player, send a destroy command to all players
-        local.photonView.RPC(nameof(RPC_DestroyUnit), RpcTarget.MasterClient, unit.SyncID, destroyed);
+        Instance.photonView.RPC(nameof(RPC_DestroyUnit), RpcTarget.MasterClient, unit.SyncID, destroyed);
     }
 
     [PunRPC]
@@ -113,7 +112,7 @@ public class Client : MonoBehaviourPunCallbacks {
 
     public static void UnitTakeOff(Unit unit) {
         if (!PhotonNetwork.IsMasterClient) return;
-        local.photonView.RPC(nameof(RPC_UnitTakeoff), RpcTarget.All, unit.SyncID);
+        Instance.photonView.RPC(nameof(RPC_UnitTakeoff), RpcTarget.All, unit.SyncID);
     }
 
     [PunRPC]
@@ -125,7 +124,7 @@ public class Client : MonoBehaviourPunCallbacks {
 
     public static void UnitChangePatrolPoint(Unit unit, Vector2 point) {
         if (!PhotonNetwork.IsMasterClient) return;
-        local.photonView.RPC(nameof(RPC_UnitChangePatrolPoint), RpcTarget.All, unit.SyncID, point);
+        Instance.photonView.RPC(nameof(RPC_UnitChangePatrolPoint), RpcTarget.All, unit.SyncID, point);
     }
 
     [PunRPC]
@@ -137,7 +136,7 @@ public class Client : MonoBehaviourPunCallbacks {
 
     public static void BulletHit(Entity entity, BulletType bulletType) {
         if (!PhotonNetwork.IsMasterClient) return;
-        local.photonView.RPC(nameof(RPC_BulletHit), RpcTarget.All, entity.SyncID, bulletType.id);
+        Instance.photonView.RPC(nameof(RPC_BulletHit), RpcTarget.All, entity.SyncID, bulletType.id);
     }
 
     [PunRPC]
@@ -153,7 +152,7 @@ public class Client : MonoBehaviourPunCallbacks {
 
     public static void Damage(Entity entity, float damage) {
         if (!PhotonNetwork.IsMasterClient) return;
-        local.photonView.RPC(nameof(RPC_Damage), RpcTarget.All, entity.SyncID, damage);
+        Instance.photonView.RPC(nameof(RPC_Damage), RpcTarget.All, entity.SyncID, damage);
     }
 
     [PunRPC]
@@ -167,7 +166,7 @@ public class Client : MonoBehaviourPunCallbacks {
 
     public static void Explosion(BulletType bulletType, Vector2 position, int mask) {
         if (!PhotonNetwork.IsMasterClient) return;
-        local.photonView.RPC(nameof(RPC_Explosion), RpcTarget.All, bulletType.id, position, mask);
+        Instance.photonView.RPC(nameof(RPC_Explosion), RpcTarget.All, bulletType.id, position, mask);
     }
 
     [PunRPC]
@@ -180,7 +179,7 @@ public class Client : MonoBehaviourPunCallbacks {
 
     public static void AddItem(Entity entity, Item item, int amount) {
         if (!PhotonNetwork.IsMasterClient) return;
-        local.photonView.RPC(nameof(RPC_AddItem), RpcTarget.All, entity.SyncID, item.id, amount);
+        Instance.photonView.RPC(nameof(RPC_AddItem), RpcTarget.All, entity.SyncID, item.id, amount);
     }
 
 
@@ -198,7 +197,7 @@ public class Client : MonoBehaviourPunCallbacks {
     public static void AddItems(Entity entity, ItemStack[] stacks) {
         if (!PhotonNetwork.IsMasterClient) return;
         int[] serializedStacks = ItemStack.Serialize(stacks);
-        local.photonView.RPC(nameof(RPC_AddItems), RpcTarget.All, entity.SyncID, serializedStacks);
+        Instance.photonView.RPC(nameof(RPC_AddItems), RpcTarget.All, entity.SyncID, serializedStacks);
     }
 
     [PunRPC]
@@ -214,7 +213,7 @@ public class Client : MonoBehaviourPunCallbacks {
 
     public static void CreateFire(Vector2 gridPosition) {
         if (!PhotonNetwork.IsMasterClient) return;
-        local.photonView.RPC(nameof(RPC_CreateFire), RpcTarget.All, gridPosition);
+        Instance.photonView.RPC(nameof(RPC_CreateFire), RpcTarget.All, gridPosition);
     }
 
     [PunRPC]
@@ -227,12 +226,12 @@ public class Client : MonoBehaviourPunCallbacks {
 
     public bool isRecivingMap = false;
     public List<int> mapRequestActorNumbers = new();
-    public static MapAssembler mapAssembler;
+    public static byte[] blockData = null;
+    public static byte[] unitData = null;
 
     public static void RequestMap() {
-        local.photonView.RPC(nameof(RPC_RequestMap), RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.ActorNumber);
-        local.isRecivingMap = true;
-        mapAssembler = new();
+        Instance.photonView.RPC(nameof(RPC_RequestMap), RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.ActorNumber);
+        Instance.isRecivingMap = true;
     }
 
     [PunRPC]
@@ -248,12 +247,15 @@ public class Client : MonoBehaviourPunCallbacks {
         }
     }
 
-    public void OnMapLoaded(object sender, MapLoader.MapLoadedEventArgs e) {
-        if (!PhotonNetwork.IsMasterClient || mapRequestActorNumbers.Count == 0) return;
+    public static void OnMapLoaded(Map map) {
+        if (blockData != null) map.BlocksFromBytes(blockData);
+        if (unitData != null) map.UnitsFromBytes(unitData);
+
+        if (!PhotonNetwork.IsMasterClient || Instance.mapRequestActorNumbers.Count == 0) return;
 
         // Send the map to the players in the request list
-        foreach(int actorNumber in mapRequestActorNumbers) {
-            SendMap(PhotonNetwork.CurrentRoom.GetPlayer(actorNumber), e.loadedMap);
+        foreach(int actorNumber in Instance.mapRequestActorNumbers) {
+            Instance.SendMap(PhotonNetwork.CurrentRoom.GetPlayer(actorNumber), map);
         }
     }
 
@@ -269,30 +271,30 @@ public class Client : MonoBehaviourPunCallbacks {
         string name = map.name;
 
         byte[] tileMapData = map.TilemapToBytes();
-        byte[] blockData = MapManager.Map.BlocksToBytes(true);
-        byte[] unitData = MapManager.Map.UnitsToBytes(true);
+        byte[] blockData = map.BlocksToBytes(true);
+        byte[] unitData = map.UnitsToBytes(true);
 
-        local.photonView.RPC(nameof(RPC_ReciveMapData), player, name, (Vector2)map.size, tileMapData);
-        local.photonView.RPC(nameof(RPC_ReciveBlockData), player, blockData);
-        local.photonView.RPC(nameof(RPC_ReciveUnitData), player, blockData);
+        Instance.photonView.RPC(nameof(RPC_ReciveMapData), player, name, (Vector2)map.size, tileMapData);
+        Instance.photonView.RPC(nameof(RPC_ReciveBlockData), player, blockData);
+        Instance.photonView.RPC(nameof(RPC_ReciveUnitData), player, blockData);
     }
 
     [PunRPC]
     public void RPC_ReciveMapData(string name, Vector2 size, byte[] tileMapData) {
-        if (mapAssembler == null) Debug.LogWarning("The fuck did you do this time?");
-        mapAssembler.ReciveTilemap(name, Vector2Int.CeilToInt(size), tileMapData);
+        MapLoader.LoadMap(name, Vector2Int.CeilToInt(size), tileMapData);
     }
 
     [PunRPC]
     public void RPC_ReciveBlockData(byte[] blockData) {
-        if (mapAssembler == null) Debug.LogWarning("The fuck did you do this time?");
-        mapAssembler.ReciveBlocks(blockData);
+        if (isRecivingMap) Client.blockData.AddRange(blockData);
+        else MapManager.Map.BlocksFromBytes(blockData);
+        
     }
 
     [PunRPC] 
     public void RPC_ReciveUnitData(byte[] unitData) {
-        if (mapAssembler == null) Debug.LogWarning("The fuck did you do this time?");
-        mapAssembler.ReciveUnits(unitData);
+        if (isRecivingMap) Client.unitData.AddRange(unitData);
+        else MapManager.Map.UnitsFromBytes(unitData);
     }
 
     #endregion

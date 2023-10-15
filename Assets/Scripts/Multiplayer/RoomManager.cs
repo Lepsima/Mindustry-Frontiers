@@ -91,17 +91,12 @@ public class RoomManager : MonoBehaviourPunCallbacks {
             // If this client is the master, spawn cores
             if (TeamUtilities.IsMaster()) {
                 MapLoader.LoadMap(Launcher.Instance.selectedMap);
-                Invoke(nameof(SpawnCores), 3f);
             } else {
                 Client.RequestMap();
             }
 
             updateManagers = true;
         }
-    }
-
-    public void SpawnCores() {
-        MapManager.Instance.InitializeCores();
     }
 
     #endregion

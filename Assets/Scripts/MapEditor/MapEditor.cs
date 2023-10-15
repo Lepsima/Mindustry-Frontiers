@@ -6,6 +6,7 @@ using UnityEngine;
 using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
 
 public class MapEditor : MonoBehaviour {
+    public static MapEditor Instance;
     public MapEditorCamera editorCamera;
 
     public int regionSize = 32;
@@ -24,16 +25,17 @@ public class MapEditor : MonoBehaviour {
     int currentLayer;
     public bool placeEnabled = false;
 
-    Map map;
+    static Map map;
 
     private void Awake() {
+        Instance = this;
+
         AssetLoader.LoadAssets();
         ContentLoader.LoadContents();
 
         Main.Map_RegionSize = regionSize;
         MapDisplayer.SetupAtlas();
 
-        MapLoader.OnMapLoaded += OnMapLoaded;
         loadedTiles = TileLoader.GetLoadedTiles();
     }
 
@@ -45,9 +47,11 @@ public class MapEditor : MonoBehaviour {
         map = new Map(mapName, size.x, size.y);
     }
 
-    private void OnMapLoaded(object sender, MapLoader.MapLoadedEventArgs e) {
-        map = e.loadedMap;
-        editorCamera.transform.position = (Vector2)map.size / 2f;
+    public static void OnMapLoaded(Map map) {
+        if (!Instance) return;
+
+        MapEditor.map = map;
+        Instance.editorCamera.transform.position = (Vector2)map.size / 2f;
     }
 
     private void Update() {

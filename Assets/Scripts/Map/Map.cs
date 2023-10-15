@@ -64,7 +64,7 @@ namespace Frontiers.Content.Maps {
             MapRaycaster.map = this;
         }
 
-        public Map(string name,Vector2Int size, byte[] tilemap, byte[] blocks, byte[] units) {
+        public Map(string name,Vector2Int size, byte[] tilemap) {
             // Create tilemap
             this.name = name;
             this.size = size;
@@ -72,8 +72,6 @@ namespace Frontiers.Content.Maps {
 
             // Load data
             TilemapFromBytes(tilemap);
-            BlocksFromBytes(blocks);
-            UnitsFromBytes(units);
 
             // End loading
             loaded = true;
@@ -192,6 +190,9 @@ namespace Frontiers.Content.Maps {
 
             // Decompress and split into chunks
             string data = DataCompressor.Unzip(bytes);
+            if (string.IsNullOrEmpty(data)) return;
+
+            // Split per block
             string[] blockDataArray = data.Split(',');
 
             foreach (string blockData in blockDataArray) {
@@ -221,6 +222,8 @@ namespace Frontiers.Content.Maps {
 
             // Decompress and split into chunks
             string data = DataCompressor.Unzip(bytes);
+            if (string.IsNullOrEmpty(data)) return;
+
             string[] unitDataArray = data.Split(',');
 
             foreach(string unitData in unitDataArray) {

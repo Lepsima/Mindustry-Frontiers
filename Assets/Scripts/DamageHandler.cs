@@ -66,7 +66,8 @@ public class DamageHandler : MonoBehaviour {
     }
 
     public static void AreaDamage(BulletType bulletType, Vector2 position, int mask) {
-        if (!bulletType.IsValid()) return;
+        if (!bulletType.Explodes()) return;
+        Debug.Log(bulletType.name);
 
         foreach (Collider2D collider in Physics2D.OverlapCircleAll(position, bulletType.blastRadius, mask)) {
 

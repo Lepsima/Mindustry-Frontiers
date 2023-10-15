@@ -2434,7 +2434,7 @@ namespace Frontiers.Content {
                 },
 
                 weapons = new WeaponMount[1] {
-                    new WeaponMount(Weapons.fotonWeapon, new Vector2(0.975f, 0.54375f), true),
+                    new WeaponMount(Weapons.sonarWeapon, new Vector2(0.975f, 0.54375f), true),
                 },
 
                 flags = new Flag[] { FlagTypes.copter, FlagTypes.slow, FlagTypes.heavy, FlagTypes.heavyArmored },
@@ -2479,8 +2479,9 @@ namespace Frontiers.Content {
                     }),
                 },
 
-                weapons = new WeaponMount[1] {
-                    new WeaponMount(Weapons.fotonWeapon, new Vector2(0.975f, 0.54375f), true),
+                weapons = new WeaponMount[2] {
+                    new WeaponMount(Weapons.fotonWeapon, new Vector2(-1.21875f, 1.25f), true),
+                    new WeaponMount(Weapons.fotonWeapon, new Vector2(-1.75f, 0.75f), true),
                 },
 
                 flags = new Flag[] { FlagTypes.copter, FlagTypes.slow, FlagTypes.heavy, FlagTypes.heavyArmored },
@@ -2682,14 +2683,26 @@ namespace Frontiers.Content {
                 reloadTime = 5f,
             };
 
-            fotonWeapon = new WeaponType("foton-weapon") {
+            sonarWeapon = new WeaponType("sonar-missiles") {
                 bulletType = Bullets.missileBullet,
-                shootOffset = new Vector2(0, 0.37f),
+                shootOffset = new Vector2(0, 0.4f),
 
-                recoil = 0f,
+                recoil = 0.2f,
+                returnSpeed = 1f,
                 clipSize = 3,
                 shootTime = 0.2f,
                 reloadTime = 2f
+            };
+
+            fotonWeapon = new WeaponType("foton-missiles") {
+                bulletType = Bullets.missileBullet,
+                shootOffset = new Vector2(0, 0.37f),
+
+                recoil = 0.5f,
+                returnSpeed = 1f,
+                clipSize = 2,
+                shootTime = 0.4f,
+                reloadTime = 4f
             };
 
             daggerWeapon = new WeaponType("dagger-weapon") {
@@ -2957,10 +2970,6 @@ namespace Frontiers.Content {
             return raw * mult;
         }
 
-        public bool IsValid() {
-            return blastRadius > 0f;
-        }
-
         public virtual void OnPoolObjectCreated(object sender, GameObjectPool.PoolEventArgs e) {
             if (e.target && sprite != null) e.target.transform.GetComponent<SpriteRenderer>().sprite = sprite;
         }
@@ -2990,6 +2999,7 @@ namespace Frontiers.Content {
         public BombBulletType(string name = null) : base(name) {
             hitFX = Effects.explosion;
             despawnFX = Effects.explosion;
+            explodeOnDespawn = true;  // Bombs never collide, they just explode on despawn
         }
 
         public override Bullet NewBullet(Weapon weapon, Transform transform) {

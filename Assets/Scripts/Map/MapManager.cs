@@ -7,6 +7,7 @@ using Frontiers.Content.Maps;
 using Frontiers.Assets;
 using Frontiers.Content.SoundEffects;
 using System;
+using Random = UnityEngine.Random;
 
 public class MapManager : MonoBehaviour {
     public static MapManager Instance;
@@ -37,7 +38,6 @@ public class MapManager : MonoBehaviour {
     public void Setup() {
         blockPrefab = AssetLoader.GetPrefab("BlockPrefab");
         unitPrefab = AssetLoader.GetPrefab("UnitPrefab");
-        MapLoader.OnMapLoaded += OnMapLoaded;
 
         if (!hasQuack) return;
 
@@ -52,13 +52,15 @@ public class MapManager : MonoBehaviour {
     }
 
     public void Quack() {
-        quack.transform.position = (Vector2)Camera.main.transform.position + (UnityEngine.Random.insideUnitCircle * UnityEngine.Random.Range(25f, 75f));
+        quack.transform.position = (Vector2)Camera.main.transform.position + (Random.insideUnitCircle * Random.Range(25f, 75f));
+        quack.clip = Random.Range(0, 101010) == 0 ? Sounds.wind3.clip : Sounds.quack.clip;
         quack.Play();
         if (hasQuack) Invoke(nameof(Quack), UnityEngine.Random.Range(1f, 4f));
     }
 
-    public void OnMapLoaded(object sender, MapLoader.MapLoadedEventArgs e) {
-        Map = e.loadedMap;
+    public static void OnMapLoaded(Map map) {
+        Map = map;
+        Instance.InitializeCores();
     }
 
     public void SaveMap() {
@@ -80,8 +82,9 @@ public class MapManager : MonoBehaviour {
     }
 
     public void InitializeCores() {
-        Client.CreateBlock(shardCorePosition, 0, Blocks.coreShard, 1);
-        Client.CreateBlock(cruxCorePosition, 0, Blocks.coreShard, 2);
+        if (!Photon.Pun.PhotonNetwork.IsMasterClient) return;
+        InstantiateBlock(shardCorePosition, 0, Blocks.coreShard.id, HostSyncHandler.GetNewSyncID(), 1);
+        InstantiateBlock(cruxCorePosition, 0, Blocks.coreShard.id, HostSyncHandler.GetNewSyncID(), 2);
     }
 
     public static bool TypeEquals(Type target, Type reference) => target == reference || target.IsSubclassOf(reference);

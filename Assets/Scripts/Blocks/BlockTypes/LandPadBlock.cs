@@ -76,6 +76,10 @@ public class LandPadBlock : ItemBlock {
 
         if (IsLocalTeam()) allyLandPads.Remove(this);
         else enemyLandPads.Remove(this);
+
+        foreach(Unit unit in landedUnits) {
+            unit.Kill(true);
+        }
     }
 }
 
