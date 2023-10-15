@@ -125,11 +125,26 @@ namespace Frontiers.Content.Maps {
         public byte[] TilemapToBytes() {
             string tileMapData = "";
 
+            // Can be tweaked, depends on how big the map is, but i predict that this is a good value for all maps
+            // On small maps should be more around 1000-500
+            // And in big maps i guess around 5000-3000
+            int stringLength = 3000;
+
+            string[] temporalStrings = new string[size.x * size.y / stringLength + 1];
+            int s = 0;
+
             // Compress tilemap data
             for (int x = 0; x < size.x; x++) {
                 for (int y = 0; y < size.y; y++) {
-                    tileMapData += tilemap.GetTile(new Vector2Int(x, y)).ToString();
+                    int stringIndex = Mathf.FloorToInt(s / stringLength);
+                    temporalStrings[stringIndex] += tilemap.GetTile(new Vector2Int(x, y)).ToString();
+                    s++;
                 }
+            }
+
+            for (int i = 0; i < temporalStrings.Length; i++) {
+                tileMapData += temporalStrings[i];
+                temporalStrings[i] = null;
             }
 
             return DataCompressor.Zip(tileMapData);
@@ -195,7 +210,10 @@ namespace Frontiers.Content.Maps {
             // Split per block
             string[] blockDataArray = data.Split(',');
 
-            foreach (string blockData in blockDataArray) {
+            for (int i = 0; i < blockDataArray.Length - 1; i++) {
+                string blockData = blockDataArray[i];
+                if (string.IsNullOrEmpty(blockData)) continue;
+
                 string[] blockValues = blockData.Split(':');
 
                 // Entity parameters
@@ -211,7 +229,7 @@ namespace Frontiers.Content.Maps {
 
                 Block block = MapManager.Instance.InstantiateBlock(position, orientation, contentID, syncID, teamCode);
                 block.ApplySaveData(blockValues);
-            }          
+            }    
         }
 
         public void UnitsFromBytes(byte[] bytes) {

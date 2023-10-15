@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: dfd2caa2f40e3ba47addaa007527544c
+guid: f4a1c58ff5074c3479c4af01b35592dc
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -72,7 +72,7 @@ TextureImporter:
     maxTextureSize: 512
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 2
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -118,14 +118,14 @@ TextureImporter:
         width: 96
         height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e9454f545163d894cbc89ddf5e0cf9cf
-      internalID: -871303638
+      spriteID: 3d10738245e5dfa4aafdefaa87f09929
+      internalID: -405227855
       vertices: []
       indices: 
       edges: []
@@ -139,20 +139,20 @@ TextureImporter:
         width: 96
         height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 85681c11f1c710f48b9972bfb4487096
-      internalID: -645007124
+      spriteID: ff5d40b4177fdfc4f845b900589f321f
+      internalID: -1079808876
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: core-shard-local
+      name: core-shard-team-local
       rect:
         serializedVersion: 2
         x: 0
@@ -160,20 +160,20 @@ TextureImporter:
         width: 96
         height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c38848d3d1150504a9cc12155c0b8743
-      internalID: 1477275230
+      spriteID: b89b9ce5986e7ec4ea037bbeeadc84d7
+      internalID: 1456687054
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: core-shard-enemy
+      name: core-shard-team-enemy
       rect:
         serializedVersion: 2
         x: 96
@@ -181,14 +181,14 @@ TextureImporter:
         width: 96
         height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 98f00b48ac28f1e45a95231f39643511
-      internalID: 1158778381
+      spriteID: 008b1929dc63a1646b25e3def817a9cc
+      internalID: 1449382364
       vertices: []
       indices: 
       edges: []
@@ -202,14 +202,14 @@ TextureImporter:
         width: 96
         height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 80745c91d3111e5409cea0828f04e129
-      internalID: -804065995
+      spriteID: 783ae4d4a3b2a1344b906958c0dc8447
+      internalID: -2032473719
       vertices: []
       indices: 
       edges: []
@@ -225,12 +225,11 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      core-shard: -871303638
-      core-shard-enemy: 1158778381
-      core-shard-full: -645007124
-      core-shard-local: 1477275230
-      core-shard-sheet_2: 1511113197
-      core-shard-team: -804065995
+      core-shard: -405227855
+      core-shard-full: -1079808876
+      core-shard-team: -2032473719
+      core-shard-team-enemy: 1449382364
+      core-shard-team-local: 1456687054
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

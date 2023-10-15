@@ -65,7 +65,7 @@ namespace Frontiers.Content.Maps {
             // Writes all the ids of the tiles on all layers in a single string
             // Used to transfer the map data across the network
             string data = "";
-
+            
             for (int i = 0; i < (int)MapLayer.Total; i++) {
                 TileType tileType = tiles[i];
                 data += tileType == null ? (char)32 : (char)(tileType.id + 32);

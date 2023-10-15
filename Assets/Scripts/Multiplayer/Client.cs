@@ -268,19 +268,14 @@ public class Client : MonoBehaviourPunCallbacks {
         // This here to prevent dumb things
         if (!PhotonNetwork.IsMasterClient) return;
 
-        string name = map.name;
-
-        byte[] tileMapData = map.TilemapToBytes();
-        byte[] blockData = map.BlocksToBytes(true);
-        byte[] unitData = map.UnitsToBytes(true);
-
-        Instance.photonView.RPC(nameof(RPC_ReciveMapData), player, name, (Vector2)map.size, tileMapData);
-        Instance.photonView.RPC(nameof(RPC_ReciveBlockData), player, blockData);
-        Instance.photonView.RPC(nameof(RPC_ReciveUnitData), player, blockData);
+        Instance.photonView.RPC(nameof(RPC_ReciveMapData), player, map.name, (Vector2)map.size, map.TilemapToBytes());
+        Instance.photonView.RPC(nameof(RPC_ReciveBlockData), player, map.BlocksToBytes(true));
+        Instance.photonView.RPC(nameof(RPC_ReciveUnitData), player, map.UnitsToBytes(true));
     }
 
     [PunRPC]
     public void RPC_ReciveMapData(string name, Vector2 size, byte[] tileMapData) {
+        isRecivingMap = false;
         MapLoader.LoadMap(name, Vector2Int.CeilToInt(size), tileMapData);
     }
 
@@ -288,7 +283,6 @@ public class Client : MonoBehaviourPunCallbacks {
     public void RPC_ReciveBlockData(byte[] blockData) {
         if (isRecivingMap) Client.blockData.AddRange(blockData);
         else MapManager.Map.BlocksFromBytes(blockData);
-        
     }
 
     [PunRPC] 
