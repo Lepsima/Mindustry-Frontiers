@@ -36,7 +36,7 @@ namespace Frontiers.Content.SoundEffects {
             missile, missileLarge, missileLaunch, missileTrail, mud, noAmmo, pew, place, plantBreak, plasmaBoom, plasmaDrop, pulse,
             pulseBlast, railgun, rain, release, respawn, respawning, rockBreak, sap, shield, shockBlast, shoot, shootAlt,
             shootAltLong, shootBig, shootSmite, shootSnap, shotgun, smelter, spark, spellLoop, splash, spray, steam, swish, techLoop,
-            thruster, titanExplosion, torch, tractorBeam, wave, wind, wind2, wind3, windHowl;
+            thruster, titanExplosion, torch, tractorBeam, wave, wind, wind2, wind3, windHowl, quack;
 
         public static Sound
             helicopterLoop, helicopterTransition, helicopterTakeoff, aircraftTakeoff;
@@ -159,6 +159,7 @@ namespace Frontiers.Content.SoundEffects {
             wind2 = new("wind2");
             wind3 = new("wind3");
             windHowl = new("windHowl");
+            quack = new("quack");
         }
     }
 }

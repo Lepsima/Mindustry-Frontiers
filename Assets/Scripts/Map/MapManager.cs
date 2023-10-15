@@ -5,6 +5,7 @@ using UnityEngine.Tilemaps;
 using Frontiers.Content;
 using Frontiers.Content.Maps;
 using Frontiers.Assets;
+using Frontiers.Content.SoundEffects;
 using System;
 
 public class MapManager : MonoBehaviour {
@@ -21,6 +22,9 @@ public class MapManager : MonoBehaviour {
     private GameObject blockPrefab;
     private GameObject unitPrefab;
 
+    public bool hasQuack = true;
+    private AudioSource quack;
+
     private void Update() {
         BulletManager.UpdateBullets();
     }
@@ -34,6 +38,23 @@ public class MapManager : MonoBehaviour {
         blockPrefab = AssetLoader.GetPrefab("BlockPrefab");
         unitPrefab = AssetLoader.GetPrefab("UnitPrefab");
         MapLoader.OnMapLoaded += OnMapLoaded;
+
+        if (!hasQuack) return;
+
+        // Quack
+        Transform quack = new GameObject("quack", typeof(AudioSource)).transform;
+        this.quack = quack.GetComponent<AudioSource>();
+        this.quack.spatialBlend = 1f;
+        this.quack.maxDistance = 100f;
+        this.quack.playOnAwake = false;
+        this.quack.clip = Sounds.quack.clip;
+        Invoke(nameof(Quack), 3f);
+    }
+
+    public void Quack() {
+        quack.transform.position = (Vector2)Camera.main.transform.position + (UnityEngine.Random.insideUnitCircle * UnityEngine.Random.Range(25f, 75f));
+        quack.Play();
+        if (hasQuack) Invoke(nameof(Quack), UnityEngine.Random.Range(1f, 4f));
     }
 
     public void OnMapLoaded(object sender, MapLoader.MapLoadedEventArgs e) {
