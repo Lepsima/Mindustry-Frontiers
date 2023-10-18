@@ -45,20 +45,20 @@ namespace Frontiers.Content.Maps {
         }
 
         public bool IsWalkable() {
-            return !tiles[(int)MapLayer.Ground].isWater;
+            return tiles[(int)MapLayer.Ground] != null && !tiles[(int)MapLayer.Ground].isWater;
         }
 
-        public void LoadTile(string data) {
+        public bool AllowsBuildings() {
+            return tiles[(int)MapLayer.Ground] != null && tiles[(int)MapLayer.Ground].allowBuildings;
+        }
+
+        public void Set(string data) {
             // Loads all layers of the tile from a single string
             // Used to recive map data across the network 
             for (int i = 0; i < data.Length; i++) {
-                LoadTile(data[i], i);
+                int id = Convert.ToInt32(data[i]) - 32;
+                Set(TileLoader.GetTileTypeById((short)id), (MapLayer)i);
             }
-        }
-
-        public void LoadTile(char data, int layer) {
-            int id = Convert.ToInt32(data) - 32;
-            Set(TileLoader.GetTileTypeById((short)id), (MapLayer)layer);
         }
 
         public override string ToString() {
@@ -69,6 +69,16 @@ namespace Frontiers.Content.Maps {
             for (int i = 0; i < (int)MapLayer.Total; i++) {
                 TileType tileType = tiles[i];
                 data += tileType == null ? (char)32 : (char)(tileType.id + 32);
+            }
+
+            return data;
+        }
+
+        public char[] ToCharArray() {
+            char[] data = new char[(int)MapLayer.Total];
+
+            for (int i = 0; i < (int)MapLayer.Total; i++) {
+                data[i] = tiles[i].ToChar();
             }
 
             return data;
@@ -89,79 +99,61 @@ namespace Frontiers.Content.Maps {
     }
 
     public class Tilemap {
+        public Tile[,] tilemap;
         public Region[,] regions;
-        public Vector2Int regionSize;
+        public int regionSize;
         public Vector2Int regionCount;
         public Vector2Int size;
 
         public struct Region {
-            public Tile[,] tilemap;
-            public Vector2Int size;
-
             public Vector2Int offset;
+
             public RegionDisplayer displayer;
+            public Tilemap tilemap;
 
-            public bool holdMeshUpdate;
-            public bool wasChanged;
-
-            public Region(Vector2Int size, Vector2Int offset) {
-                // Store given parameters
-                this.size = size;
+            public Region(Tilemap tilemap, Vector2Int offset) {
+                this.tilemap = tilemap;
                 this.offset = offset;
+
                 displayer = null;
-                holdMeshUpdate = false;
-                wasChanged = false;
-
-                // Create a new tile array
-                tilemap = new Tile[size.x, size.y];
-
-                // Create all the tiles
-                for (int x = 0; x < size.x; x++) {
-                    for (int y = 0; y < size.y; y++) {
-                        tilemap[x, y] = new Tile(new Vector2Int(x, y) + offset);
-                    }
-                }
-
                 displayer = new RegionDisplayer(this);
             }
 
-            public Tile GetTile(Vector2Int position) {
-                // Get a local tile from a world position
-                Vector2Int localPosition = position - offset;
-                return tilemap[localPosition.x, localPosition.y];
+            public Vector2Int ToLocal(Vector2Int position) {
+                return position - offset;
             }
 
-            public void SetTile(TileType tileType, Vector2Int position, MapLayer layer) {
-                // Sets a tile type of a tile
-                GetTile(position).Set(tileType, layer);
-
-                if (holdMeshUpdate) wasChanged = true;
-                else displayer.Update(this);
+            public Vector2Int ToWorld(Vector2Int position) {
+                return position += offset;
             }
 
-            public void SetTile(string data, Vector2Int position) {
-                // Load a tile from the given string data
-                GetTile(position).LoadTile(data);
+            public Tile GetTile(Vector2Int local) {
+                Vector2Int world = ToWorld(local);
+                return tilemap.GetTile(world);
             }
 
-            public void HoldMeshUpdate(bool state) {
-                holdMeshUpdate = state;
+            public Tile[,] GetTiles() {
+                int size = tilemap.regionSize;
+                Tile[,] tiles = new Tile[size, size];
 
-                if (state) {
-                    wasChanged = false;
-                } else {
-                    if (wasChanged) displayer.Update(this);
-                    wasChanged = false;
+                for (int x = 0; x < size; x++) {
+                    for (int y = 0; y < size; y++) {
+                        tiles[x, y] = tilemap.GetTile(ToWorld(new Vector2Int(x, y)));
+                    }
                 }
+
+                return tiles;
             }
 
             public int GetRenderedTileCount() {
                 // Get the total tile count that should be renderer;
                 int counter = 0;
+                int size = tilemap.regionSize;
 
-                for (int x = 0; x < size.x; x++) {
-                    for (int y = 0; y < size.y; y++) {
-                        Tile tile = tilemap[x, y];
+                for (int x = 0; x < size; x++) {
+                    for (int y = 0; y < size; y++) {
+                        Tile tile = tilemap.GetTile(ToWorld(new Vector2Int(x, y)));
+                        if (tile == null) continue;
 
                         if (tile.Layer(MapLayer.Solid) != null) counter++;
                         else {
@@ -173,22 +165,33 @@ namespace Frontiers.Content.Maps {
 
                 return counter;
             }
+
+            public void UpdateMesh() {
+                displayer.Update();
+            }
         }
 
-        public Tilemap(Vector2Int size, Vector2Int regionSize) {
+        public Tilemap(Vector2Int size, int regionSize) {
             // Store given parameters
             this.size = size;
             this.regionSize = regionSize;
 
-            // Create the region array
-            regionCount = new(Mathf.CeilToInt((float)size.x / regionSize.x), Mathf.CeilToInt((float)size.y / regionSize.y));
-            regions = new Region[regionCount.x, regionCount.y];
+            // Create empty tilemap
+            tilemap = new Tile[size.x, size.y];
+            for (int x = 0; x < size.x; x++) {
+                for (int y = 0; y < size.y; y++) {
+                    tilemap[x, y] = new Tile(new Vector2Int(x, y));
+                }
+            }
 
+            // Create the region array
+            regionCount = new(Mathf.CeilToInt((float)size.x / regionSize), Mathf.CeilToInt((float)size.y / regionSize));
+            regions = new Region[regionCount.x, regionCount.y];
 
             // Create all the region structs
             for (int x = 0; x < regionCount.x; x++) {
                 for (int y = 0; y < regionCount.y; y++) {
-                    regions[x, y] = new Region(regionSize, new Vector2Int(x, y) * regionSize);
+                    regions[x, y] = new Region(this, new Vector2Int(x, y) * regionSize);
                 }
             }
         }
@@ -197,30 +200,27 @@ namespace Frontiers.Content.Maps {
             return position.x >= 0 && position.x < size.x && position.y >= 0 && position.y < size.y;
         }
 
-        public void HoldMeshUpdate(bool state) {
+        public void UpdateMesh() {
             // Used when updating the whole map is needed, to not call update 5000000 times, only once finished
             for (int x = 0; x < regions.GetLength(0); x++) {
                 for (int y = 0; y < regions.GetLength(1); y++) {
-                    regions[x, y].HoldMeshUpdate(state);
+                    regions[x, y].UpdateMesh();
                 }
             }
         }
 
         public Tile GetTile(Vector2Int position) {
-            // Get a tile from a region
-            int x = position.x / regionSize.x;
-            int y = position.y / regionSize.y;
-            return regions[x, y].GetTile(position);
+            return tilemap[position.x, position.y];
         }
 
-        public TileType GetTile(Vector2Int position, MapLayer layer) {
+        public TileType GetTileType(Vector2Int position, MapLayer layer) {
             // Get a tile type from a region
             return GetTile(position).Layer(layer);
         }
 
         public void SetTile(TileType tileType, Vector2Int position, MapLayer layer) {
             // Set a region's tile
-            regions[position.x / regionSize.x, position.y / regionSize.y].SetTile(tileType, position, layer);
+            GetTile(position).Set(tileType, layer);
         }
 
         public void SetBlock(Vector2Int position, Block block) {
@@ -230,7 +230,7 @@ namespace Frontiers.Content.Maps {
 
         public void SetTile(Vector2Int position, string data) {
             // Load a tile from the given string data
-            GetTile(position).LoadTile(data);
+            GetTile(position).Set(data);
         }
     }
 }

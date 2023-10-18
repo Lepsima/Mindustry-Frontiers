@@ -70,9 +70,25 @@ namespace Frontiers.Content.Maps {
 
         public static void OnLoadMap(Map map) {
             MapManager.Map = map;
+
             MapManager.OnMapLoaded(map);
             Client.OnMapLoaded(map);
             MapEditor.OnMapLoaded(map);
+
+            /*
+            int count = 100;
+            long time = 0;
+
+            for (int i = 0; i < count; i++) {
+                System.Diagnostics.Stopwatch sw = new();
+                sw.Start();
+                map.TilemapToBytes();
+                sw.Stop();
+                time += sw.ElapsedMilliseconds;
+            }
+
+            Debug.Log((double)time / count / 1000f);
+            */
         }
 
         public static void SaveMap(Map map) {

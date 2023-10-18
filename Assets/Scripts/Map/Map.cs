@@ -39,7 +39,7 @@ namespace Frontiers.Content.Maps {
             size = new(width, height);
 
             // Create an empty tilemap
-            tilemap = new(size, Vector2Int.one * Main.Map_RegionSize);
+            tilemap = new(size, Main.Map_RegionSize);
 
             // End loading
             loaded = true;
@@ -54,28 +54,26 @@ namespace Frontiers.Content.Maps {
             size = mapData.size;
 
             // Create an empty tilemap
-            tilemap = new(size, Vector2Int.one * Main.Map_RegionSize);
+            tilemap = new(size, Main.Map_RegionSize);
 
             // Fill the tilemap with the given tile data
             LoadTilemapData(mapData.tilemapData.DecodeThis());
 
             // End loading
             loaded = true;
-            MapRaycaster.map = this;
         }
 
-        public Map(string name,Vector2Int size, byte[] tilemap) {
+        public Map(string name, Vector2Int size, byte[] tilemap) {
             // Create tilemap
             this.name = name;
             this.size = size;
-            this.tilemap = new Tilemap(size, Vector2Int.one * Main.Map_RegionSize);
+            this.tilemap = new(size, Main.Map_RegionSize);
 
             // Load data
             TilemapFromBytes(tilemap);
 
             // End loading
             loaded = true;
-            MapRaycaster.map = this;
         }
 
         public void LoadTilemapData(string[,,] tileNameArray) {
@@ -83,8 +81,6 @@ namespace Frontiers.Content.Maps {
 
             // Get the amount of layers
             int layers = (int)MapLayer.Total;
-
-            tilemap.HoldMeshUpdate(true);
 
             for (int x = 0; x < size.x; x++) {
                 for (int y = 0; y < size.y; y++) {
@@ -96,7 +92,7 @@ namespace Frontiers.Content.Maps {
                 }
             }
 
-            tilemap.HoldMeshUpdate(false);
+            tilemap.UpdateMesh();
         }
 
         public string[,,] SaveTilemapData() {
@@ -119,35 +115,30 @@ namespace Frontiers.Content.Maps {
                     }
                 }
             }
+
             return returnArray;
         }
 
         public byte[] TilemapToBytes() {
-            string tileMapData = "";
+            // Split Strings (value not scalable) => 552.75ms, 20 samples
+            // Char array => 120.78ms, 100 samples
+            // Alt char array (current method) => 13.51ms :O, 100 samples
 
-            // Can be tweaked, depends on how big the map is, but i predict that this is a good value for all maps
-            // On small maps should be more around 1000-500
-            // And in big maps i guess around 5000-3000
-            int stringLength = 3000;
+            char[] tileMapData = new char[size.x * size.y * (int)MapLayer.Total];
+            int i = 0;
 
-            string[] temporalStrings = new string[size.x * size.y / stringLength + 1];
-            int s = 0;
-
-            // Compress tilemap data
             for (int x = 0; x < size.x; x++) {
                 for (int y = 0; y < size.y; y++) {
-                    int stringIndex = Mathf.FloorToInt(s / stringLength);
-                    temporalStrings[stringIndex] += tilemap.GetTile(new Vector2Int(x, y)).ToString();
-                    s++;
+                    Tile tile = tilemap.GetTile(new Vector2Int(x, y));
+
+                    for (int c = 0; c < (int)MapLayer.Total; c++) {
+                        tileMapData[i] = tile.tiles[c].ToChar();
+                        i++;
+                    }
                 }
             }
 
-            for (int i = 0; i < temporalStrings.Length; i++) {
-                tileMapData += temporalStrings[i];
-                temporalStrings[i] = null;
-            }
-
-            return DataCompressor.Zip(tileMapData);
+            return DataCompressor.Zip(tileMapData.ToString());
         }
 
         public byte[] BlocksToBytes(bool includeSyncID) {
@@ -179,10 +170,6 @@ namespace Frontiers.Content.Maps {
             // Initialize vars
             int layers = (int)MapLayer.Total;
 
-            // Each string contains a list of all the tiles in the {index} layer
-            //string[] layerDatas = (string[])tilemapData.SplitToChunks(layers);
-            //Debug.Log(tilemapData);
-
             // Load each tile
             for (int x = 0; x < size.x; x++) {
                 for (int y = 0; y < size.y; y++) {
@@ -190,11 +177,9 @@ namespace Frontiers.Content.Maps {
                     tilemap.SetTile(new Vector2Int(x, y), tileData);
                 }
             }
-            /*for (int i = 0; i < layerDatas[0].Length; i++) {
-                Vector2Int position = new(i / size.x, i % size.y);
-                string data = layerDatas[i];
-                tilemap.SetTile(position, data);
-            }*/
+
+            // Refresh mesh
+            tilemap.UpdateMesh();
         }
 
         public void BlocksFromBytes(byte[] bytes) {
@@ -261,54 +246,6 @@ namespace Frontiers.Content.Maps {
             }
         } 
 
-        public string[] TilemapsToStringArray() {
-            // Encode the current state of the tilemap to a single string array
-            // Used for network transmission
-
-            // Initialize arrays
-
-            // Split into various strings to pass over the string character limit
-            string[] tileData = new string[Mathf.CeilToInt(size.x * size.y * (int)MapLayer.Total / MapLoader.TilesPerString) + 1];
-            int i = 0;
-
-            for (int x = 0; x < size.x; x++) {
-                for (int y = 0; y < size.y; y++) {
-                    // Get the tile and encode it's tile types id's
-                    int stringIndex = Mathf.FloorToInt(i / MapLoader.TilesPerString);
-                    tileData[stringIndex] += tilemap.GetTile(new Vector2Int(x, y)).ToString();
-                    i++;
-                }
-            }
-
-            return tileData;
-        }
-
-        public void SetTilemapsFromStringArray(Vector2Int size, string[] tileData) {
-            // Load the given encoded string array
-
-            // Initialize vars
-            int layers = (int)MapLayer.Total;
-            int i = 0;
-
-            for (int x = 0; x < size.x; x++) {
-                for (int y = 0; y < size.y; y++) {
-                    // Get the current substring index
-                    int stringIndex = Mathf.FloorToInt(i / MapLoader.TilesPerString);
-
-                    // Split the substring into smaller string that each contain a single's tile data
-                    string[] subTileData = (string[])tileData[stringIndex].SplitToChunks(layers);
-
-                    // Load each data string into a tile
-                    for (int z = 0; z < subTileData.Length; z++) {
-                        string data = subTileData[z];
-                        tilemap.SetTile(new Vector2Int(x, y), data);
-                    }
-
-                    i++;
-                }
-            }
-        }
-
         public void Save() {
             mapData = new MapData(this);
         }
@@ -353,11 +290,7 @@ namespace Frontiers.Content.Maps {
         public bool CanPlaceBlockAt(Vector2Int position) {
             // Check if a block could be placed on a tile
             Tile tile = tilemap.GetTile(position);
-
-            if (!tile.Layer(MapLayer.Ground).allowBuildings) return false;
-            else if (tile.IsSolid()) return false;
-
-            return true;
+            return tile.AllowsBuildings() && !tile.IsSolid();
         }
 
         public void PlaceTile(MapLayer layer, Vector2Int position, TileType tile, int size) {

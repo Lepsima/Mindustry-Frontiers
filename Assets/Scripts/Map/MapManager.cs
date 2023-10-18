@@ -61,6 +61,7 @@ public class MapManager : MonoBehaviour {
     public static void OnMapLoaded(Map map) {
         Map = map;
         Instance.InitializeCores();
+        if (RoomManager.Instance != null) RoomManager.Instance.updateManagers = true;
     }
 
     public void SaveMap() {

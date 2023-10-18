@@ -85,8 +85,6 @@ public class MapEditor : MonoBehaviour {
     }
 
     public void ApplyNoise(TileType mainTile, TileType secTile, float scale, float threshold, int octaves, float persistance, float lacunarity, float riverWidth, float shoreWidth) {
-        map.tilemap.HoldMeshUpdate(true);
-
         bool isRiver = riverWidth != -1f;
         float minThreshold = isRiver ? threshold - riverWidth : -1;
         float shoreThreshold = shoreWidth;
@@ -147,12 +145,10 @@ public class MapEditor : MonoBehaviour {
             }
         }
 
-        map.tilemap.HoldMeshUpdate(false);
+        map.tilemap.UpdateMesh();
     }
 
     public void ApplyReplace(TileType targetTile, TileType replaceTile) {
-        map.tilemap.HoldMeshUpdate(true);
-
         if (targetTile == null) {
             Debug.LogWarning("Target tile not found for replace action");
             return;
@@ -165,7 +161,7 @@ public class MapEditor : MonoBehaviour {
             }
         }
 
-        map.tilemap.HoldMeshUpdate(false);
+        map.tilemap.UpdateMesh();
     }
 
     public int GetByName(string name) {

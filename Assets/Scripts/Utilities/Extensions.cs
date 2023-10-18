@@ -1,3 +1,4 @@
+using Frontiers.Content.Maps;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,5 +24,9 @@ public static class MoreExtensions {
         for (int i = 0; i < array.Length; i++) result[i] = array[i];
         for (int i = 0; i < other.Length; i++) result[i + array.Length] = other[i];
         return result;
+    }
+
+    public static char ToChar(this TileType tileType) {
+        return tileType == null ? (char)32 : (char)(tileType.id + 32);
     }
 }

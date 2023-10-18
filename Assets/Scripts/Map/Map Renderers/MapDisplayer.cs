@@ -23,10 +23,19 @@ namespace Frontiers.Content.Maps {
     }
 
     public class RegionDisplayer {
+        public static Transform mapParent;
+
         readonly MeshFilter meshFilter;
+        readonly Region region;
 
         public RegionDisplayer(Region region) {
+            // Create parent object
+            if (!mapParent) mapParent = new GameObject("Map").transform;
+            this.region = region;
+
+            // Create world object
             Transform transform = new GameObject("Map Region", typeof(MeshRenderer), typeof(MeshFilter)).transform;
+            transform.parent = mapParent;
             transform.position = (Vector2)region.offset;
 
             // Get the mesh renderer component and apply the atlas material
@@ -38,7 +47,7 @@ namespace Frontiers.Content.Maps {
             meshFilter.mesh = MapMeshGenerator.GenerateMesh(region);
         }
 
-        public void Update(Region region) {
+        public void Update() {
             // Update the region's mesh
             meshFilter.mesh = MapMeshGenerator.GenerateMesh(region);
         }

@@ -15,14 +15,14 @@ namespace Frontiers.Content.Maps {
 
         public static Mesh GenerateMesh(Region region) {
             // Initialize the needed variables
-            Tile[,] tilemap = region.tilemap;
-            Vector2Int size = new(tilemap.GetLength(0), tilemap.GetLength(1));
+            int size = region.tilemap.regionSize;
             MeshData meshData = new(region.GetRenderedTileCount());
 
-            for (int x = 0; x < size.x; x++) {
-                for (int y = 0; y < size.y; y++) {
+            for (int x = 0; x < size; x++) {
+                for (int y = 0; y < size; y++) {
                     // Get the tile UVs corresponding to the region coords
-                    Tile tile = tilemap[x, y];
+                    Tile tile = region.GetTile(new Vector2Int(x, y));
+                    if (tile == null) continue;
 
                     // Get solid tile
                     TileType tileType = tile.Layer(MapLayer.Solid);

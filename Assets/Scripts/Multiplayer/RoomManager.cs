@@ -18,7 +18,7 @@ public class RoomManager : MonoBehaviourPunCallbacks {
     public PhotonTeamsManager photonTeamsManager;
 
     private float switchButtonCooldown;
-    private bool updateManagers = false;
+    public bool updateManagers = false;
 
     public int shardedTeamPlayers;
     public int cruxTeamPlayers;
@@ -94,8 +94,6 @@ public class RoomManager : MonoBehaviourPunCallbacks {
             } else {
                 Client.RequestMap();
             }
-
-            updateManagers = true;
         }
     }
 
