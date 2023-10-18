@@ -63,7 +63,7 @@ public class Client : MonoBehaviourPunCallbacks {
 
     public static void DestroyBlock(Block block, bool destroyed = false) {
         // As a player, send the remove command to all players
-        Instance.photonView.RPC(nameof(RPC_DestroyBlock), RpcTarget.MasterClient, block.SyncID, destroyed);
+        Instance.photonView.RPC(nameof(RPC_DestroyBlock), RpcTarget.All, block.SyncID, destroyed);
     }
 
     [PunRPC]
@@ -98,7 +98,7 @@ public class Client : MonoBehaviourPunCallbacks {
 
     public static void DestroyUnit(Unit unit, bool destroyed = false) {
         // As a player, send a destroy command to all players
-        Instance.photonView.RPC(nameof(RPC_DestroyUnit), RpcTarget.MasterClient, unit.SyncID, destroyed);
+        Instance.photonView.RPC(nameof(RPC_DestroyUnit), RpcTarget.All, unit.SyncID, destroyed);
     }
 
     [PunRPC]
