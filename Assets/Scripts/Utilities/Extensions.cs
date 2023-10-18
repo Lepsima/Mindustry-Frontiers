@@ -26,7 +26,7 @@ public static class MoreExtensions {
         return result;
     }
 
-    public static char ToChar(this TileType tileType) {
-        return tileType == null ? (char)32 : (char)(tileType.id + 32);
-    }
+    public static char ToChar(this TileType tileType) => Convert.ToChar(tileType == null ? 0 : tileType.id);
+
+    public static TileType ToType(this char data) => TileLoader.GetTileTypeById(Convert.ToInt16(data));
 }

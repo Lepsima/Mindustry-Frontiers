@@ -125,20 +125,21 @@ namespace Frontiers.Content.Maps {
             // Alt char array (current method) => 13.51ms :O, 100 samples
 
             char[] tileMapData = new char[size.x * size.y * (int)MapLayer.Total];
+            int layers = (int)MapLayer.Total;
             int i = 0;
 
             for (int x = 0; x < size.x; x++) {
                 for (int y = 0; y < size.y; y++) {
                     Tile tile = tilemap.GetTile(new Vector2Int(x, y));
 
-                    for (int c = 0; c < (int)MapLayer.Total; c++) {
+                    for (int c = 0; c < layers; c++) {
                         tileMapData[i] = tile.tiles[c].ToChar();
                         i++;
                     }
                 }
             }
 
-            return DataCompressor.Zip(tileMapData.ToString());
+            return DataCompressor.Zip(new string(tileMapData));
         }
 
         public byte[] BlocksToBytes(bool includeSyncID) {
@@ -165,16 +166,21 @@ namespace Frontiers.Content.Maps {
 
         public void TilemapFromBytes(byte[] bytes) {
             // Decompress
-            string tilemapData = DataCompressor.Unzip(bytes);
+            char[] tilemapData = DataCompressor.Unzip(bytes).ToCharArray();
 
             // Initialize vars
             int layers = (int)MapLayer.Total;
+            int i = 0;
 
             // Load each tile
             for (int x = 0; x < size.x; x++) {
                 for (int y = 0; y < size.y; y++) {
-                    string tileData = tilemapData.Substring(0, layers);
-                    tilemap.SetTile(new Vector2Int(x, y), tileData);
+                    Tile tile = tilemap.GetTile(new Vector2Int(x, y));
+
+                    for (int c = 0; c < layers; c++) {
+                        tile.tiles[c] = tilemapData[i].ToType();
+                        i++;
+                    }
                 }
             }
 

@@ -129,7 +129,7 @@ namespace Frontiers.Content.Maps {
 
             public Tile GetTile(Vector2Int local) {
                 Vector2Int world = ToWorld(local);
-                return tilemap.GetTile(world);
+                return tilemap.InBounds(world) ? tilemap.GetTile(world) : null;
             }
 
             public Tile[,] GetTiles() {
@@ -152,7 +152,10 @@ namespace Frontiers.Content.Maps {
 
                 for (int x = 0; x < size; x++) {
                     for (int y = 0; y < size; y++) {
-                        Tile tile = tilemap.GetTile(ToWorld(new Vector2Int(x, y)));
+                        Vector2Int world = ToWorld(new Vector2Int(x, y));
+                        if (!tilemap.InBounds(world)) continue;
+
+                        Tile tile = tilemap.GetTile(world);
                         if (tile == null) continue;
 
                         if (tile.Layer(MapLayer.Solid) != null) counter++;

@@ -11,7 +11,7 @@ namespace Frontiers.Content.Maps {
         public static Dictionary<string, TileType> loadedTiles = new();
 
         public static void HandleTile(TileType tileType) {
-            tileType.id = (short)loadedTiles.Count;
+            tileType.id = (short)(loadedTiles.Count + 1);
             if (tileType.name == null) tileType.name = "content num. " + tileType.id;
 
             if (GetTileTypeByName(tileType.name) != null) throw new ArgumentException("Two tile types cannot have the same name! (issue: '" + tileType.name + "')");
