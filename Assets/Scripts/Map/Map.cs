@@ -299,20 +299,19 @@ namespace Frontiers.Content.Maps {
             return tile.AllowsBuildings() && !tile.IsSolid();
         }
 
-        public void PlaceTile(MapLayer layer, Vector2Int position, TileType tile, int size) {
-            // Place a square of the given size of tiles (i think i wont use it until a long time)
-
-            for (int x = 0; x < size; x++) {
-                for (int y = 0; y < size; y++) {
-                    Vector2Int sizePosition = position + new Vector2Int(x, y);
-                    PlaceTile(layer, sizePosition, tile);
-                }
-            }
-        }
-
         public void PlaceTile(MapLayer layer, Vector2Int position, TileType tile) {
             // Change a tile on the tilemap, this won't update the region mesh as of now
             tilemap.SetTile(tile, position, layer);
+        }
+
+        public void UpdatePlaceTile(MapLayer layer, Vector2Int position, TileType tile) {
+            // Change a tile on the tilemap, this won't update the region mesh as of now
+            tilemap.SetTile(tile, position, layer);
+            tilemap.GetRegion(position).UpdateMesh();
+        }
+
+        public void UpdateRegion(Vector2Int position) {
+            tilemap.GetRegion(position).UpdateMesh();
         }
 
         public void CreateUnitFromString(string data) {

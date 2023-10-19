@@ -212,6 +212,10 @@ namespace Frontiers.Content.Maps {
             }
         }
 
+        public Region GetRegion(Vector2Int position) {
+            return regions[position.x / regionSize, position.y / regionSize];
+        }
+
         public Tile GetTile(Vector2Int position) {
             return tilemap[position.x, position.y];
         }

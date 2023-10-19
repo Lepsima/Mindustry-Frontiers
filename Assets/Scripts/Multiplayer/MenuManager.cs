@@ -13,6 +13,8 @@ public class MenuManager : MonoBehaviour {
     [SerializeField] bool hasAnimations = false;
     [SerializeField] Animator backgroundAnimator;
 
+    [HideInInspector] public Menu openMenu;
+
     private void Awake() {
         Instance = this;
     }
@@ -26,7 +28,9 @@ public class MenuManager : MonoBehaviour {
             if (menus[i].isOpen) CloseMenu(menus[i]); 
             if (menus[i] == menu && hasAnimations) backgroundAnimator.SetInteger("state", i);    
         }
+
         menu.Open();
+        openMenu = menu;
     }
 
     public void CloseMenu(Menu menu) {

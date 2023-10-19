@@ -68,13 +68,16 @@ namespace Frontiers.Content.Maps {
             OnLoadMap(map);
         }
 
+        public static void CreateMap(string name, Vector2Int size) {
+            Map map = new(name, size.x, size.y);
+            OnLoadMap(map);
+        }
+
         public static void OnLoadMap(Map map) {
             MapManager.Map = map;
 
             MapManager.OnMapLoaded(map);
             Client.OnMapLoaded(map);
-            MapEditor.OnMapLoaded(map);
-
             /*
             int count = 100;
             long time = 0;

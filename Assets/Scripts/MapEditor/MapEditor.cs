@@ -8,6 +8,8 @@ using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
 public class MapEditor : MonoBehaviour {
     public static MapEditor Instance;
     public MapEditorCamera editorCamera;
+    public MenuManager menuManager;
+    public Menu viewMenu;
 
     public int regionSize = 32;
 
@@ -40,31 +42,41 @@ public class MapEditor : MonoBehaviour {
     }
 
     public void LoadMap(string mapName) {
-        MapLoader.LoadMap(mapName);
+        Map map = new(mapName, MapLoader.ReadMap(mapName));
+        OnMapLoaded(map);
     }
 
     public void CreateMap(string mapName, Vector2Int size) {
-        map = new Map(mapName, size.x, size.y);
+        Map map = new(mapName, size.x, size.y);
+        OnMapLoaded(map);
     }
 
     public static void OnMapLoaded(Map map) {
-        if (!Instance) return;
-
         MapEditor.map = map;
-        Instance.editorCamera.transform.position = (Vector2)map.size / 2f;
+        Instance.editorCamera.SetPosition((Vector2)map.size / 2f);
+    }
+
+    public void PlaceMode() {
+        placeEnabled = true;
+    }
+
+    public void ViewMode() {
+        placeEnabled = false;
     }
 
     private void Update() {
+        editorCamera.AllowMove(menuManager.openMenu == viewMenu);
+
         if (map == null) return;
         Vector2Int mouseGridPos = Vector2Int.FloorToInt(Camera.main.ScreenToWorldPoint(Input.mousePosition));
 
         if (placeEnabled) {
-            if (Input.GetMouseButtonDown(0)) {
-                map.PlaceTile((MapLayer)currentLayer, mouseGridPos, loadedTiles[mainTile]);
+            if (Input.GetMouseButton(0)) {
+                map.UpdatePlaceTile((MapLayer)currentLayer, mouseGridPos, loadedTiles[mainTile]);
             }
 
-            if (Input.GetMouseButtonDown(1)) {
-                map.PlaceTile((MapLayer)currentLayer, mouseGridPos, null);
+            if (Input.GetMouseButton(1)) {
+                map.UpdatePlaceTile((MapLayer)currentLayer, mouseGridPos, null);
             }
         }
     }
