@@ -40,25 +40,20 @@ public class Weapon : MonoBehaviour {
             HandleTargeting(); 
         }
 
-        if (isActive && IsAvilable()) {
+        if (isActive && IsAvilable()) { 
             Shoot();
         }
 
         // If is charged and can but not shooting, start to lose charge progress
         if (chargeUpProgress > 0 && avilableShootTimer < Time.time) {
-            if (chargeShotCooldownTimer == -1f) {
-                // If cooldown not started, start
-                chargeShotCooldownTimer = Time.time + Type.chargeShotCooldown;
+            chargeShotCooldownTimer -= Time.deltaTime;
 
-            } else if (Time.time <= chargeShotCooldownTimer) {
-                // Remove progress
+            if (chargeShotCooldownTimer <= 0f) {
                 chargeUpProgress--;
-                
-                // Add time for next cooldown
-                chargeShotCooldownTimer += Type.chargeShotCooldown;
+                chargeShotCooldownTimer = Type.chargeShotCooldown;
             }
         } else {
-            chargeShotCooldownTimer = -1f;
+            chargeShotCooldownTimer = Type.chargeShotCooldown;
         }
 
         UpdateRecoil();

@@ -316,6 +316,8 @@ public abstract class Unit : Entity, IArmed, IMessager {
         base.Set(position, rotation, type, id, teamCode);
 
         size = Type.size;
+        BoxCollider2D collider = GetComponent<BoxCollider2D>();
+        collider.size = Vector2.one * size;
 
         maxVelocity = Type.maxVelocity;
         rotationSpeed = Type.rotationSpeed;

@@ -1447,6 +1447,16 @@ namespace Frontiers.Content {
                 canGetOnFire = true,
             };
 
+            deviation = new TurretBlockType("deviation", typeof(TurretBlock), 3) {
+                buildCost = ItemStack.With(Items.copper, 125, Items.graphite, 55, Items.silicon, 35),
+                mount = new WeaponMount(Weapons.deviationWeapon, Vector2.zero),
+
+                health = 512f,
+                size = 3,
+
+                canGetOnFire = true,
+            };
+
             /*airFactory = new UnitFactoryBlockType("air-factory", typeof(UnitFactoryBlock), 2) {
                 unitPlan = new UnitPlan(Units.flare, 4f, new ItemStack[1] {
                     new ItemStack(Items.silicon, 20)
@@ -2634,7 +2644,7 @@ namespace Frontiers.Content {
         public const Weapon none = null;
 
         // Base weapons
-        public static WeaponType smallAutoWeapon, tempestWeapon, windstormWeapon, stingerWeapon, pathWeapon, spreadWeapon, cycloneWeapon, lasertWeapon;
+        public static WeaponType smallAutoWeapon, tempestWeapon, windstormWeapon, stingerWeapon, pathWeapon, spreadWeapon, cycloneWeapon, deviationWeapon, lasertWeapon;
 
         //Unit weapons
         public static WeaponType 
@@ -2874,6 +2884,39 @@ namespace Frontiers.Content {
                 chargeShotCooldown = 0.25f,
 
                 casingFXOffset = -1.5f,
+            };
+
+            deviationWeapon = new WeaponType("deviation-weapon") {
+                // TODO Flak bullet type
+                bulletType = new BulletType() {
+                    damage = 7.5f,
+                    lifeTime = 2f,
+                    velocity = 75f
+                },
+
+                shootOffset = Vector2.zero,
+                barrels = new WeaponBarrel[3] {
+                    new WeaponBarrel("deviation-weapon", 1, new Vector2(-0.3125f, 1.185f)),
+                    new WeaponBarrel("deviation-weapon", 2, new Vector2(0f, 1.285f)),
+                    new WeaponBarrel("deviation-weapon", 3, new Vector2(0.3125f, 1.185f))
+                },
+
+                independent = true,
+                ammoPerShot = 0.15f,
+
+                recoil = 0.15f,
+                returnSpeed = 3f,
+                clipSize = 3,
+                shootTime = 0.4f,
+                reloadTime = 0.2f,
+                rotateSpeed = 170f,
+
+                chargesUp = true,
+                shotsToChargeUp = 12,
+                chargedShootTime = 0.1f,
+                chargeShotCooldown = 0.3f,
+
+                casingFXOffset = -0.75f,
             };
 
             lasertWeapon = new WeaponType("lasert-weapon") {
