@@ -11,7 +11,7 @@ namespace Frontiers.Content.Maps {
         public static Dictionary<string, TileType> loadedTiles = new();
 
         public static void HandleTile(TileType tileType) {
-            tileType.id = (short)(loadedTiles.Count + 1);
+            tileType.id = (short)loadedTiles.Count;
             if (tileType.name == null) tileType.name = "content num. " + tileType.id;
 
             if (GetTileTypeByName(tileType.name) != null) throw new ArgumentException("Two tile types cannot have the same name! (issue: '" + tileType.name + "')");
@@ -19,12 +19,12 @@ namespace Frontiers.Content.Maps {
         }
 
         public static TileType GetTileTypeById(short id) {
-            if (loadedTiles.Count <= id) return null;
+            if (id == 255 || loadedTiles.Count <= id) return null;
             return loadedTiles.ElementAt(id).Value;
         }
 
         public static TileType GetTileTypeByName(string name) {
-            if (!loadedTiles.ContainsKey(name)) return null;
+            if (name == null || !loadedTiles.ContainsKey(name)) return null;
             return loadedTiles[name];
         }
 

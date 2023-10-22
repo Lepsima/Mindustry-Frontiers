@@ -58,8 +58,7 @@ namespace Frontiers.Content.Maps {
                 for (int x = 0; x < size.x; x++) {
                     for (int y = 0; y < size.y; y++) {
                         for (int z = 0; z < size.z; z++) {
-                            string name = tileNameGrid[x, y, z];
-                            returnGrid[x, y] += name == null ? (char)32 : (char)(TileLoader.GetTileTypeByName(name).id + 32);
+                            returnGrid[x, y] += TileLoader.GetTileTypeByName(tileNameGrid[x, y, z]).ToChar();
                         }
                     }
                 }
@@ -99,9 +98,7 @@ namespace Frontiers.Content.Maps {
                         string tileData = tileReferenceGrid[x, y];
 
                         for (int z = 0; z < layers; z++) {
-                            int value = Convert.ToInt32(tileData[z]) - 32;
-                            if (value == 0) continue;
-                            returnGrid[x, y, z] = value == 0 ? null : TileLoader.GetTileTypeById((short)value).name;
+                            returnGrid[x, y, z] = tileData[z].ToType()?.name;
                         }
                     }
                 }
