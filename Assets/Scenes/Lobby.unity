@@ -3243,6 +3243,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   photonTeamsManager: {fileID: 441784425}
+  updateManagers: 0
   shardedTeamPlayers: 0
   cruxTeamPlayers: 0
 --- !u!4 &441784424
@@ -10966,6 +10967,7 @@ MonoBehaviour:
   - {fileID: 593425371}
   hasAnimations: 1
   backgroundAnimator: {fileID: 398889520}
+  openMenu: {fileID: 0}
 --- !u!1 &1355855251
 GameObject:
   m_ObjectHideFlags: 0
