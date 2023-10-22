@@ -82,10 +82,12 @@ namespace Frontiers.Content.Maps {
                 uvs[index * 4 + 2] = new Vector2(uv11.x, uv11.y);
                 uvs[index * 4 + 3] = new Vector2(uv11.x, uv00.y);
 
-                vertices[index * 4 + 0] = new Vector2(x, y);
-                vertices[index * 4 + 1] = new Vector2(x, y + 1);
-                vertices[index * 4 + 2] = new Vector2(x + 1, y + 1);
-                vertices[index * 4 + 3] = new Vector2(x + 1, y);
+                float p =  1.001f;
+                float n = -0.001f;
+                vertices[index * 4 + 0] = new Vector2(x + n, y + n);
+                vertices[index * 4 + 1] = new Vector2(x + n, y + p);
+                vertices[index * 4 + 2] = new Vector2(x + p, y + p);
+                vertices[index * 4 + 3] = new Vector2(x + p, y + n);
 
                 index++;
             }

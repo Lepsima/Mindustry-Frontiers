@@ -74,8 +74,6 @@ namespace Frontiers.Content.Maps {
 
             allVariantSprites[0] = sprite;
             for (int i = 1; i < this.variants; i++) allVariantSprites[i] = AssetLoader.GetAsset<Sprite>(name + (i + 1));
-
-            color = sprite.texture.GetPixel(sprite.texture.width / 2, sprite.texture.height / 2);
         }
 
         public virtual Sprite[] GetAllTiles() {
@@ -115,7 +113,7 @@ namespace Frontiers.Content.Maps {
         public static TileType darksandWater, darksand, deepWater, grass, ice, metalFloor, metalFloor2, metalFloorWarning, metalFloorDamaged, sandFloor, sandWater, shale, snow, stone, water;
 
         //Ore tiles
-        public static TileType copperOre, leadOre, titaniumOre, coalOre, thoriumOre;
+        public static TileType coalOre, copperOre, goldOre, ironOre, lithiumOre, magnesiumOre, nickelOre, thoriumOre;
 
         //Wall tiles
         public static TileType daciteWall, dirtWall, duneWall, iceWall, saltWall, sandWall, shaleWall, grassWall, snowWall, stoneWall;
@@ -161,34 +159,26 @@ namespace Frontiers.Content.Maps {
                 isWater = true,
             };
 
-            copperOre = new OreTileType("ore-copper", 3, Items.copper);
-
-            leadOre = new OreTileType("ore-lead", 3, Items.cocaine);
-
-            titaniumOre = new OreTileType("ore-titanium", 3, Items.cocaine);
-
+            // Ores
             coalOre = new OreTileType("ore-coal", 3, Items.coal);
-
+            copperOre = new OreTileType("ore-copper", 3, Items.copper);
+            goldOre = new OreTileType("ore-gold", 3, Items.gold);
+            ironOre = new OreTileType("ore-iron", 3, Items.iron);
+            lithiumOre = new OreTileType("ore-lithium", 3, Items.lithium);
+            magnesiumOre = new OreTileType("ore-magnesium", 3, Items.magnesium);
+            nickelOre = new OreTileType("ore-nickel", 3, Items.nickel);
             thoriumOre = new OreTileType("ore-thorium", 3, Items.thorium);
 
+            // Walls
             daciteWall = new TileType("dacite-wall", 2);
-
             dirtWall = new TileType("dirt-wall", 2);
-
             duneWall = new TileType("dune-wall", 2);
-
             iceWall = new TileType("ice-wall", 2);
-
             saltWall = new TileType("salt-wall", 2);
-
             sandWall = new TileType("sand-wall", 2);
-
             shaleWall = new TileType("shale-wall", 2);
-
             grassWall = new TileType("shrubs", 2);
-
             snowWall = new TileType("snow-wall", 2);
-
             stoneWall = new TileType("stone-wall", 2);
         }
     }
