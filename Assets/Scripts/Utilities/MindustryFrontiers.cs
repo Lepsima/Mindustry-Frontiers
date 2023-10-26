@@ -2221,6 +2221,28 @@ namespace Frontiers.Content {
             canGetOnFire = true;
             maximumFires = 2;
         }
+
+        /*
+        public float GetPowerScore() {
+            float damage = GetDPS(false);
+            float buildingDamage = GetDPS(true);
+            float damageScore = (damage + buildingDamage) / 1.8f;
+
+            // Aproximated offensive score
+            float offensiveScore = damageScore * (range * 0.1f) + (searchRange * 0.5f);
+
+            float defensiveScore = health;
+
+            // Aproximated mobility score
+            float mobilityScore = (maxVelocity / 3f) * (rotationSpeed / 90f);
+        }
+        */
+
+        public float GetDPS(bool buildings) {
+            float dps = 0f;
+            foreach (WeaponMount mount in weapons) dps += mount.GetDPS(buildings);
+            return dps;
+        }
     }
 
     public class MechUnitType : UnitType {
@@ -2270,8 +2292,9 @@ namespace Frontiers.Content {
         public const UnitType none = null;
         public static UnitType
             flare, horizon, zenith,  // Assault - air
-            poly,                    // Support - air
-            foton, pulse,           // Copter - air
+            sonar, pulse,            // Assault (Copter) - air
+            flame, blaze,            // Interceptor - air
+            poly,                    // Support - air    
             dagger, fortress;        // Assault - ground       
 
         public static EntityType train, turretTrain;
@@ -2279,6 +2302,7 @@ namespace Frontiers.Content {
         public static void Load() {
             train = new TrainType("train", typeof(TrainSegment)) {
                 connectionPinOffset = 3.75f,
+                hidden = true,
             };
 
             turretTrain = new TrainType("trainTurret", typeof(TrainSegment)) {
@@ -2288,6 +2312,7 @@ namespace Frontiers.Content {
                 },
 
                 connectionPinOffset = 2.6f,
+                hidden = true,
             };
 
             flare = new AircraftUnitType("flare", typeof(AircraftUnit), 1) {
@@ -2434,9 +2459,11 @@ namespace Frontiers.Content {
 
                 buildSpeedMultiplier = 1f,
                 itemPickupDistance = 6f,
+
+                hidden = true,
             };
 
-            foton = new CopterUnitType("sonar", typeof(CopterUnit), 2) {
+            sonar = new CopterUnitType("sonar", typeof(CopterUnit), 2) {
                 rotors = new UnitRotor[] {
                     new UnitRotor("sonar-blade", new(0f, 0.38f), 8f, 2.4f, 3f, 4.5f, new UnitRotorBlade[1] {
                         new UnitRotorBlade(0f, false)
@@ -2528,6 +2555,45 @@ namespace Frontiers.Content {
                 //fuelDensity = 0.0275f,
             };
 
+            blaze = new AircraftUnitType("blaze", typeof(AircraftUnit), 2) {
+                weapons = new WeaponMount[1] {
+                    new WeaponMount(Weapons.blazeWeapon, Vector2.zero),
+                },
+
+                flags = new Flag[] { FlagTypes.aircraft, FlagTypes.interceptor, FlagTypes.fast, FlagTypes.lightArmored },
+                priorityList = new Type[4] { typeof(AircraftUnit), typeof(Unit), typeof(TurretBlock), typeof(ItemBlock) },
+                useAerodynamics = true,
+
+                trailOffset = new(0.8f, -0.7f),
+                trailSize = 1.75f,
+
+                health = 305f,
+                size = 3f,
+                maxVelocity = 15f,
+                itemCapacity = 25,
+                drag = 0.1f,
+
+                engineSize = 0.4f,
+                engineOffset = -0.8f,
+                engineLength = 1f,
+
+                rotationSpeed = 180f,
+                bankAmount = 25f,
+
+                range = 25f,
+                searchRange = 30f,
+                fov = 150f,
+                groundHeight = 8f,
+
+                fuelCapacity = 340f,
+                fuelConsumption = 2.15f,
+                fuelRefillRate = 14.5f,
+
+                force = 1000f,
+                emptyMass = 15.5f,
+                itemMass = 10f,
+            };
+
             dagger = new MechUnitType("dagger", typeof(MechUnit), 1) {
                 weapons = new WeaponMount[1] {
                     new WeaponMount(Weapons.daggerWeapon, new Vector2(0.437805f, 0.2343f), true, false),
@@ -2559,6 +2625,7 @@ namespace Frontiers.Content {
                 emptyMass = 7.05f,
                 itemMass = 2.2f,
                 //fuelDensity = 12.25f,
+                hidden = true,
             };
 
             fortress = new MechUnitType("fortress", typeof(MechUnit), 3) {
@@ -2592,6 +2659,7 @@ namespace Frontiers.Content {
                 emptyMass = 17.5f,
                 itemMass = 3f,
                 //fuelDensity = 23.5f,
+                hidden = true,
             };
         }
     }
@@ -2633,8 +2701,29 @@ namespace Frontiers.Content {
         public float recoil = 0.75f; // The recoil of the weapon after each shot
         public float returnSpeed = 1f; // The return speed to compensate recoil, keep high for fast shooting weapons
 
+        public Sprite heatSprite; // The heatSprite
+        public float heatFadeTime = 0.5f; // The heat dissipation per second, 1 = max heat 
+        public float heatSpriteAlpha = 0.3f; // The max alpha value for the heat sprite
+        public float heatIncrease = 0.33f; // The heat increase per shot, 1 = max heat
+
         public WeaponType(string name) : base(name) {
             outlineSprite = AssetLoader.GetSprite(name + "-outline", true);
+            heatSprite = AssetLoader.GetSprite(name + "-heat", true);
+            if (heatSprite != null) Debug.Log("Has heat sprite");
+        }
+
+        public float GetDPS(bool buildings) {
+            // The time it takes to empty the magazine and reload == 1cycle
+            float timeSpan = reloadTime + shootTime * clipSize;
+
+            // The damage dealt in a cycle
+            float damage = clipSize * bulletType.damage * (buildings ? bulletType.buildingDamageMultiplier : 1f);
+
+            // Predict blast damage, aprox: +1 hit per 3 blast distane, half damage to all extra hits
+            damage += bulletType.Explodes() ? damage * bulletType.blastRadius / 6f : 0f;
+
+            // Return the damage over the cycle time
+            return damage / timeSpan;
         }
 
         public float Range { get => bulletType.GetRange(); }
@@ -2650,6 +2739,7 @@ namespace Frontiers.Content {
         public static WeaponType 
             flareWeapon, horizonBombBay, zenithMissiles,
             sonarWeapon, fotonWeapon,
+            flameWeapon, blazeWeapon,
             daggerWeapon, fortressWeapon;
 
         // Item related weapons 
@@ -2691,6 +2781,41 @@ namespace Frontiers.Content {
                 clipSize = 25,
                 shootTime = 0.15f,
                 reloadTime = 5f,
+            };
+
+            flameWeapon = new WeaponType("flame-weapon") {
+                bulletType = new BulletType() {
+                    damage = 5f,
+                    lifeTime = 0.5f,
+                    velocity = 150f
+                },
+                shootOffset = new Vector2(0, 0.37f),
+
+                recoil = 0f,
+                returnSpeed = 1f,
+                clipSize = 15,
+                shootTime = 0.05f,
+                reloadTime = 2f,
+            };
+
+            blazeWeapon = new WeaponType("blaze-weapon") {
+                bulletType = new BulletType() {
+                    damage = 5.35f,
+                    lifeTime = 0.7f,
+                    velocity = 150f,
+                },
+
+                shootOffset = Vector2.zero,
+
+                recoil = 0f,
+                returnSpeed = 1f,
+                clipSize = 1,
+                shootTime = 0.05f,
+                reloadTime = 0.05f,
+
+                heatFadeTime = 0.35f,
+                heatSpriteAlpha = 0.28f,
+                heatIncrease = 0.2f,
             };
 
             sonarWeapon = new WeaponType("sonar-missiles") {
@@ -2971,7 +3096,7 @@ namespace Frontiers.Content {
         public Effect hitFX = Effects.bulletHit, despawnFX = Effects.despawn;
 
         public BulletType(string name = null) {
-            this.name = name;
+            this.name = name ?? GetDefaultName();
             BulletLoader.HandleBullet(this);
 
             sprite = AssetLoader.GetSprite(name, true);
@@ -2984,8 +3109,12 @@ namespace Frontiers.Content {
             return velocity * lifeTime;
         }
 
+        public virtual string GetDefaultName() {
+            return "tracer-prefab";
+        }
+
         public virtual GameObjectPool GetPool() {
-            return PoolManager.GetOrCreatePool(AssetLoader.GetPrefab("tracer-prefab"), 100);
+            return PoolManager.GetOrCreatePool(AssetLoader.GetPrefab(name), 100);
         }
 
         public virtual Bullet NewBullet(Weapon weapon, Transform transform) {
@@ -3027,12 +3156,12 @@ namespace Frontiers.Content {
             explodeOnDespawn = true;
         }
 
-        public override Bullet NewBullet(Weapon weapon, Transform transform) {
-            return new MissileBullet(weapon, transform);
+        public override string GetDefaultName() {
+            return "missile-prefab";
         }
 
-        public override GameObjectPool GetPool() {
-            return PoolManager.GetOrCreatePool(AssetLoader.GetPrefab("missile-prefab"), 100);
+        public override Bullet NewBullet(Weapon weapon, Transform transform) {
+            return new MissileBullet(weapon, transform);
         }
     }
 
@@ -3045,12 +3174,12 @@ namespace Frontiers.Content {
             explodeOnDespawn = true;  // Bombs never collide, they just explode on despawn
         }
 
-        public override Bullet NewBullet(Weapon weapon, Transform transform) {
-            return new BombBullet(weapon, transform);
+        public override string GetDefaultName() {
+            return "bomb-prefab";
         }
 
-        public override GameObjectPool GetPool() {
-            return PoolManager.GetOrCreatePool(AssetLoader.GetPrefab("bomb-prefab"), 100);
+        public override Bullet NewBullet(Weapon weapon, Transform transform) {
+            return new BombBullet(weapon, transform);
         }
 
         public override void OnPoolObjectCreated(object sender, GameObjectPool.PoolEventArgs e) {
@@ -3081,16 +3210,16 @@ namespace Frontiers.Content {
 
         }
 
+        public override string GetDefaultName() {
+            return "beam-prefab";
+        }
+
         public override float GetRange() {
             return beamLength;
         }
 
         public override Bullet NewBullet(Weapon weapon, Transform transform) {
             return new BeamBullet(weapon, transform);
-        }
-
-        public override GameObjectPool GetPool() {
-            return PoolManager.GetOrCreatePool(AssetLoader.GetPrefab("beam-prefab"), 100);
         }
     }
 
@@ -3113,7 +3242,7 @@ namespace Frontiers.Content {
                 velocity = 70f
             };
 
-            bombBullet = new BombBulletType("bomb") {
+            bombBullet = new BombBulletType() {
                 damage = 25f,
                 minBlastDamage = 5f,
                 blastRadius = 3f,
@@ -3121,7 +3250,7 @@ namespace Frontiers.Content {
                 fallVelocity = 4f
             };
 
-            missileBullet = new MissileBulletType("homing-missile") {
+            missileBullet = new MissileBulletType() {
                 damage = 20f,
                 minBlastDamage = 5f,
                 blastRadius = 1.25f,
@@ -3267,6 +3396,12 @@ namespace Frontiers.Content {
             this.position = position;
             this.mirrored = mirrored;
             this.onTop = onTop;
+        }
+
+        public float GetDPS(bool buildings) {
+            float dps = weapon.GetDPS(buildings);
+            if (mirrored) dps *= 1.9f;
+            return dps;
         }
     }
 

@@ -25,10 +25,13 @@ public class Weapon : MonoBehaviour {
     private SpriteAnimator animator;
     private bool hasAnimations;
 
+    private SpriteRenderer heatSpriteRenderer;
+    private float currentHeat;
+
     // Timers
     private float targetSearchTimer = 0f, avilableShootTimer = 0f, chargeShotCooldownTimer = -1f;
 
-    private bool isReloading = false, isActive = false, mirrored = false, hasMultiBarrel = false;
+    private bool isReloading = false, isActive = false, mirrored = false, hasMultiBarrel = false, hasHeat = false;
     private int currentRounds, barrelIndex, chargeUpProgress;
 
     private void Update() {
@@ -57,6 +60,7 @@ public class Weapon : MonoBehaviour {
         }
 
         UpdateRecoil();
+        if (hasHeat) ChangeHeat(-Type.heatFadeTime * Time.deltaTime);
     }
 
     private void UpdateRecoil() {
@@ -73,6 +77,11 @@ public class Weapon : MonoBehaviour {
         if (target) target.OnDestroyed -= OnTargetDestroyed;
         target = newTarget;
         if (target) target.OnDestroyed += OnTargetDestroyed;
+    }
+
+    private void ChangeHeat(float value) {
+        currentHeat = Mathf.Clamp01(currentHeat + value);
+        heatSpriteRenderer.color = new Color(1f, 1f, 1f, currentHeat * Type.heatSpriteAlpha);
     }
 
     private void OnTargetDestroyed(object sender, Entity.EntityArg e) {
@@ -168,9 +177,24 @@ public class Weapon : MonoBehaviour {
     }
 
     private void SetSprites(bool onTop) {
+        if (Type.heatSprite != null) {
+            hasHeat = true;
+            Transform heatTransform = new GameObject("heat", typeof(SpriteRenderer)).transform;
+            heatTransform.parent = transform;
+            heatTransform.localPosition = Vector3.zero;
+            heatTransform.localRotation = Quaternion.identity;
+
+            heatSpriteRenderer = heatTransform.GetComponent<SpriteRenderer>();
+            heatSpriteRenderer.sprite = Type.heatSprite;
+            heatSpriteRenderer.sortingLayerName = "Units";
+            heatSpriteRenderer.sortingOrder = onTop ? 7 : 4;
+            heatSpriteRenderer.color = new Color(1f, 1f, 1f, 0f);
+        }
+
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
         spriteRenderer.sprite = Type.sprite;
         spriteRenderer.flipX = mirrored;
+        spriteRenderer.sortingLayerName = "Units";
         spriteRenderer.sortingOrder = onTop ? 5 : 2;
 
         Transform outlineTransform = transform.Find("Outline");
@@ -181,6 +205,7 @@ public class Weapon : MonoBehaviour {
 
         outlineSpriteRenderer.sprite = Type.outlineSprite;
         outlineSpriteRenderer.flipX = mirrored;
+        spriteRenderer.sortingLayerName = "Units";
         outlineSpriteRenderer.sortingOrder = onTop ? 5 : -1;
         outlineTransform.localScale = Vector3.one;
     }
@@ -215,6 +240,7 @@ public class Weapon : MonoBehaviour {
 
     public void Shoot() {
         currentRounds--;
+        if (hasHeat) ChangeHeat(Type.heatIncrease);
         float time = Type.shootTime;
 
         if (Type.chargesUp) {

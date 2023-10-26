@@ -94,7 +94,7 @@ namespace Frontiers.Content.Flags {
         public static Flag 
             wall, core,
             aircraft, copter, mech, maxwell, 
-            fighter, bomber, support, 
+            fighter, bomber, support, interceptor, 
             light, heavy,
             fast, slow, 
             lightArmored, moderateArmored, heavyArmored;
@@ -109,6 +109,7 @@ namespace Frontiers.Content.Flags {
             fighter = new("fighter");
             bomber = new("bomber");
             support = new("support");
+            interceptor = new("interceptor");
             light = new("light");
             heavy = new("heavy");
             fast = new("fast");
