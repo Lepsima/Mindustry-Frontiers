@@ -74,7 +74,7 @@ TrailRenderer:
   m_SortingLayerID: -1191501893
   m_SortingLayer: 4
   m_SortingOrder: 10
-  m_Time: 0.05
+  m_Time: 0.01
   m_PreviewTimeScale: 0.1
   m_Parameters:
     serializedVersion: 3
@@ -106,8 +106,8 @@ TrailRenderer:
     colorGradient:
       serializedVersion: 2
       key0: {r: 0.47058824, g: 0.8430285, b: 0.93333334, a: 1}
-      key1: {r: 0.24313724, g: 0.27338123, b: 0.9843137, a: 0.8117647}
-      key2: {r: 1, g: 0.05098039, b: 0.38206965, a: 0.8117647}
+      key1: {r: 0.24313724, g: 0.27338123, b: 0.9843137, a: 0.047058824}
+      key2: {r: 0, g: 0.17230225, b: 1, a: 0.02726006}
       key3: {r: 0.5506571, g: 0.05098039, b: 1, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
       key5: {r: 0, g: 0, b: 0, a: 0}
@@ -115,16 +115,16 @@ TrailRenderer:
       key7: {r: 0, g: 0, b: 0, a: 0}
       ctime0: 0
       ctime1: 26100
-      ctime2: 58486
+      ctime2: 65535
       ctime3: 61725
       ctime4: 0
       ctime5: 0
       ctime6: 0
       ctime7: 0
       atime0: 193
-      atime1: 65535
-      atime2: 65535
-      atime3: 0
+      atime1: 34292
+      atime2: 47437
+      atime3: 65535
       atime4: 0
       atime5: 0
       atime6: 0
@@ -132,7 +132,7 @@ TrailRenderer:
       m_Mode: 0
       m_ColorSpace: 0
       m_NumColorKeys: 3
-      m_NumAlphaKeys: 2
+      m_NumAlphaKeys: 4
     numCornerVertices: 0
     numCapVertices: 3
     alignment: 1
@@ -140,7 +140,7 @@ TrailRenderer:
     textureScale: {x: 1, y: 1}
     shadowBias: 0.5
     generateLightingData: 0
-  m_MinVertexDistance: 10
+  m_MinVertexDistance: 0.1
   m_MaskInteraction: 0
   m_Autodestruct: 0
   m_Emitting: 1

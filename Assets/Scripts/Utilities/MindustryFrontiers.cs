@@ -2555,6 +2555,43 @@ namespace Frontiers.Content {
                 //fuelDensity = 0.0275f,
             };
 
+            flame = new AircraftUnitType("flame", typeof(AircraftUnit), 1) {
+                weapons = new WeaponMount[1] {
+                    new WeaponMount(Weapons.flameWeapon, new(0.6f, -0.05f), true),
+                },
+
+                flags = new Flag[] { FlagTypes.aircraft, FlagTypes.interceptor, FlagTypes.light, FlagTypes.fast, FlagTypes.lightArmored },
+                priorityList = new Type[4] { typeof(AircraftUnit), typeof(Unit), typeof(TurretBlock), typeof(Block) },
+                useAerodynamics = true,
+
+                trailOffset = new(0.8f, -0.6f),
+
+                health = 125f,
+                size = 2f,
+                maxVelocity = 24f,
+                drag = 0.1f,
+
+                engineSize = 0.4f,
+                engineOffset = -0.6f,
+                engineLength = 1.2f,
+
+                rotationSpeed = 160f,
+                bankAmount = 20f,
+
+                range = 17.5f,
+                searchRange = 25f,
+                fov = 180f,
+                groundHeight = 18f,
+
+                fuelCapacity = 170f,
+                fuelConsumption = 1.25f,
+                fuelRefillRate = 8.25f,
+
+                force = 450f,
+                emptyMass = 12f,
+                itemMass = 3f,
+            };
+
             blaze = new AircraftUnitType("blaze", typeof(AircraftUnit), 2) {
                 weapons = new WeaponMount[1] {
                     new WeaponMount(Weapons.blazeWeapon, Vector2.zero),
@@ -2564,7 +2601,7 @@ namespace Frontiers.Content {
                 priorityList = new Type[4] { typeof(AircraftUnit), typeof(Unit), typeof(TurretBlock), typeof(ItemBlock) },
                 useAerodynamics = true,
 
-                trailOffset = new(0.8f, -0.7f),
+                trailOffset = new(1.1f, -0.8f),
                 trailSize = 1.75f,
 
                 health = 305f,
@@ -2573,8 +2610,8 @@ namespace Frontiers.Content {
                 itemCapacity = 25,
                 drag = 0.1f,
 
-                engineSize = 0.4f,
-                engineOffset = -0.8f,
+                engineSize = 0.6f,
+                engineOffset = -1.2f,
                 engineLength = 1f,
 
                 rotationSpeed = 180f,
@@ -2784,12 +2821,12 @@ namespace Frontiers.Content {
             };
 
             flameWeapon = new WeaponType("flame-weapon") {
-                bulletType = new BulletType() {
+                bulletType = new BulletType("fast-tracer-prefab") {
                     damage = 5f,
                     lifeTime = 0.5f,
                     velocity = 150f
                 },
-                shootOffset = new Vector2(0, 0.37f),
+                shootOffset = Vector2.zero,
 
                 recoil = 0f,
                 returnSpeed = 1f,
@@ -2799,12 +2836,11 @@ namespace Frontiers.Content {
             };
 
             blazeWeapon = new WeaponType("blaze-weapon") {
-                bulletType = new BulletType() {
+                bulletType = new BulletType("rail-tracer-prefab") {
                     damage = 5.35f,
                     lifeTime = 0.7f,
                     velocity = 150f,
                 },
-
                 shootOffset = Vector2.zero,
 
                 recoil = 0f,
@@ -2963,7 +2999,12 @@ namespace Frontiers.Content {
             };
 
             spreadWeapon = new WeaponType("spread-weapon") {
-                bulletType = Bullets.basicBullet,
+                bulletType = new BulletType("white-tracer-prefab") {
+                    damage = 7.5f,
+                    lifeTime = 2f,
+                    velocity = 75f
+                },
+
                 shootOffset = Vector2.zero,
 
                 barrels = new WeaponBarrel[4] {
@@ -2974,15 +3015,15 @@ namespace Frontiers.Content {
                 },
 
                 independent = true,
-                recoil = 0.1f,
-                clipSize = 20,
-                shootTime = 0.085f,
-                reloadTime = 6f,
+                recoil = 0.15f,
+                clipSize = 8,
+                shootTime = 0.095f,
+                reloadTime = 2f,
                 rotateSpeed = 100f,
             };
 
             cycloneWeapon = new WeaponType("cyclone-weapon") {
-                bulletType = new BulletType() {
+                bulletType = new BulletType("wide-tracer-prefab") {
                     damage = 15f,
                     lifeTime = 1.5f,
                     velocity = 100f
@@ -3013,7 +3054,7 @@ namespace Frontiers.Content {
 
             deviationWeapon = new WeaponType("deviation-weapon") {
                 // TODO Flak bullet type
-                bulletType = new BulletType() {
+                bulletType = new BulletType("white-tracer-prefab") {
                     damage = 7.5f,
                     lifeTime = 2f,
                     velocity = 75f
@@ -3029,7 +3070,7 @@ namespace Frontiers.Content {
                 independent = true,
                 ammoPerShot = 0.15f,
 
-                recoil = 0.15f,
+                recoil = 0.3f,
                 returnSpeed = 3f,
                 clipSize = 3,
                 shootTime = 0.4f,
