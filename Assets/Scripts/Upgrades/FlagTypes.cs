@@ -92,7 +92,7 @@ namespace Frontiers.Content.Flags {
 
     public static class FlagTypes {
         public static Flag 
-            wall, core,
+            wall, core, powerable, powerGenerator, powerBank,
             aircraft, copter, mech, maxwell, 
             fighter, bomber, support, interceptor, 
             light, heavy,
@@ -102,6 +102,9 @@ namespace Frontiers.Content.Flags {
         public static void Load() {
             wall = new("wall");
             core = new("core");
+            powerable = new("powerable");
+            powerGenerator = new("powerGenerator");
+            powerBank = new("powerBank");
             aircraft = new("aircraft");
             copter = new("copter");
             mech = new("mech");

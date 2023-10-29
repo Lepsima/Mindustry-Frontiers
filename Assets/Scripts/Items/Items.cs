@@ -82,7 +82,7 @@ namespace Frontiers.Content {
             };
 
             nickel = new("nickel-item") {
-                hardness = 2,
+                hardness = 1,
                 cost = 2f,
             };
 

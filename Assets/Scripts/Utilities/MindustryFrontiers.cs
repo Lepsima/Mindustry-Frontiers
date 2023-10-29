@@ -819,6 +819,7 @@ namespace Frontiers.Content {
         public int size = 1;
 
         public bool usesPower = false, transfersPower = false;
+        //PowerUsage => negative: consumes, positive: generates
         public float powerUsage = 0f, powerStorage = 0f, powerConnectionRange = 0f;
         public int maxPowerConnections = 0;
 
@@ -1097,7 +1098,12 @@ namespace Frontiers.Content {
     }
 
     public class PowerGeneratorBlockType : ItemBlockType {
-        public MaterialList consumption;
+        // Item/fluid, power percent generated
+        public (Element, float)[] fuelTypes;
+        public (Element, float) extraFuel;
+
+        public float fuelConsumptionTime = 1f; // Time between each consumtion of fuel
+
         public MovementAnimation[] animations;
 
         public Effect loopEffect = null, generateEffect = null;
@@ -1111,18 +1117,24 @@ namespace Frontiers.Content {
     }
 
     public class PowerBankBlockType : BlockType {
+        public Sprite powerSprite;
+
         public PowerBankBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             canGetOnFire = true;
             usesPower = true;
             transfersPower = true;
+            powerSprite = AssetLoader.GetSprite(name + "-power");
         }
     }
 
     public class PowerNodeBlockType : BlockType {
+        public Sprite powerSprite;
+
         public PowerNodeBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             canGetOnFire = true;
             usesPower = true;
             transfersPower = true;
+            powerSprite = AssetLoader.GetSprite(name + "-power");
         }
     }
 
@@ -1188,13 +1200,13 @@ namespace Frontiers.Content {
 
         public static BlockType // Power generators
             combustionGenerator, combustionGeneratorLarge, turbineGenerator, turbineGeneratorLarge,
-            pistonGeneratorSmall, pistonGenerator, fissionReactor, fissionReactorLarge;
+            pistonGeneratorSmall, pistonGenerator, fissionReactor; //, fissionReactorLarge;
 
         public static BlockType // Distribution
             conveyor, router, junction, sorter, overflowGate;
 
         public static BlockType // Power blocks
-            powerNode, powerNodeLarge, battery, batteryLarge;
+            powerNode, battery, batteryLarge;
 
         public static BlockType // Unit blocks, S = small units, M = medium units, L = large units
             landingPadS, landingPadSLarge, landingPadM, landingPadL, landingPadLLarge;
@@ -1210,6 +1222,82 @@ namespace Frontiers.Content {
             lowPressurePipe, highPressurePipe, liquidContainer, fluidFilter, fluidExhaust;     
 
         public static void Load() {
+            powerNode = new PowerNodeBlockType("power-node", typeof(Block)) {
+                buildCost = ItemStack.With(Items.copper, 4, Items.nickel, 6),
+                flags = new Flag[] { FlagTypes.powerable },
+
+                health = 35f,
+
+                powerConnectionRange = 7.5f,
+                powerStorage = 150f,
+                maxPowerConnections = 4,
+            };
+
+            battery = new PowerBankBlockType("battery", typeof(Block)) {
+                buildCost = ItemStack.With(Items.copper, 10, Items.nickel, 5, Items.lithium, 15),
+                flags = new Flag[] { FlagTypes.powerable, FlagTypes.powerBank },
+
+                health = 75f,
+                powerStorage = 2500f,
+            };
+
+            batteryLarge = new PowerBankBlockType("large-battery", typeof(Block)) {
+                buildCost = ItemStack.With(Items.copper, 10, Items.iron, 25, Items.resistor, 20),
+                flags = new Flag[] { FlagTypes.powerable, FlagTypes.powerBank },
+
+                health = 215f,
+                size = 2,
+                powerStorage = 12500f,
+            };
+
+            combustionGenerator = new PowerGeneratorBlockType("combustion-generator", typeof(ItemBlock)) {
+                buildCost = ItemStack.With(Items.copper, 15, Items.nickel, 20, Items.graphite, 10),
+                flags = new Flag[] { FlagTypes.powerable, FlagTypes.powerGenerator },
+
+                health = 95f,
+
+                powerStorage = 120f,
+                powerUsage = 80f,
+                powerConnectionRange = 5f,
+                maxPowerConnections = 1,
+
+                fuelConsumptionTime = 3f,
+                fuelTypes = new (Element, float)[] { (Fluids.hydrogen, 0.5f), (Items.coal, 0.75f), (Items.magnesium, 1f), (Fluids.petroleum, 1f), (Fluids.kerosene, 1.25f) }
+            };
+
+            combustionGeneratorLarge = new PowerGeneratorBlockType("combustion-generator", typeof(ItemBlock)) {
+                buildCost = ItemStack.With(Items.copper, 15, Items.nickel, 20, Items.graphite, 10),
+                flags = new Flag[] { FlagTypes.powerable, FlagTypes.powerGenerator },
+
+                health = 235f,
+                size = 2,
+
+                powerStorage = 320f,
+                powerUsage = 350f,
+                powerConnectionRange = 7.5f,
+                maxPowerConnections = 1,
+
+                fuelConsumptionTime = 5f,
+                fuelTypes = new (Element, float)[] { (Fluids.hydrogen, 0.5f), (Items.coal, 0.75f), (Items.magnesium, 1f), (Fluids.petroleum, 1f), (Fluids.kerosene, 1.25f) }
+            };
+
+            turbineGenerator = new PowerGeneratorBlockType("turbine", typeof(ItemBlock)) {
+                buildCost = ItemStack.With(Items.copper, 15, Items.nickel, 20, Items.graphite, 10),
+                flags = new Flag[] { FlagTypes.powerable, FlagTypes.powerGenerator },
+
+                health = 310f,
+                size = 2,
+
+                powerStorage = 250f,
+                powerUsage = 650f,
+                powerConnectionRange = 4f,
+                maxPowerConnections = 1,
+
+                fuelConsumptionTime = 6f,
+                fuelTypes = new (Element, float)[] { (Fluids.hydrogen, 0.25f), (Items.coal, 0.75f), (Items.magnesium, 1f), (Fluids.petroleum, 1f), (Fluids.kerosene, 1.25f) },
+                extraFuel = (Fluids.water, )
+            };
+
             // Walls
             copperWall = new BlockType("copper-wall", typeof(Block), 1) {
                 buildCost = ItemStack.With(Items.copper, 6),
@@ -1688,6 +1776,9 @@ namespace Frontiers.Content {
                 pressurizable = false,
 
                 maxFluids = 1,
+
+                // SPRITES TO DO
+                hidden = true,
             };
 
 
@@ -1748,6 +1839,9 @@ namespace Frontiers.Content {
                 pressurizable = false,
 
                 maxFluids = 1,
+
+                // SPRITES TO DO
+                hidden = true,
             };
 
             plastaniumPress = new CrafterBlockType("plastanium-press", typeof(CrafterBlock), 2) {
@@ -3481,6 +3575,30 @@ namespace Frontiers.Content {
             this.production = product;
             this.consumption = cost;
             this.craftTime = craftTime;
+        }
+    }
+
+    public struct ConsumePlan {
+        // Fuel elements needed, amount needed, efficiency
+        public (Element[], float[], float)[] consumptionTypes;
+        public float consumeTime;
+
+        public ConsumePlan(float consumeTime, (Element[], float[], float)[] consumptionTypes) {
+            this.consumeTime = consumeTime;
+            this.consumptionTypes = consumptionTypes;
+        }
+
+        public bool Has(int type, Element[] elements, float[] amounts) {
+            Element[] required = consumptionTypes[type].Item1;
+            float[] requiredAmt = consumptionTypes[type].Item2;
+
+            for (int i = 0; i < elements.Length; i++) if (required[i].id != elements[i].id || requiredAmt[i] > amounts[i]) return false;
+            return true;
+        }
+
+        public int ReturnFirst(Element[] elements, float[] amounts) {
+            for (int i = 0; i < consumptionTypes.Length; i++) if (Has(i, elements, amounts)) return i;
+            return -1;
         }
     }
 
