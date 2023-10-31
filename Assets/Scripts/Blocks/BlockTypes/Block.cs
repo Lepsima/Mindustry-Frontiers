@@ -13,7 +13,7 @@ using MapLayer = Frontiers.Content.Maps.Map.MapLayer;
 using Frontiers.Content.VisualEffects;
 using Frontiers.Content.Upgrades;
 
-public class Block : Entity, IPowerable {
+public class Block : Entity {
     public new BlockType Type { protected set; get; }
     private Vector2Int gridPosition;
     private int orientation;
@@ -24,18 +24,9 @@ public class Block : Entity, IPowerable {
     private bool glows = false;
     private float glowSpriteOffset;
 
-    protected float powerPercent; // The current amount of power usage given to this block
-    protected float powerStored; // The current amount of power stored
-
     static readonly Vector2Int[] adjacentPositions = new Vector2Int[4] { new Vector2Int(1, 0), new Vector2Int(0, 1), new Vector2Int(-1, 0), new Vector2Int(0, -1) };
 
-    #region - Upgradable Stats -
-
-    protected float
-        powerUsage, // The amount of power this block uses, negative = consumes, positive = generates
-        powerStorage; // The amount of power this block can store
-
-    #endregion
+    public BlockPowerModule powerModule;
 
     public override string SaveDataToString(bool includeSyncID) {
         string data = base.SaveDataToString(includeSyncID);
@@ -61,8 +52,6 @@ public class Block : Entity, IPowerable {
 
         enabled = Type.updates;
         health = Type.health;
-        powerUsage = Type.powerUsage;
-        powerStorage = Type.powerStorage;
 
         //Set position
         transform.SetPositionAndRotation(Vector2Int.CeilToInt(position) + (0.5f * Type.size * Vector2.one), ToQuaternion(rotation));
@@ -81,7 +70,7 @@ public class Block : Entity, IPowerable {
 
         // Add this block to the map lists
         MapManager.Map.AddBlock(this);
-        if (UsesPower()) PowerGraphManager.HandleIPowerable(this);
+        if (Type.usesPower) powerModule = new(Type.powerUsage, Type.powerStorage);
     }
 
     protected override void SetSprites() {
@@ -144,8 +133,10 @@ public class Block : Entity, IPowerable {
 
         BlockUpgradeMultipliers mult = upgrade.properties as BlockUpgradeMultipliers;
 
-        powerUsage += powerUsage * mult.powerUsage;
-        powerStorage += powerStorage * mult.powerStorage;
+        if (powerModule != null) {
+            powerModule.powerUsage += powerModule.powerUsage * mult.powerUsage;
+            powerModule.powerStorage += powerModule.powerStorage * mult.powerUsage;
+        }
     }
 
     public override EntityType GetEntityType() => Type;
@@ -222,71 +213,4 @@ public class Block : Entity, IPowerable {
         MapManager.Map.RemoveBlock(this);
         base.OnDestroy();
     }
-
-    #region - Power Section -
-
-    public bool UsesPower() {
-        return powerUsage != 0 || powerStorage != 0;
-    }
-
-    public bool ConsumesPower() {
-        return powerUsage < 0;
-    }
-
-    public bool GeneratesPower() {
-        return powerUsage > 0;
-    }
-
-    public bool StoresPower() {
-        return powerStorage > 0;
-    }
-
-    public bool TransfersPower() {
-        return Type.transfersPower;
-    }
-
-    public float GetPowerConsumption() {
-        // Invert because consumption is stored as negative but operated as positive
-        return -powerUsage;
-    }
-
-    public float GetPowerGeneration() {
-        return powerUsage;
-    }
-
-    public float GetPowerCapacity() {
-        return powerStorage - powerStored;
-    }
-
-    public float GetStoredPower() {
-        return powerStored;
-    }
-
-    public float GetMaxStorage() {
-        return powerStorage;
-    }
-
-    public void ChargePower(float amount) {
-        // Dont pass a negative value plsss
-        powerStored = Mathf.Min(powerStored + amount, powerStorage);
-    }
-
-    public void DischargePower(float amount) {
-        // Dont pass a negative value plsss
-        powerStored = Mathf.Max(powerStored - amount, 0);
-    }
-
-    public void SetPowerPercent(float amount) {
-        powerPercent = amount;
-    }
-
-    public virtual List<IPowerable> GetConnections() {
-        List<IPowerable> connections = MapManager.Map.GetAdjacentPowerBlocks(this);
-        List<Entity> rangedConnections = Type.powerConnectionRange > 0 ? MapManager.Map.GetAllEntitiesInRange(GetPosition(), Type.powerConnectionRange) : null;
-
-        foreach(Entity entity in rangedConnections) if (entity is Block block && block.UsesPower()) connections.Add(block);
-        return connections;
-    }
-
-    #endregion
 }

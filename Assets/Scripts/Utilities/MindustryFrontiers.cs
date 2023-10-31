@@ -1042,6 +1042,7 @@ namespace Frontiers.Content {
 
         public Effect craftEffect = null, enabledEffect = null;
 
+        public Rotator rotator;
         public MovementAnimation[] crafterAnimations;
         public ArmData[] arms;
 
@@ -1097,17 +1098,7 @@ namespace Frontiers.Content {
         }
     }
 
-    public class PowerGeneratorBlockType : ItemBlockType {
-        // Item/fluid, power percent generated
-        public (Element, float)[] fuelTypes;
-        public (Element, float) extraFuel;
-
-        public float fuelConsumptionTime = 1f; // Time between each consumtion of fuel
-
-        public MovementAnimation[] animations;
-
-        public Effect loopEffect = null, generateEffect = null;
-
+    public class PowerGeneratorBlockType : CrafterBlockType {
         public PowerGeneratorBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             updates = true;
             canGetOnFire = true;
@@ -1257,15 +1248,61 @@ namespace Frontiers.Content {
                 health = 95f,
 
                 powerStorage = 120f,
-                powerUsage = 80f,
                 powerConnectionRange = 5f,
                 maxPowerConnections = 1,
 
-                fuelConsumptionTime = 3f,
-                fuelTypes = new (Element, float)[] { (Fluids.hydrogen, 0.5f), (Items.coal, 0.75f), (Items.magnesium, 1f), (Fluids.petroleum, 1f), (Fluids.kerosene, 1.25f) }
+                hasFluidInventory = true,
+                fluidInputOnly = true,
+                maxFluids = 1,
+
+                maxInput = 2f,
+                maxVolume = 10f,
+
+                maxPressure = -1f,
+                pressurizable = false,
+
+                hasItemInventory = true,
+                itemCapacity = 10,
+
+                craftPlans = new CraftPlan[] {
+                    new CraftPlan() {
+                        production = MaterialList.Empty,
+                        consumption = new MaterialList(FluidStack.With(Fluids.hydrogen, 1f)),
+                        craftTime = 1f,
+                        powerUsage = 60f,
+                    },
+                    
+                    new CraftPlan() {
+                        production = MaterialList.Empty,
+                        consumption = new MaterialList(ItemStack.With(Items.coal, 1)),
+                        craftTime = 3f,
+                        powerUsage = 60f,
+                    },
+                    
+                    new CraftPlan() {
+                        production = MaterialList.Empty,
+                        consumption = new MaterialList(FluidStack.With(Fluids.petroleum, 1f)),
+                        craftTime = 1.75f,
+                        powerUsage = 80f,
+                    },
+                    
+                    new CraftPlan() {
+                        production = MaterialList.Empty,
+                        consumption = new MaterialList(ItemStack.With(Items.magnesium, 1)),
+                        craftTime = 4f,
+                        powerUsage = 90f,
+                    },
+
+                    new CraftPlan() {
+                        production = MaterialList.Empty,
+                        consumption = new MaterialList(FluidStack.With(Fluids.kerosene, 0.5f)),
+                        craftTime = 1.15f,
+                        powerUsage = 100f,
+                    },
+                },
             };
 
-            combustionGeneratorLarge = new PowerGeneratorBlockType("combustion-generator", typeof(ItemBlock)) {
+            combustionGeneratorLarge = new PowerGeneratorBlockType("large-combustion-generator", typeof(ItemBlock)) {
                 buildCost = ItemStack.With(Items.copper, 15, Items.nickel, 20, Items.graphite, 10),
                 flags = new Flag[] { FlagTypes.powerable, FlagTypes.powerGenerator },
 
@@ -1277,11 +1314,58 @@ namespace Frontiers.Content {
                 powerConnectionRange = 7.5f,
                 maxPowerConnections = 1,
 
-                fuelConsumptionTime = 5f,
-                fuelTypes = new (Element, float)[] { (Fluids.hydrogen, 0.5f), (Items.coal, 0.75f), (Items.magnesium, 1f), (Fluids.petroleum, 1f), (Fluids.kerosene, 1.25f) }
+                hasFluidInventory = true,
+                fluidInputOnly = true,
+                maxFluids = 1,
+
+                maxInput = 6f,
+                maxVolume = 45f,
+
+                maxPressure = -1f,
+                pressurizable = false,
+
+                hasItemInventory = true,
+                itemCapacity = 18,
+
+                craftPlans = new CraftPlan[] {
+                    new CraftPlan() {
+                        production = MaterialList.Empty,
+                        consumption = new MaterialList(FluidStack.With(Fluids.hydrogen, 4.5f)),
+                        craftTime = 1f,
+                        powerUsage = 180f,
+                    },
+
+                    new CraftPlan() {
+                        production = MaterialList.Empty,
+                        consumption = new MaterialList(ItemStack.With(Items.coal, 3)),
+                        craftTime = 2.5f,
+                        powerUsage = 210f,
+                    },
+
+                    new CraftPlan() {
+                        production = MaterialList.Empty,
+                        consumption = new MaterialList(FluidStack.With(Fluids.petroleum, 2.5f)),
+                        craftTime = 2f,
+                        powerUsage = 340f,
+                    },
+
+                    new CraftPlan() {
+                        production = MaterialList.Empty,
+                        consumption = new MaterialList(ItemStack.With(Items.magnesium, 2)),
+                        craftTime = 3f,
+                        powerUsage = 360f,
+                    },
+
+                    new CraftPlan() {
+                        production = MaterialList.Empty,
+                        consumption = new MaterialList(FluidStack.With(Fluids.kerosene, 2.5f)),
+                        craftTime = 1f,
+                        powerUsage = 400f,
+                    },
+                },
             };
 
-            turbineGenerator = new PowerGeneratorBlockType("turbine", typeof(ItemBlock)) {
+            turbineGenerator = new CrafterBlockType("turbine", typeof(CrafterBlock)) {
                 buildCost = ItemStack.With(Items.copper, 15, Items.nickel, 20, Items.graphite, 10),
                 flags = new Flag[] { FlagTypes.powerable, FlagTypes.powerGenerator },
 
@@ -1293,9 +1377,80 @@ namespace Frontiers.Content {
                 powerConnectionRange = 4f,
                 maxPowerConnections = 1,
 
-                fuelConsumptionTime = 6f,
-                fuelTypes = new (Element, float)[] { (Fluids.hydrogen, 0.25f), (Items.coal, 0.75f), (Items.magnesium, 1f), (Fluids.petroleum, 1f), (Fluids.kerosene, 1.25f) },
-                extraFuel = (Fluids.water, )
+                hasFluidInventory = true,
+                fluidInputOnly = true,
+                maxFluids = 1,
+
+                maxInput = 4f,
+                maxVolume = 105f,
+
+                maxPressure = -1f,
+                pressurizable = false,
+
+                hasItemInventory = true,
+                itemCapacity = 10,
+
+                rotator = new Rotator("turbine-rotator", Vector2.zero, 5f, 1.2f, 2f, 3f, new RotatorBlade(0f, false)),
+
+                craftPlans = new CraftPlan[] {
+                    new CraftPlan() {
+                        production = MaterialList.Empty,
+                        consumption = new MaterialList(ItemStack.With(Items.coal, 1), FluidStack.With(Fluids.water, 7.5f)),
+                        craftTime = 3f,
+                        powerUsage = 500f,
+                    },
+
+                    new CraftPlan() {
+                        production = MaterialList.Empty,
+                        consumption = new MaterialList(ItemStack.With(Items.magnesium, 1), FluidStack.With(Fluids.water, 10.5f)),
+                        craftTime = 3f,
+                        powerUsage = 700f,
+                    },
+                },
+            };
+
+            turbineGeneratorLarge = new CrafterBlockType("large-turbine", typeof(CrafterBlock)) {
+                buildCost = ItemStack.With(Items.copper, 15, Items.nickel, 20, Items.graphite, 10),
+                flags = new Flag[] { FlagTypes.powerable, FlagTypes.powerGenerator },
+
+                health = 525f,
+                size = 3,
+
+                powerStorage = 350f,
+                powerUsage = 1575f,
+                powerConnectionRange = 6f,
+                maxPowerConnections = 1,
+
+                hasFluidInventory = true,
+                fluidInputOnly = true,
+                maxFluids = 1,
+
+                maxInput = 10f,
+                maxVolume = 220f,
+
+                maxPressure = -1f,
+                pressurizable = false,
+
+                hasItemInventory = true,
+                itemCapacity = 20,
+
+                rotator = new Rotator("large-turbine-rotator", Vector2.zero, 5f, 1.2f, 2f, 3f, new RotatorBlade(0f, false)),
+
+                craftPlans = new CraftPlan[] {
+                    new CraftPlan() {
+                        production = MaterialList.Empty,
+                        consumption = new MaterialList(ItemStack.With(Items.coal, 2), FluidStack.With(Fluids.water, 13f)),
+                        craftTime = 2.75f,
+                        powerUsage = 1425f,
+                    },
+
+                    new CraftPlan() {
+                        production = MaterialList.Empty,
+                        consumption = new MaterialList(ItemStack.With(Items.magnesium, 2), FluidStack.With(Fluids.water, 22f)),
+                        craftTime = 3f,
+                        powerUsage = 1725f,
+                    },
+                },
             };
 
             // Walls
@@ -1561,8 +1716,8 @@ namespace Frontiers.Content {
             siliconSmelter = new CrafterBlockType("silicon-smelter", typeof(CrafterBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 45, Items.graphite, 25),
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(ItemStack.With(Items.silicon, 2), null),
-                    consumption = new MaterialList(ItemStack.With(Items.sand, 3, Items.coal, 2), null),
+                    production = new MaterialList(ItemStack.With(Items.silicon, 2)),
+                    consumption = new MaterialList(ItemStack.With(Items.sand, 3, Items.coal, 2)),
                     craftTime = 1f
                 },
 
@@ -1576,8 +1731,8 @@ namespace Frontiers.Content {
             graphitePress = new CrafterBlockType("graphite-press", typeof(CrafterBlock), 1) {
                 buildCost = ItemStack.With(Items.copper, 55),
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(ItemStack.With(Items.graphite, 1), null),
-                    consumption = new MaterialList(ItemStack.With(Items.coal, 2), null),
+                    production = new MaterialList(ItemStack.With(Items.graphite, 1)),
+                    consumption = new MaterialList(ItemStack.With(Items.coal, 2)),
                     craftTime = 1.5f
                 },
 
@@ -1592,15 +1747,15 @@ namespace Frontiers.Content {
                 craftPlans = new CraftPlan[] {
                     // Light alloy
                     new CraftPlan() {
-                        production = new MaterialList(ItemStack.With(Items.lightAlloy, 3), null),
-                        consumption = new MaterialList(ItemStack.With(Items.copper, 3, Items.nickel, 2), null),
+                        production = new MaterialList(ItemStack.With(Items.lightAlloy, 3)),
+                        consumption = new MaterialList(ItemStack.With(Items.copper, 3, Items.nickel, 2)),
                         craftTime = 2.5f
                     },
 
                     // Heavy alloy
                     new CraftPlan() {
-                        production = new MaterialList(ItemStack.With(Items.heavyAlloy, 4), null),
-                        consumption = new MaterialList(ItemStack.With(Items.copper, 3, Items.graphite, 2, Items.iron, 4), null),
+                        production = new MaterialList(ItemStack.With(Items.heavyAlloy, 4)),
+                        consumption = new MaterialList(ItemStack.With(Items.copper, 3, Items.graphite, 2, Items.iron, 4)),
                         craftTime = 4f
                     },
                 },
@@ -1614,13 +1769,14 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.iron, 125, Items.silicon, 65, Items.lithium, 25),
                 craftPlans = new CraftPlan[] {
                     new CraftPlan() {
-                        production = new MaterialList(ItemStack.With(Items.resistor, 3), null),
-                        consumption = new MaterialList(ItemStack.With(Items.copper, 2, Items.silicon, 3, Items.lithium, 4), null),
+                        production = new MaterialList(ItemStack.With(Items.resistor, 3)),
+                        consumption = new MaterialList(ItemStack.With(Items.copper, 2, Items.silicon, 3, Items.lithium, 4)),
                         craftTime = 3.5f
                     },
+
                     new CraftPlan() {
-                        production = new MaterialList(ItemStack.With(Items.resistor, 2), null),
-                        consumption = new MaterialList(ItemStack.With(Items.lithium, 1, Items.gold, 2), null),
+                        production = new MaterialList(ItemStack.With(Items.resistor, 2)),
+                        consumption = new MaterialList(ItemStack.With(Items.lithium, 1, Items.gold, 2)),
                         craftTime = 1.5f
                     },
                 },
@@ -1642,6 +1798,7 @@ namespace Frontiers.Content {
 
                         effect = Effects.weldSparks
                     },
+
                     new ArmData("assembler") {
                         idlePosition = new Vector2(-0.34375f, 0),
                         minPosition = new Vector2(-0.34375f, -0.34375f),
@@ -1668,8 +1825,8 @@ namespace Frontiers.Content {
             thoriumCrusher = new CrafterBlockType("thorium-crusher", typeof(CrafterBlock), 2) {
                 buildCost = ItemStack.With(Items.heavyAlloy, 65, Items.thorium, 25, Items.lithium, 35),
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(ItemStack.With(Items.thoriumDust, 1), null),
-                    consumption = new MaterialList(ItemStack.With(Items.thorium, 2), null),
+                    production = new MaterialList(ItemStack.With(Items.thoriumDust, 1)),
+                    consumption = new MaterialList(ItemStack.With(Items.thorium, 2)),
                     craftTime = 1.75f
                 },
 
@@ -1681,7 +1838,7 @@ namespace Frontiers.Content {
             thoriumCentrifuge = new CrafterBlockType("thorium-centrifuge", typeof(CrafterBlock), 2) {
                 buildCost = ItemStack.With(Items.iron, 45, Items.graphite, 65, Items.thorium, 55, Items.lithium, 25),
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(ItemStack.With(Items.thoriumFuel, 1), null),
+                    production = new MaterialList(ItemStack.With(Items.thoriumFuel, 1)),
                     consumption = new MaterialList(ItemStack.With(Items.thoriumDust, 5), FluidStack.With(Fluids.nitrogen, 6f)),
                     craftTime = 1.5f
                 },
@@ -1706,7 +1863,7 @@ namespace Frontiers.Content {
             thoriumReprocessor = new CrafterBlockType("thorium-reprocessor", typeof(CrafterBlock), 2) {
                 buildCost = ItemStack.With(Items.iron, 65, Items.thorium, 25, Items.resistor, 30),
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(ItemStack.With(Items.thoriumDust, 4), null),
+                    production = new MaterialList(ItemStack.With(Items.thoriumDust, 4)),
                     consumption = new MaterialList(ItemStack.With(Items.depletedThorium, 2), FluidStack.With(Fluids.water, 12f)),
                     craftTime = 2f
                 },
@@ -1731,7 +1888,7 @@ namespace Frontiers.Content {
             crystalizer = new CrafterBlockType("crystalizer", typeof(CrafterBlock), 3) {
                 buildCost = ItemStack.With(Items.copper, 125, Items.nickel, 65, Items.magnesium, 40, Items.superconductor, 25, Items.resistor, 30),
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(ItemStack.With(Items.quartz, 2), null),
+                    production = new MaterialList(ItemStack.With(Items.quartz, 2)),
                     consumption = new MaterialList(ItemStack.With(Items.salt, 4, Items.silicon, 2), FluidStack.With(Fluids.oxigen, 8f)),
                     craftTime = 3f
                 },
@@ -1756,7 +1913,7 @@ namespace Frontiers.Content {
             reflectiveFabricWeaver = new CrafterBlockType("reflective-fabric-weaver", typeof(CrafterBlock), 3) {
                 buildCost = ItemStack.With(Items.heavyAlloy, 200, Items.lightAlloy, 125, Items.nickel, 80, Items.superconductor, 55, Items.resistor, 15),
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(ItemStack.With(Items.reflectiveFabric, 3), null),
+                    production = new MaterialList(ItemStack.With(Items.reflectiveFabric, 3)),
                     consumption = new MaterialList(ItemStack.With(Items.resistor, 2, Items.gold, 1), FluidStack.With(Fluids.oxigen, 4f)),
                     craftTime = 5f
                 },
@@ -1788,7 +1945,7 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.copper, 60, Items.iron, 25),
 
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(null, FluidStack.With(Fluids.petroleum, 6f)),
+                    production = new MaterialList(FluidStack.With(Fluids.petroleum, 6f)),
                     consumption = new MaterialList(ItemStack.With(Items.coal, 2), FluidStack.With(Fluids.co2, 0.5f)),
                     craftTime = 1f
                 },
@@ -1817,8 +1974,8 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.copper, 70, Items.nickel, 15),
 
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(ItemStack.With(Items.coal, 4), null),
-                    consumption = new MaterialList(null, FluidStack.With(Fluids.petroleum, 12f)),
+                    production = new MaterialList(ItemStack.With(Items.coal, 4)),
+                    consumption = new MaterialList(FluidStack.With(Fluids.petroleum, 12f)),
                     craftTime = 2.5f
                 },
 
@@ -1848,7 +2005,7 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.copper, 25, Items.iron, 65, Items.lithium, 25),
 
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(ItemStack.With(Items.plastanium, 6), null),
+                    production = new MaterialList(ItemStack.With(Items.plastanium, 6)),
                     consumption = new MaterialList(ItemStack.With(Items.sand, 12), FluidStack.With(Fluids.petroleum, 24f)),
                     craftTime = 9f
                 },
@@ -1876,8 +2033,8 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.graphite, 60, Items.iron, 35, Items.nickel, 40),
 
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(null, FluidStack.With(Fluids.kerosene, 4f)),
-                    consumption = new MaterialList(null, FluidStack.With(Fluids.petroleum, 3f)),
+                    production = new MaterialList(FluidStack.With(Fluids.kerosene, 4f)),
+                    consumption = new MaterialList(FluidStack.With(Fluids.petroleum, 3f)),
                     craftTime = 0.75f
                 },
 
@@ -1903,7 +2060,7 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.copper, 60, Items.silicon, 25, Items.graphite, 20),
 
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(null, FluidStack.With(Fluids.hydrogen, 30f, Fluids.oxigen, 15f)),
+                    production = new MaterialList(FluidStack.With(Fluids.hydrogen, 30f, Fluids.oxigen, 15f)),
                     consumption = new MaterialList(ItemStack.With(Items.salt, 1), FluidStack.With(Fluids.water, 15f)),
                     craftTime = 3f
                 },
@@ -1932,8 +2089,8 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.copper, 60, Items.silicon, 25, Items.graphite, 20),
 
                 craftPlan = new CraftPlan() {
-                    production = new MaterialList(null, FluidStack.With(Fluids.fuel, 3.5f)),
-                    consumption = new MaterialList(null, FluidStack.With(Fluids.nitrogen, 1f, Fluids.kerosene, 3f)),
+                    production = new MaterialList(FluidStack.With(Fluids.fuel, 3.5f)),
+                    consumption = new MaterialList(FluidStack.With(Fluids.nitrogen, 1f, Fluids.kerosene, 3f)),
                     craftTime = 1f
                 },
 
@@ -2371,7 +2528,7 @@ namespace Frontiers.Content {
     }
 
     public class CopterUnitType : AircraftUnitType {
-        public UnitRotor[] rotors;
+        public Rotator[] rotors;
 
         // Degrees / second
         public float wreckSpinAccel = 50f;
@@ -2558,9 +2715,9 @@ namespace Frontiers.Content {
             };
 
             sonar = new CopterUnitType("sonar", typeof(CopterUnit), 2) {
-                rotors = new UnitRotor[] {
-                    new UnitRotor("sonar-blade", new(0f, 0.38f), 8f, 2.4f, 3f, 4.5f, new UnitRotorBlade[1] {
-                        new UnitRotorBlade(0f, false)
+                rotors = new Rotator[] {
+                    new Rotator("sonar-blade", new(0f, 0.38f), 8f, 2.4f, 3f, 4.5f, new RotatorBlade[1] {
+                        new RotatorBlade(0f, false)
                     }),
                 },
 
@@ -2603,10 +2760,10 @@ namespace Frontiers.Content {
             };
 
             pulse = new CopterUnitType("pulse", typeof(CopterUnit), 3) {
-                rotors = new UnitRotor[] {
-                    new UnitRotor("pulse-blade", new(0f, 0.68f), 5f, 1.2f, 2f, 3f, new UnitRotorBlade[2] {
-                        new UnitRotorBlade(0f, false),
-                        new UnitRotorBlade(0f, true)
+                rotors = new Rotator[] {
+                    new Rotator("pulse-blade", new(0f, 0.68f), 5f, 1.2f, 2f, 3f, new RotatorBlade[2] {
+                        new RotatorBlade(0f, false),
+                        new RotatorBlade(0f, true)
                     }),
                 },
 
@@ -3498,9 +3655,21 @@ namespace Frontiers.Content {
         public ItemStack[] items;
         public FluidStack[] fluids;
 
+        public static MaterialList Empty = new(null, null);
+
         public MaterialList(ItemStack[] items, FluidStack[] fluids) {
             this.items = items;
             this.fluids = fluids;
+        }
+
+        public MaterialList(FluidStack[] fluids) {
+            items = null;
+            this.fluids = fluids;
+        }
+
+        public MaterialList(ItemStack[] items) {
+            this.items = items;
+            fluids = null;
         }
 
         public MaterialList((ItemStack[], FluidStack[]) elementStacks, float mult = 1f) {
@@ -3570,41 +3739,38 @@ namespace Frontiers.Content {
         public MaterialList production;
         public MaterialList consumption;
         public float craftTime;
+        public float powerUsage; // Only used for multicrafters else the block's power usage is used
 
-        public CraftPlan(MaterialList product, MaterialList cost, float craftTime) {
+        public CraftPlan(MaterialList product, MaterialList cost, float craftTime, float powerUsage) {
             this.production = product;
             this.consumption = cost;
             this.craftTime = craftTime;
+            this.powerUsage = powerUsage;
         }
     }
 
     public struct ConsumePlan {
         // Fuel elements needed, amount needed, efficiency
-        public (Element[], float[], float)[] consumptionTypes;
+        public (Element, float, float)[] consumptionTypes;
+        public Element consumptionSecondary;
+
         public float consumeTime;
 
-        public ConsumePlan(float consumeTime, (Element[], float[], float)[] consumptionTypes) {
-            this.consumeTime = consumeTime;
-            this.consumptionTypes = consumptionTypes;
+        public bool Has(int type, Element elements, float amounts) {
+            Element required = consumptionTypes[type].Item1;
+            float requiredAmt = consumptionTypes[type].Item2;
+            return required.id == elements.id && requiredAmt <= amounts;
         }
 
-        public bool Has(int type, Element[] elements, float[] amounts) {
-            Element[] required = consumptionTypes[type].Item1;
-            float[] requiredAmt = consumptionTypes[type].Item2;
-
-            for (int i = 0; i < elements.Length; i++) if (required[i].id != elements[i].id || requiredAmt[i] > amounts[i]) return false;
-            return true;
-        }
-
-        public int ReturnFirst(Element[] elements, float[] amounts) {
+        public int ReturnFirst(Element elements, float amounts) {
             for (int i = 0; i < consumptionTypes.Length; i++) if (Has(i, elements, amounts)) return i;
             return -1;
         }
     }
 
-    public struct UnitRotor {
+    public struct Rotator {
         [JsonIgnore] public Sprite sprite, blurSprite, topSprite;
-        public UnitRotorBlade[] blades;
+        public RotatorBlade[] blades;
         public Vector2 offset;
         public float
             velocity,        // The maximum rotor angular velocity
@@ -3616,7 +3782,7 @@ namespace Frontiers.Content {
         /// Creates a rotor container
         /// </summary>
         /// <param name="unitName">The name of the unit and the rotor, example "flare-rotor"</param>
-        public UnitRotor(string unitName, Vector2 offset, float velocity, float velocityIncrease, float blurStart, float blurEnd, UnitRotorBlade[] blades) {
+        public Rotator(string unitName, Vector2 offset, float velocity, float velocityIncrease, float blurStart, float blurEnd, RotatorBlade[] blades) {
             sprite = AssetLoader.GetSprite($"{unitName}");
             blurSprite = AssetLoader.GetSprite($"{unitName}-blur");
             topSprite = AssetLoader.GetSprite($"{unitName}-top");
@@ -3634,12 +3800,30 @@ namespace Frontiers.Content {
         /// Creates a rotor container
         /// </summary>
         /// <param name="unitName">The name of the unit and the rotor, example "flare-rotor"</param>
-        public UnitRotor(string unitName, Vector2 offset, float velocity, float velocityIncrease, float blurStart, float blurEnd, int blades = 1) {
+        public Rotator(string unitName, Vector2 offset, float velocity, float velocityIncrease, float blurStart, float blurEnd, RotatorBlade blade) {
             sprite = AssetLoader.GetSprite($"{unitName}");
             blurSprite = AssetLoader.GetSprite($"{unitName}-blur");
             topSprite = AssetLoader.GetSprite($"{unitName}-top");
 
-            this.blades = new UnitRotorBlade[blades];
+            this.blades = new RotatorBlade[] { blade };
+            this.offset = offset;
+
+            this.velocity = velocity;
+            this.velocityIncrease = velocityIncrease;
+            this.blurStart = blurStart;
+            this.blurEnd = blurEnd;
+        }
+
+        /// <summary>
+        /// Creates a rotor container
+        /// </summary>
+        /// <param name="unitName">The name of the unit and the rotor, example "flare-rotor"</param>
+        public Rotator(string unitName, Vector2 offset, float velocity, float velocityIncrease, float blurStart, float blurEnd, int blades = 1) {
+            sprite = AssetLoader.GetSprite($"{unitName}");
+            blurSprite = AssetLoader.GetSprite($"{unitName}-blur");
+            topSprite = AssetLoader.GetSprite($"{unitName}-top");
+
+            this.blades = new RotatorBlade[blades];
             for (int i = 0; i < blades; i++) this.blades[i] = new(360f / blades * i);
 
             this.offset = offset;
@@ -3655,11 +3839,11 @@ namespace Frontiers.Content {
         }
     }
 
-    public struct UnitRotorBlade {
+    public struct RotatorBlade {
         public bool counterClockwise;
         public float offset;
 
-        public UnitRotorBlade(float offset, bool counterClockwise = false) {
+        public RotatorBlade(float offset, bool counterClockwise = false) {
             this.offset = offset;
             this.counterClockwise = counterClockwise;
         }

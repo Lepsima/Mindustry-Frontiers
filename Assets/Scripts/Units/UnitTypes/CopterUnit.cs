@@ -15,12 +15,12 @@ public class CopterUnit : AircraftUnit {
         public RotorBlade[] blades;
 
         public Transform transform;
-        public UnitRotor Type;
+        public Rotator Type;
 
         public float velocity;
         public float position;
 
-        public Rotor(Transform parent, UnitRotor Type) {
+        public Rotor(Transform parent, Rotator Type) {
             this.Type = Type;
             velocity = Type.velocity;
 
@@ -31,11 +31,13 @@ public class CopterUnit : AircraftUnit {
             transform.localRotation = Quaternion.identity;
             transform.localScale = Vector3.one;
 
-            // Set the top sprite
-            SpriteRenderer topSpriteRenderer = transform.GetComponent<SpriteRenderer>();
-            topSpriteRenderer.sprite = Type.topSprite;
-            topSpriteRenderer.sortingLayerName = "Units";
-            topSpriteRenderer.sortingOrder = 12;
+            if (Type.topSprite != null) {
+                // Set the top sprite
+                SpriteRenderer topSpriteRenderer = transform.GetComponent<SpriteRenderer>();
+                topSpriteRenderer.sprite = Type.topSprite;
+                topSpriteRenderer.sortingLayerName = "Units";
+                topSpriteRenderer.sortingOrder = 12;
+            }
 
             // Create all the blades
             blades = new RotorBlade[Type.blades.Length];
@@ -63,12 +65,12 @@ public class CopterUnit : AircraftUnit {
             public SpriteRenderer blurSpriteRenderer;
 
             public Transform transform;
-            public UnitRotor Type;
+            public Rotator Type;
 
             public float modifier;
             public float offset;
 
-            public RotorBlade(Transform parent, UnitRotor Type, UnitRotorBlade rotorBladeType) {
+            public RotorBlade(Transform parent, Rotator Type, RotatorBlade rotorBladeType) {
                 this.Type = Type;
                 modifier = rotorBladeType.counterClockwise ? -360f : 360f;
                 offset = rotorBladeType.offset;
@@ -117,7 +119,7 @@ public class CopterUnit : AircraftUnit {
         rotors = new Rotor[Type.rotors.Length];
 
         for (int i = 0; i < Type.rotors.Length; i++) {
-            UnitRotor rotorData = Type.rotors[i];
+            Rotator rotorData = Type.rotors[i];
             Rotor rotor = new(transform, rotorData);
             rotors[i] = rotor;
         }

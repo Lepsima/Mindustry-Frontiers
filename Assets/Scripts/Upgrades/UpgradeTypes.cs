@@ -580,6 +580,7 @@ namespace Frontiers.Content.Upgrades {
         public float powerUsage, powerStorage;
         public float drill_hardness, drill_rate;
         public float crafter_craftTime, crafter_craftCost, crafter_craftReturn;
+        public float generator_consumeTime, generator_consumeAmount;
         public float conveyor_itemSpeed;
 
         public override void ApplyMult(float mult) {
@@ -592,6 +593,8 @@ namespace Frontiers.Content.Upgrades {
             crafter_craftTime *= mult;
             crafter_craftCost *= mult;
             crafter_craftReturn *= mult;
+            generator_consumeTime *= mult;
+            generator_consumeAmount *= mult;
             conveyor_itemSpeed *= mult;
         }
 

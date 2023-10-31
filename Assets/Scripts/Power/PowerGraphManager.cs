@@ -7,7 +7,7 @@ public static class PowerGraphManager {
     public static List<PowerGraph> graphs = new();
 
     public static void HandleIPowerable(IPowerable powerable) {
-        List<IPowerable> connections = null;
+        List<IPowerable> connections = powerable.;
         List<PowerGraph> connectedPowerGraphs = new();
 
         foreach (IPowerable connection in connections) {
