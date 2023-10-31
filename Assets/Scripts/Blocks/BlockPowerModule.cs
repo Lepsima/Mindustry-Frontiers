@@ -4,14 +4,18 @@ using UnityEngine;
 
 public class BlockPowerModule : MonoBehaviour, IPowerable {
     public Block block;
+    public IPowerable[] connections;
+
     public float powerPercent; // The current amount of power usage given to this block
     public float powerStored; // The current amount of power stored
     public float powerUsage; // The amount of power this block uses, negative = consumes, positive = generates
     public float powerStorage; // The amount of power this block can store
 
+
+
     public BlockPowerModule(float usage, float storage) {
-        this.powerUsage = usage;
-        this.powerStorage = storage;
+        powerUsage = usage;
+        powerStorage = storage;
     }
 
     public bool UsesPower() {
@@ -31,7 +35,7 @@ public class BlockPowerModule : MonoBehaviour, IPowerable {
     }
 
     public bool TransfersPower() {
-        return Type.transfersPower;
+        return block.Type.transfersPower;
     }
 
     public float GetPowerConsumption() {
@@ -70,10 +74,10 @@ public class BlockPowerModule : MonoBehaviour, IPowerable {
     }
 
     public virtual List<IPowerable> GetConnections() {
-        List<IPowerable> connections = MapManager.Map.GetAdjacentPowerBlocks(this);
+        List<IPowerable> connections = MapManager.Map.GetAdjacentPowerBlocks(block);
         List<Entity> rangedConnections = block.Type.powerConnectionRange > 0 ? MapManager.Map.GetAllEntitiesInRange(block.GetPosition(), block.Type.powerConnectionRange) : null;
 
-        foreach (Entity entity in rangedConnections) if (entity is Block other && other..UsesPower()) connections.Add(other);
+        foreach (Entity entity in rangedConnections) if (entity is Block other && other.UsesPower()) connections.Add(other.powerModule);
         return connections;
     }
 }

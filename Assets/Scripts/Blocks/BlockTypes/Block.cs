@@ -182,6 +182,8 @@ public class Block : Entity {
         return new Vector2Int(Mathf.Max(pos.x, -1), Mathf.Max(pos.y, -1));
     }
 
+    public bool UsesPower() => powerModule;
+
     public override void OnDestroy() {
         if (!gameObject.scene.isLoaded) return;
 
