@@ -2,8 +2,8 @@
 [![Discord](https://img.shields.io/discord/1062431967536238675?style=for-the-badge&logo=discord&logoColor=ffffff&label=Discord&labelColor=7289da&color=424549)](https://discord.gg/vCzqxDVh2d)
 
 # About
-A Mindustry fangame made using Unity and coded in C#. Aiming to give a more cinematic experience with minimal effort from the player to do so 
-**Developed** by **Lepisma**, based on **Mindustry** by **Anuken**
+A Mindustry fangame made using Unity and coded in C#. Aiming to give a more cinematic experience with minimal effort from the player
+> **Developed** by **Lepisma**, based on **Mindustry** by **Anuken**
 
 # Current progress
 The current game includes most of the base mindustry features
@@ -40,4 +40,4 @@ Gameplay/Mechanics/Other related:
  - Mobile **Input** support: i will make builds for android, but i rather die a hundred times than make touchscreen input support
  - Code readability: live with it
 
-Everything remains subject to change, and most of the non-planned things could be done with help, but just dont expect me to be doing those
+> Everything remains subject to change, and most of the non-planned things could be done with help, but just dont expect me to be doing those
