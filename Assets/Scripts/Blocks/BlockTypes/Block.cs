@@ -62,6 +62,11 @@ public class Block : Entity {
         GetComponent<BoxCollider2D>().size = Vector2.one * Type.size;
         size = Type.size;
 
+        if (Type.usesPower) { 
+            powerModule = new(this, Type.powerUsage, Type.powerStorage);
+            powerModule.Init();
+        }
+
         syncs = Type.syncs;
         syncValues = 1; // The amount of values sent each sync (do not change)
         syncTime = 10f; // The minimum time between syncs
@@ -70,7 +75,6 @@ public class Block : Entity {
 
         // Add this block to the map lists
         MapManager.Map.AddBlock(this);
-        if (Type.usesPower) powerModule = new(Type.powerUsage, Type.powerStorage);
     }
 
     protected override void SetSprites() {

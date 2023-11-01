@@ -1,6 +1,7 @@
 using Frontiers.Content;
 using Photon.Pun;
 using System.Collections.Generic;
+using UnityEngine;
 
 public interface IDamageable {
     public void Damage(float amount);
@@ -52,6 +53,8 @@ public interface IPowerable {
     public void DischargePower(float amount);
 
     public void SetPowerPercent(float amount);
+
+    public Vector2 GetPosition();
 
     public PowerGraph GetGraph();
 

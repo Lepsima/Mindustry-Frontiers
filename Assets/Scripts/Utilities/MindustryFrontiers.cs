@@ -1241,7 +1241,7 @@ namespace Frontiers.Content {
                 powerStorage = 12500f,
             };
 
-            combustionGenerator = new PowerGeneratorBlockType("combustion-generator", typeof(ItemBlock)) {
+            combustionGenerator = new PowerGeneratorBlockType("combustion-generator", typeof(CrafterBlock)) {
                 buildCost = ItemStack.With(Items.copper, 15, Items.nickel, 20, Items.graphite, 10),
                 flags = new Flag[] { FlagTypes.powerable, FlagTypes.powerGenerator },
 
@@ -1302,7 +1302,7 @@ namespace Frontiers.Content {
                 },
             };
 
-            combustionGeneratorLarge = new PowerGeneratorBlockType("large-combustion-generator", typeof(ItemBlock)) {
+            combustionGeneratorLarge = new PowerGeneratorBlockType("large-combustion-generator", typeof(CrafterBlock)) {
                 buildCost = ItemStack.With(Items.copper, 15, Items.nickel, 20, Items.graphite, 10),
                 flags = new Flag[] { FlagTypes.powerable, FlagTypes.powerGenerator },
 

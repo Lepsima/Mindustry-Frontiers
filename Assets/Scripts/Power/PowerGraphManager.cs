@@ -41,6 +41,7 @@ public static class PowerGraphManager {
 
         // Loop through all connections
         foreach(IPowerable connection in connections) {
+
             if (connection.GetGraph() != graph) continue;
 
             // Create new graph

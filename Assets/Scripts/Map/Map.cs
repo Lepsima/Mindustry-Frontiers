@@ -585,10 +585,8 @@ namespace Frontiers.Content.Maps {
             void Handle(int x, int y) {
                 Block block = GetBlockAt(new Vector2Int(x, y) + position);
 
-                bool validBlock = !(block == null || from == block || !block.UsesPower() || adjacentBlocks.Contains(block.powerModule));
-                bool validConnection = from.powerModule.TransfersPower() || block.powerModule.TransfersPower();
-
-                if (validBlock && validConnection) adjacentBlocks.Add(block.powerModule);
+                if (block == null || from == block || !block.UsesPower() || adjacentBlocks.Contains(block.powerModule)) return;
+                if (from.powerModule.TransfersPower() || block.powerModule.TransfersPower()) adjacentBlocks.Add(block.powerModule);
             }
 
             return adjacentBlocks;

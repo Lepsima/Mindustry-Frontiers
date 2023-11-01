@@ -13,11 +13,26 @@ public class BlockPowerModule : IPowerable {
     public float powerUsage; // The amount of power this block uses, negative = consumes, positive = generates
     public float powerStorage; // The amount of power this block can store
 
-    public BlockPowerModule(float usage, float storage) {
+    public BlockPowerModule(Block block, float usage, float storage) {
+        this.block = block;
         powerUsage = usage;
         powerStorage = storage;
+    }
 
+    public void Init() {
         CreateConnections();
+
+        Vector2 start = GetPosition();
+
+        foreach (IPowerable powerable in connections) {
+            Vector2 end = powerable.GetPosition();
+
+            GameObject line = new("lInE", typeof(LineRenderer));
+            LineRenderer lnRe = line.GetComponent<LineRenderer>();
+
+            lnRe.SetPosition(0, start);
+            lnRe.SetPosition(0, end);
+        }
     }
 
     public bool UsesPower() {
@@ -75,6 +90,10 @@ public class BlockPowerModule : IPowerable {
         powerPercent = amount;
     }
 
+    public Vector2 GetPosition() {
+        return block.GetPosition();
+    }
+
     public PowerGraph GetGraph() {
         return graph;
     }
@@ -110,7 +129,7 @@ public class BlockPowerModule : IPowerable {
         foreach (Entity entity in rangedConnections) {
 
             // If the entity is a block, uses power, isn't in the adjacent connection list, and it's power graph hasnt been registered previously, include as a connection
-            if (entity is Block other && other.UsesPower() && !connections.Contains(other.powerModule) && !connectedGraphs.Contains(other.powerModule.GetGraph())) {
+            if (entity is Block other && other.UsesPower() && other != block && !connections.Contains(other.powerModule) && !connectedGraphs.Contains(other.powerModule.GetGraph())) {
 
                 // Add to connection list and also add it's power graph to the list
                 connections.Add(other.powerModule);
