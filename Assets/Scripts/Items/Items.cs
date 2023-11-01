@@ -4,7 +4,6 @@ using UnityEngine;
 using System.Collections.Generic;
 
 namespace Frontiers.Content {
-    [Serializable]
     public class Item : Element {
         public float hardness = 0, cost = 1;
         public bool lowPriority = false, buildable = true;

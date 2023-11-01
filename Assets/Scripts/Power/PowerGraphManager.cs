@@ -7,11 +7,11 @@ public static class PowerGraphManager {
     public static List<PowerGraph> graphs = new();
 
     public static void HandleIPowerable(IPowerable powerable) {
-        List<IPowerable> connections = powerable.;
+        IPowerable[] connections = powerable.GetConnections();
         List<PowerGraph> connectedPowerGraphs = new();
 
         foreach (IPowerable connection in connections) {
-            PowerGraph connectionGraph = GetPowerGraphFrom(connection);
+            PowerGraph connectionGraph = connection.GetGraph();
             if (connectionGraph != null) connectedPowerGraphs.Add(connectionGraph);
         }
 
@@ -35,11 +35,36 @@ public static class PowerGraphManager {
     }
 
     public static void HandleDisconnection(IPowerable powerable) {
+        // Get graph and connections
+        IPowerable[] connections = powerable.GetConnections();
+        PowerGraph graph = powerable.GetGraph();
 
-    }
+        // Loop through all connections
+        foreach(IPowerable connection in connections) {
+            if (connection.GetGraph() != graph) continue;
 
-    public static PowerGraph GetPowerGraphFrom(IPowerable powerable) {
-        foreach (PowerGraph graph in graphs) if (graph.Contains(powerable)) return graph;
-        return null;
+            // Create new graph
+            PowerGraph newGraph = new(connection);
+
+            // A queue with all the nodes that need to be evaluated
+            Queue<IPowerable> queue = new();
+            queue.Enqueue(connection);
+
+            while (queue.Count > 0) {
+                // Get the next powerable and it's connections
+                IPowerable child = queue.Dequeue();
+                IPowerable[] childConnections = child.GetConnections();
+
+                // Loop through all connections
+                foreach (IPowerable childConnection in childConnections) {
+
+                    // If isn't the removed powerable and hasnt been added already, set child's graph to new graph
+                    if (childConnection != powerable && childConnection.GetGraph() != newGraph) {
+                        newGraph.Handle(childConnection);
+                        queue.Enqueue(childConnection);
+                    }
+                }
+            }
+        }
     }
 }

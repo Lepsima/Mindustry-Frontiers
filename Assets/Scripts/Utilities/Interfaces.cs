@@ -52,4 +52,12 @@ public interface IPowerable {
     public void DischargePower(float amount);
 
     public void SetPowerPercent(float amount);
+
+    public PowerGraph GetGraph();
+
+    public void SetGraph(PowerGraph graph);
+
+    public IPowerable[] GetConnections();
+
+    public void ForceRemoveConnection(IPowerable powerable);
 }

@@ -22,6 +22,7 @@ public class PowerGraph {
         if (powerable.GeneratesPower()) powerGenerators.Add(powerable);
         if (powerable.StoresPower()) powerStorages.Add(powerable);
         all.Add(powerable);
+        powerable.SetGraph(this);
     }
 
     public void Handle(PowerGraph other) {
@@ -34,6 +35,9 @@ public class PowerGraph {
         powerGenerators.AddRange(other.powerGenerators);
         powerStorages.AddRange(other.powerStorages);
         all.AddRange(other.all);
+
+        foreach(IPowerable powerable in other.all) powerable.SetGraph(this);
+
         PowerGraphManager.graphs.Remove(other);
     }
 
