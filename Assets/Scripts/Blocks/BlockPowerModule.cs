@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static PowerGraphManager;
 
 public class BlockPowerModule : IPowerable {
     public Block block;
@@ -20,19 +21,28 @@ public class BlockPowerModule : IPowerable {
     }
 
     public void Init() {
-        CreateConnections();
+        List<Connection> connections = block.GetConnectedGraphs();
+        this.connections = new IPowerable[connections.Count];
 
-        Vector2 start = GetPosition();
-
-        foreach (IPowerable powerable in connections) {
-            Vector2 end = powerable.GetPosition();
-
-            GameObject line = new("lInE", typeof(LineRenderer));
-            LineRenderer lnRe = line.GetComponent<LineRenderer>();
-
-            lnRe.SetPosition(0, start);
-            lnRe.SetPosition(1, end);
+        for(int i = 0; i < connections.Count; i++) {
+            Connection connection = connections[i];
+            if (connection.isRanged) HandleRangeConnection(connection);
+            this.connections[i] = connection.powerable;
         }
+    }
+
+    private void HandleRangeConnection(Connection connection) {
+        Vector2 start = GetPosition();
+        Vector2 end = connection.powerable.GetPosition();
+
+        GameObject line = new("powerLine", typeof(LineRenderer));
+        LineRenderer lineRenderer = line.GetComponent<LineRenderer>();
+
+        lineRenderer.SetPosition(0, start);
+        lineRenderer.SetPosition(1, end);
+
+        lineRenderer.sortingLayerName = "Blocks";
+        lineRenderer.sortingOrder = 10;
     }
 
     public bool UsesPower() {

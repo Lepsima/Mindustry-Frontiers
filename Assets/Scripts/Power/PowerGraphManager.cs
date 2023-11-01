@@ -65,14 +65,6 @@ public static class PowerGraphManager {
             }
         }
 
-        foreach(Connection connection in connections) {
-            if (diff <= 0) break;
-
-            if (connection.isRanged) {
-                retu
-            }
-        }
-
         return connections;
 
         static Connection GetConnection(List<Connection> list, IPowerable powerable) {
