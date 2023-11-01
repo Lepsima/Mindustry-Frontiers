@@ -26,7 +26,7 @@ public class Block : Entity {
 
     static readonly Vector2Int[] adjacentPositions = new Vector2Int[4] { new Vector2Int(1, 0), new Vector2Int(0, 1), new Vector2Int(-1, 0), new Vector2Int(0, -1) };
 
-    public BlockPowerModule powerModule;
+    public PowerModule powerModule;
 
     public override string SaveDataToString(bool includeSyncID) {
         string data = base.SaveDataToString(includeSyncID);
@@ -64,7 +64,7 @@ public class Block : Entity {
 
         if (Type.usesPower) { 
             powerModule = new(this, Type.powerUsage, Type.powerStorage);
-            powerModule.Init();
+            powerModule.Start();
         }
 
         syncs = Type.syncs;

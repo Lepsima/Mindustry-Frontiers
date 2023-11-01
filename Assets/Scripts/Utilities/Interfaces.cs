@@ -54,13 +54,17 @@ public interface IPowerable {
 
     public void SetPowerPercent(float amount);
 
+    public int GetFreeConections();
+
+    public float GetLineStartDistance();
+
     public Vector2 GetPosition();
 
     public PowerGraph GetGraph();
 
     public void SetGraph(PowerGraph graph);
 
-    public IPowerable[] GetConnections();
+    public List<IPowerable> GetConnections();
 
     public void ForceRemoveConnection(IPowerable powerable);
 }

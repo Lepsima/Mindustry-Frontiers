@@ -8,10 +8,10 @@ public static class PowerGraphManager {
     public static List<PowerGraph> graphs = new();
 
     public struct Connection {
-        public IPowerable powerable;
+        public PowerModule powerable;
         public bool isRanged;
 
-        public Connection(IPowerable powerable, bool isRanged) {
+        public Connection(PowerModule powerable, bool isRanged) {
             this.powerable = powerable;
             this.isRanged = isRanged;
         }
@@ -19,7 +19,7 @@ public static class PowerGraphManager {
         public bool IsValid() => powerable != null;
     };
 
-    public static List<Connection> GetConnectedGraphs(this Block block) {
+    public static List<Connection> GetConnections(this Block block) {
         float range = block.Type.powerConnectionRange;
         int rangedConnections = 0;
 
@@ -30,7 +30,7 @@ public static class PowerGraphManager {
         if (range > 0) {
             // Get the closest powerable from each graph and check if it's valid
             foreach (PowerGraph graph in graphs) {
-                IPowerable closest = graph.GetClosestTo(blockPosition, out float distance);
+                PowerModule closest = graph.GetClosestTo(blockPosition, out float distance);
 
                 if (distance <= range) {
                     connections.Add(new(closest, true));
@@ -40,18 +40,26 @@ public static class PowerGraphManager {
         }
 
         // Get all the adjacent powerables to discard ranged connections
-        List<IPowerable> adjacentConnections = MapManager.Map.GetAdjacentPowerBlocks(block);
+        List<PowerModule> adjacentConnections = MapManager.Map.GetAdjacentPowerBlocks(block);
 
-        foreach (IPowerable powerable in adjacentConnections) {
-            Connection other = GetConnection(connections, powerable);
-
+        foreach (PowerModule powerable in adjacentConnections) {
+            Connection other = GetConnection(powerable);
+  
             if (other.IsValid()) {
+                // If the connection was added already, set it to not ranged
                 other.isRanged = false;
                 rangedConnections--;
+
+            } else if (ContainsGraph(powerable.GetGraph())){
+                // If the connection's graph hasn't been added already, add it as not ranged
+                connections.Add(new(powerable, false));
             }
         }
-
+        
+        // Positive if is higher than expected
         int diff = rangedConnections - block.Type.maxPowerConnections;
+
+        // return if the connection amount is below expected
         if (diff <= 0) return connections;
 
         // If there are too many connections, remove till satisfied
@@ -67,17 +75,22 @@ public static class PowerGraphManager {
 
         return connections;
 
-        static Connection GetConnection(List<Connection> list, IPowerable powerable) {
-            foreach (Connection connection in list) if (connection.powerable == powerable) return connection;
+        Connection GetConnection(PowerModule powerable) {
+            foreach (Connection connection in connections) if (connection.powerable == powerable) return connection;
             return new Connection();
+        }
+
+        bool ContainsGraph(PowerGraph graph) {
+            foreach (Connection connection in connections) if (connection.powerable.GetGraph() == graph) return true;
+            return false;
         }
     }
 
-    public static void HandleIPowerable(IPowerable powerable) {
-        IPowerable[] connections = powerable.GetConnections();
+    public static void HandleIPowerable(PowerModule powerable) {
+        List<PowerModule> connections = powerable.GetConnections();
         List<PowerGraph> connectedPowerGraphs = new();
 
-        foreach (IPowerable connection in connections) {
+        foreach (PowerModule connection in connections) {
             PowerGraph connectionGraph = connection.GetGraph();
             if (connectionGraph != null) connectedPowerGraphs.Add(connectionGraph);
         }
@@ -101,13 +114,13 @@ public static class PowerGraphManager {
         }
     }
 
-    public static void HandleDisconnection(IPowerable powerable) {
+    public static void HandleDisconnection(PowerModule powerable) {
         // Get graph and connections
-        IPowerable[] connections = powerable.GetConnections();
+        List<PowerModule> connections = powerable.GetConnections();
         PowerGraph graph = powerable.GetGraph();
 
         // Loop through all connections
-        foreach(IPowerable connection in connections) {
+        foreach(PowerModule connection in connections) {
 
             if (connection.GetGraph() != graph) continue;
 
@@ -115,22 +128,22 @@ public static class PowerGraphManager {
             PowerGraph newGraph = new(connection);
 
             // A queue with all the nodes that need to be evaluated
-            Queue<IPowerable> queue = new();
+            Queue<PowerModule> queue = new();
             queue.Enqueue(connection);
 
             while (queue.Count > 0) {
                 // Get the next powerable and it's connections
-                IPowerable child = queue.Dequeue();
-                IPowerable[] childConnections = child.GetConnections();
+                PowerModule child = queue.Dequeue();
+                List<PowerModule> childConnections = child.GetConnections();
 
                 // Loop through all connections
-                foreach (IPowerable childConnection in childConnections) {
+                foreach (PowerModule childConnection in childConnections) {
 
                     // If isn't the removed powerable and hasnt been added already, set child's graph to new graph
-                    if (childConnection != powerable && childConnection.GetGraph() != newGraph) {
-                        newGraph.Handle(childConnection);
-                        queue.Enqueue(childConnection);
-                    }
+                    if (childConnection == powerable || childConnection.GetGraph() == newGraph) continue;
+
+                    newGraph.Handle(childConnection);
+                    queue.Enqueue(childConnection);
                 }
             }
         }

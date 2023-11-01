@@ -567,9 +567,9 @@ namespace Frontiers.Content.Maps {
             return (adjacentBlocks, adjacentBlockOrientations);
         }
 
-        public List<IPowerable> GetAdjacentPowerBlocks(Block from) {
+        public List<PowerModule> GetAdjacentPowerBlocks(Block from) {
             // Create the adjacent block list
-            List<IPowerable> adjacentBlocks = new();
+            List<PowerModule> adjacentBlocks = new();
             int size = (int)from.size;
 
             // Get the block's position

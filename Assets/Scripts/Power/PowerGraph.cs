@@ -4,24 +4,24 @@ using UnityEngine;
 using System.Linq;
 
 public class PowerGraph {
-    public List<IPowerable> powerConsumers = new();
-    public List<IPowerable> powerGenerators = new();
-    public List<IPowerable> powerStorages = new();
-    public List<IPowerable> all = new();
+    public List<PowerModule> powerConsumers = new();
+    public List<PowerModule> powerGenerators = new();
+    public List<PowerModule> powerStorages = new();
+    public List<PowerModule> all = new();
 
     public PowerGraph() { 
     
     }
 
-    public PowerGraph(IPowerable powerable) {
+    public PowerGraph(PowerModule powerable) {
         Handle(powerable);
     }
 
-    public IPowerable GetClosestTo(Vector2 position, out float closestDistance) {
+    public PowerModule GetClosestTo(Vector2 position, out float closestDistance) {
         closestDistance = float.MaxValue;
-        IPowerable closest = null;
+        PowerModule closest = null;
 
-        foreach(IPowerable powerable in all) {
+        foreach(PowerModule powerable in all) {
             float distance = Vector2.Distance(powerable.GetPosition(), position);
 
             if (distance < closestDistance) {
@@ -33,7 +33,7 @@ public class PowerGraph {
         return closest;
     }
 
-    public void Handle(IPowerable powerable) {
+    public void Handle(PowerModule powerable) {
         if (powerable.ConsumesPower()) powerConsumers.Add(powerable);
         if (powerable.GeneratesPower()) powerGenerators.Add(powerable);
         if (powerable.StoresPower()) powerStorages.Add(powerable);
@@ -52,12 +52,12 @@ public class PowerGraph {
         powerStorages.AddRange(other.powerStorages);
         all.AddRange(other.all);
 
-        foreach(IPowerable powerable in other.all) powerable.SetGraph(this);
+        foreach(PowerModule powerable in other.all) powerable.SetGraph(this);
 
         PowerGraphManager.graphs.Remove(other);
     }
 
-    public bool Contains(IPowerable powerable) {
+    public bool Contains(PowerModule powerable) {
         return all.Contains(powerable);
     }
 
@@ -77,7 +77,7 @@ public class PowerGraph {
         // Haha conditional tower
         float coverage = generated == 0 && needed == 0 ? 0 : needed == 0 ? 1f : Mathf.Min(1, generated / needed);
 
-        foreach (IPowerable powerable in powerConsumers) {
+        foreach (PowerModule powerable in powerConsumers) {
             powerable.SetPowerPercent(coverage);
         }
     }
@@ -88,7 +88,7 @@ public class PowerGraph {
 
         float dischargePercentage = Mathf.Min(1f, amount / stored);
 
-        foreach (IPowerable powerable in powerStorages) {
+        foreach (PowerModule powerable in powerStorages) {
             powerable.DischargePower(dischargePercentage);
         }
 
@@ -101,7 +101,7 @@ public class PowerGraph {
 
         float chargePercentage = Mathf.Min(1f, amount / capacity);
 
-        foreach (IPowerable powerable in powerStorages) {
+        foreach (PowerModule powerable in powerStorages) {
             powerable.ChargePower(chargePercentage);
         }
 
@@ -111,7 +111,7 @@ public class PowerGraph {
     public float PowerNeeded() {
         float usage = 0;
 
-        foreach (IPowerable powerable in powerConsumers) {
+        foreach (PowerModule powerable in powerConsumers) {
             usage += powerable.GetPowerConsumption();
         }
 
@@ -121,7 +121,7 @@ public class PowerGraph {
     public float PowerGenerated() {
         float usage = 0;
 
-        foreach (IPowerable powerable in powerGenerators) {
+        foreach (PowerModule powerable in powerGenerators) {
             usage += powerable.GetPowerGeneration();
         }
 
@@ -131,7 +131,7 @@ public class PowerGraph {
     public float GetPowerCapacity() {
         float storage = 0;
 
-        foreach (IPowerable powerable in powerStorages) {
+        foreach (PowerModule powerable in powerStorages) {
             storage += powerable.GetPowerCapacity();
         }
 
@@ -141,7 +141,7 @@ public class PowerGraph {
     public float GetPowerStored() {
         float storage = 0;
 
-        foreach (IPowerable powerable in powerStorages) {
+        foreach (PowerModule powerable in powerStorages) {
             storage += powerable.GetStoredPower();
         }
 
@@ -151,7 +151,7 @@ public class PowerGraph {
     public float GetPowerStorage() {
         float storage = 0;
 
-        foreach(IPowerable powerable in powerStorages) {
+        foreach(PowerModule powerable in powerStorages) {
             storage += powerable.GetMaxStorage();
         }
 
