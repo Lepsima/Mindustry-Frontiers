@@ -17,6 +17,22 @@ public class PowerGraph {
         Handle(powerable);
     }
 
+    public IPowerable GetClosestTo(Vector2 position, out float closestDistance) {
+        closestDistance = float.MaxValue;
+        IPowerable closest = null;
+
+        foreach(IPowerable powerable in all) {
+            float distance = Vector2.Distance(powerable.GetPosition(), position);
+
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closest = powerable;
+            }
+        }
+
+        return closest;
+    }
+
     public void Handle(IPowerable powerable) {
         if (powerable.ConsumesPower()) powerConsumers.Add(powerable);
         if (powerable.GeneratesPower()) powerGenerators.Add(powerable);

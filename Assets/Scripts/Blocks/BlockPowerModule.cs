@@ -31,7 +31,7 @@ public class BlockPowerModule : IPowerable {
             LineRenderer lnRe = line.GetComponent<LineRenderer>();
 
             lnRe.SetPosition(0, start);
-            lnRe.SetPosition(0, end);
+            lnRe.SetPosition(1, end);
         }
     }
 
@@ -100,45 +100,6 @@ public class BlockPowerModule : IPowerable {
 
     public void SetGraph(PowerGraph graph) {
         this.graph = graph;
-    }
-
-    /// <summary>
-    /// Creates the power connection array, doesn't actually connect any power graphs together
-    /// </summary>
-    public void CreateConnections() {
-        // A list of all the graphs that this block will be connected to
-        List<PowerGraph> connectedGraphs = new();
-
-        // A list of all the blocks that transfer power by touch
-        List<IPowerable> connections = MapManager.Map.GetAdjacentPowerBlocks(block);
-
-        // Add all the touch transfer blocks graph's to the graph list
-        foreach(IPowerable powerable in connections) {
-            // If graph is null or already in the list, skip
-            PowerGraph otherGraph = powerable.GetGraph();
-            if (otherGraph == null || connectedGraphs.Contains(otherGraph)) continue;
-            
-            // Add to list
-            connectedGraphs.Add(otherGraph);
-        }
-
-        // All the entities that are in connection range of this block !!INCLUDES UNITS AND ALL BLOCKS!!
-        List<Entity> rangedConnections = block.Type.powerConnectionRange > 0 ? MapManager.Map.GetAllEntitiesInRange(block.GetPosition(), block.Type.powerConnectionRange) : null;
-
-        // Filter the ranged connections to valid power blocks
-        foreach (Entity entity in rangedConnections) {
-
-            // If the entity is a block, uses power, isn't in the adjacent connection list, and it's power graph hasnt been registered previously, include as a connection
-            if (entity is Block other && other.UsesPower() && other != block && !connections.Contains(other.powerModule) && !connectedGraphs.Contains(other.powerModule.GetGraph())) {
-
-                // Add to connection list and also add it's power graph to the list
-                connections.Add(other.powerModule);
-                connectedGraphs.Add(other.powerModule.GetGraph());
-            }
-        }
-
-        // Convert to array
-        this.connections = connections.ToArray();
     }
 
     /// <summary>

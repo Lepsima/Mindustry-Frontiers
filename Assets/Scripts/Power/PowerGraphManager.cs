@@ -2,9 +2,84 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Frontiers.Content.Maps;
+using System.Linq;
 
 public static class PowerGraphManager {
     public static List<PowerGraph> graphs = new();
+
+    public struct Connection {
+        public IPowerable powerable;
+        public bool isRanged;
+
+        public Connection(IPowerable powerable, bool isRanged) {
+            this.powerable = powerable;
+            this.isRanged = isRanged;
+        }
+
+        public bool IsValid() => powerable != null;
+    };
+
+    public static List<Connection> GetConnectedGraphs(this Block block) {
+        float range = block.Type.powerConnectionRange;
+        int rangedConnections = 0;
+
+        Vector2 blockPosition = block.GetPosition();
+
+        List<Connection> connections = new();
+
+        if (range > 0) {
+            // Get the closest powerable from each graph and check if it's valid
+            foreach (PowerGraph graph in graphs) {
+                IPowerable closest = graph.GetClosestTo(blockPosition, out float distance);
+
+                if (distance <= range) {
+                    connections.Add(new(closest, true));
+                    rangedConnections++;
+                }
+            }
+        }
+
+        // Get all the adjacent powerables to discard ranged connections
+        List<IPowerable> adjacentConnections = MapManager.Map.GetAdjacentPowerBlocks(block);
+
+        foreach (IPowerable powerable in adjacentConnections) {
+            Connection other = GetConnection(connections, powerable);
+
+            if (other.IsValid()) {
+                other.isRanged = false;
+                rangedConnections--;
+            }
+        }
+
+        int diff = rangedConnections - block.Type.maxPowerConnections;
+        if (diff <= 0) return connections;
+
+        // If there are too many connections, remove till satisfied
+        for (int i = connections.Count - 1; i >= 0; i--) {
+            if (diff <= 0) break;
+
+            Connection connection = connections[i];
+            if (connection.isRanged) {
+                connections.Remove(connection);
+                diff--;
+            }
+        }
+
+        foreach(Connection connection in connections) {
+            if (diff <= 0) break;
+
+            if (connection.isRanged) {
+                retu
+            }
+        }
+
+        return connections;
+
+        static Connection GetConnection(List<Connection> list, IPowerable powerable) {
+            foreach (Connection connection in list) if (connection.powerable == powerable) return connection;
+            return new Connection();
+        }
+    }
 
     public static void HandleIPowerable(IPowerable powerable) {
         IPowerable[] connections = powerable.GetConnections();
