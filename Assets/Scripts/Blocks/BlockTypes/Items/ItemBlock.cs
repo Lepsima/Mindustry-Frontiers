@@ -108,8 +108,8 @@ public abstract class ItemBlock : Block, IInventory {
     }
 
     public virtual void OutputItems() {
+        if (reciverBlocks == null || reciverBlocks.Length == 0 || (outputItems != null && (outputItems.Length == 0 || inventory.Empty(outputItems)))) return;
         int reciverBlockCount = reciverBlocks.Length;
-        if (reciverBlockCount == 0 || (outputItems != null && (outputItems.Length == 0 || inventory.Empty(outputItems)))) return;
 
         Item currentItem = outputItems == null ? inventory.First() : inventory.First(outputItems);
         if (currentItem == null || !inventory.Has(currentItem, 1)) return;

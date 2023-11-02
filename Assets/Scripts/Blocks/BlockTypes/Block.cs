@@ -62,10 +62,7 @@ public class Block : Entity {
         GetComponent<BoxCollider2D>().size = Vector2.one * Type.size;
         size = Type.size;
 
-        if (Type.usesPower) { 
-            powerModule = new(this, Type.powerUsage, Type.powerStorage);
-            powerModule.Start();
-        }
+        if (Type.usesPower) powerModule = new(this, Type.powerUsage, Type.powerStorage);
 
         syncs = Type.syncs;
         syncValues = 1; // The amount of values sent each sync (do not change)
@@ -190,6 +187,9 @@ public class Block : Entity {
 
     public override void OnDestroy() {
         if (!gameObject.scene.isLoaded) return;
+
+        //kAbOoM!!!
+        if (Type.usesPower) powerModule.Destroy();
 
         // If this block was destroyed by damage, create fx
         if (wasDestroyed) {

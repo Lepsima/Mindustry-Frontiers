@@ -7,34 +7,36 @@ using static PowerGraphManager;
 
 public class PowerModule {
     public class PowerLineRenderer {
-        public static GameObject linePrefab;
-        public static float scale;
+        public static GameObject linePrefab = AssetLoader.GetPrefab("power-line-prefab");
+        public static float scale = 0.5f, spriteScale = 8f;
 
         public Transform instance;
         public PowerModule powerable1;
         public PowerModule powerable2;
 
-        public static void Init(string name) {
-            linePrefab = AssetLoader.GetPrefab(name + "-prefab");
-        }
-
         public PowerLineRenderer(PowerModule powerable1, PowerModule powerable2) {
             this.powerable1 = powerable1;
             this.powerable2 = powerable2;
+
+            this.powerable1.powerLineRenderers.Add(this);
+            this.powerable2.powerLineRenderers.Add(this);
 
             Update();
         }
 
         public void Destroy() {
-            Object.Destroy(instance);
+            powerable1.powerLineRenderers.Remove(this);
+            powerable2.powerLineRenderers.Remove(this);
+
+            Object.Destroy(instance.gameObject);
         }
 
         private void GetPositions(out Vector2 v1, out Vector2 v2) {
             Vector2 v01 = powerable1.GetPosition();
             Vector2 v02 = powerable2.GetPosition();
 
-            v1 = v01 + (v02 - v01) * powerable1.GetLineStartDistance();
-            v2 = v02 + (v01 - v02) * powerable2.GetLineStartDistance();
+            v1 = v01 + (powerable1.GetLineStartDistance() * scale * (v02 - v01).normalized);
+            v2 = v02 + (powerable2.GetLineStartDistance() * scale * (v01 - v02).normalized);
         }
 
         public void Update() {
@@ -55,13 +57,13 @@ public class PowerModule {
             endTransform.position = end;
 
             // Rotations
-            startTransform.up = end - start;
-            lineTransform.up = end - start;
-            endTransform.up = start - end;
+            startTransform.right = end - start;
+            lineTransform.right = end - start;
+            endTransform.right = start - end;
 
             // Scale
             float length = Vector2.Distance(start, end);
-            lineTransform.localScale = new Vector3(1f, length, 1f);
+            lineTransform.localScale = new Vector3((length - scale * 0.5f) * spriteScale / scale, 1f, 1f);
         }
     }
 
@@ -79,9 +81,7 @@ public class PowerModule {
         this.block = block;
         powerUsage = usage;
         powerStorage = storage;
-    }
 
-    public void Start() {
         List<Connection> connections = block.GetConnections();
         this.connections = new List<PowerModule>(connections.Count);
 
@@ -96,8 +96,8 @@ public class PowerModule {
     public void Destroy() {
         HandleDisconnection(this);
 
-        foreach (PowerModule powerable in connections) DisconnectFrom(powerable);
-        foreach (PowerLineRenderer powerLineRenderer in powerLineRenderers) powerLineRenderer.Destroy();
+        for (int i = connections.Count - 1; i >= 0; i--) DisconnectFrom(connections[i]);
+        for (int i = powerLineRenderers.Count - 1; i >= 0; i--) powerLineRenderers[i].Destroy();
     }
 
     void ConnectTo(PowerModule powerable) {
@@ -170,7 +170,7 @@ public class PowerModule {
     }
 
     public float GetLineStartDistance() {
-        return block.size / 1.5f;
+        return block.size * 0.75f;
     }
 
     public Vector2 GetPosition() {
