@@ -19,7 +19,11 @@ public class PowerGraph {
     public PowerGraph(PowerModule powerable) {
         id = ids;
         ids++;
+        
         Handle(powerable);
+
+        // adadadadadadadadada
+        PowerGraphManager.graphs.Add(this);
     }
 
     public PowerModule GetClosestInRange(Vector2 position, float range) {

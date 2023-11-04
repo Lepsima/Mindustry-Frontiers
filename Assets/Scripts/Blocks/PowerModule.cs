@@ -9,7 +9,7 @@ using static PowerGraphManager;
 public class PowerModule {
     public class PowerLineRenderer {
         public static GameObject linePrefab = AssetLoader.GetPrefab("power-line-prefab");
-        public static float scale = 0.5f, spriteScale = 8f;
+        public static float scale = 0.5f, spriteScale = 12f;
 
         public Transform instance;
         public PowerModule powerable1;
@@ -75,8 +75,10 @@ public class PowerModule {
         }
 
         public static void CalculateColor(float velocity) {
-            float alpha = (Mathf.Sin(Time.time * velocity) * 0.5f + 1f) * 0.5f;
-            color = new(0f, 0.7013682f, 0.3349057f, alpha);
+            float alpha = (Mathf.Sin(Time.time * velocity) * 0.5f + 1f) * 0.5f + 0.25f;
+            Debug.Log(alpha);
+            //color = new(1f, 0.7013682f, 0.3349057f, alpha);
+            color = new(1f, 1f, 1f, alpha);
         }
 
         public void HandleGlow() {
@@ -218,7 +220,7 @@ public class PowerModule {
 
     public void SetGraph(PowerGraph graph) {
         this.graph = graph;
-        block.transform.ChangeNumbers((int)graph.id);
+        //block.transform.ChangeNumbers((int)graph.id);
     }
 
     /// <summary>

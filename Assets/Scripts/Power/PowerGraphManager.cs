@@ -89,11 +89,9 @@ public static class PowerGraphManager {
             if (connectionGraph != null) connectedPowerGraphs.Add(connectionGraph);
         }
 
-        Debug.Log("Final connections: " + connections.Count);
-
         if (connectedPowerGraphs.Count == 0) {
             // Not connected to anyone, should create a new graph
-            graphs.Add(new PowerGraph(powerable));
+            new PowerGraph(powerable);
 
         } else {
             // Connected to at least 1 graph, should add itself to it

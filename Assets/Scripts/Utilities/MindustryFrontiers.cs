@@ -1125,6 +1125,7 @@ namespace Frontiers.Content {
             canGetOnFire = true;
             usesPower = true;
             transfersPower = true;
+            updates = true; // To update the glow of the power lines IMPORTANT
             powerSprite = AssetLoader.GetSprite(name + "-power");
         }
     }

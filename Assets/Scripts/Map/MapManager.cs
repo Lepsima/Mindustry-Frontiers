@@ -77,7 +77,7 @@ public class MapManager : MonoBehaviour {
         if (Map == null) return;
 
         // I have no idea for where to put this, so here it goes, good luck anyone trying to find it
-        PowerLineRenderer.CalculateColor(1f);
+        PowerLineRenderer.CalculateColor(4f);
 
         Content selectedContent = PlayerContentSelector.SelectedContent;
         int size = selectedContent == null ? 1 : TypeEquals(selectedContent.GetType(), typeof(BlockType)) ? ((BlockType)selectedContent).size : 1;
