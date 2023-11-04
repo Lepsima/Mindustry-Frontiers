@@ -15,6 +15,9 @@ public class PowerModule {
         public PowerModule powerable1;
         public PowerModule powerable2;
 
+        public SpriteRenderer spriteRenderer1, spriteRenderer2, spriteRenderer3;
+        public static Color color;
+
         public PowerLineRenderer(PowerModule powerable1, PowerModule powerable2) {
             this.powerable1 = powerable1;
             this.powerable2 = powerable2;
@@ -65,6 +68,21 @@ public class PowerModule {
             // Scale
             float length = Vector2.Distance(start, end);
             lineTransform.localScale = new Vector3((length - scale * 0.5f) * spriteScale / scale, 1f, 1f);
+
+            spriteRenderer1 = startTransform.GetComponent<SpriteRenderer>();
+            spriteRenderer2 = lineTransform.GetComponent<SpriteRenderer>();
+            spriteRenderer3 = endTransform.GetComponent<SpriteRenderer>();
+        }
+
+        public static void CalculateColor(float velocity) {
+            float alpha = (Mathf.Sin(Time.time * velocity) * 0.5f + 1f) * 0.5f;
+            color = new(0f, 0.7013682f, 0.3349057f, alpha);
+        }
+
+        public void HandleGlow() {
+            spriteRenderer1.color = color;
+            spriteRenderer2.color = color;
+            spriteRenderer3.color = color;
         }
     }
 
@@ -82,6 +100,12 @@ public class PowerModule {
         this.block = block;
         powerUsage = usage;
         powerStorage = storage;
+    }
+
+    public void UpdatePowerLines() {
+        foreach(PowerLineRenderer powerLineRenderer in powerLineRenderers) {
+            powerLineRenderer.HandleGlow();
+        }
     }
 
     public void Initialize() {

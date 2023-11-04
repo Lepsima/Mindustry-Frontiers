@@ -8,6 +8,7 @@ using Frontiers.Assets;
 using Frontiers.Content.SoundEffects;
 using System;
 using Random = UnityEngine.Random;
+using static PowerModule;
 
 public class MapManager : MonoBehaviour {
     public static MapManager Instance;
@@ -74,6 +75,10 @@ public class MapManager : MonoBehaviour {
 
     public void UpdateMapManager() {
         if (Map == null) return;
+
+        // I have no idea for where to put this, so here it goes, good luck anyone trying to find it
+        PowerLineRenderer.CalculateColor(1f);
+
         Content selectedContent = PlayerContentSelector.SelectedContent;
         int size = selectedContent == null ? 1 : TypeEquals(selectedContent.GetType(), typeof(BlockType)) ? ((BlockType)selectedContent).size : 1;
         Vector2Int mouseGridPos = Vector2Int.CeilToInt(PlayerManager.mousePos - (Vector3.one * 0.5f) - (0.5f * size * Vector3.one));

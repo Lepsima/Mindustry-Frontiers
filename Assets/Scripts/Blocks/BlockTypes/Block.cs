@@ -121,6 +121,10 @@ public class Block : Entity {
     }
 
     protected virtual void Update() {
+        if (UsesPower()) {
+            powerModule.UpdatePowerLines();
+        }
+
         // Update the glow sprite
         if (glows) {
             for (int i = 0; i < glowSpriteRenderers.Length; i++) {
