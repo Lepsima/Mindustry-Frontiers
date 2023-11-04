@@ -44,7 +44,7 @@ public static class PowerGraphManager {
                 other.isRanged = false;
                 rangedConnections--;
 
-            } else if (ContainsGraph(powerable.GetGraph())){
+            } else if (!ContainsGraph(powerable.GetGraph())){
                 // If the connection's graph hasn't been added already, add it as not ranged
                 connections.Add(new(powerable, false));
             }
