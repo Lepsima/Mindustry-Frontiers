@@ -203,7 +203,9 @@ public class PowerModule {
     }
 
     public int GetFreeConections() {
-        return block.Type.maxPowerConnections - connections.Count;
+        // If it has 0 max connections it works as unlimited connections, returns 99 just in case, but 1 should also work
+        int maxConnections = block.Type.maxPowerConnections;
+        return maxConnections == 0 ? 99 : maxConnections - connections.Count;
     }
 
     public float GetLineStartDistance() {
