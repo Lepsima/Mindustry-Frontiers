@@ -125,4 +125,14 @@ public static class LandingPadNumberGenerator {
         spriteRenderer.sortingOrder = 5;
         spriteRenderer.material = numberMaterial;
     }
+
+    public static void ChangeNumbers(this Transform transform, int number) {
+        Transform n1 = transform.Find("Number 1");
+        Transform n2 = transform.Find("Number 2");
+
+        if (n1) Object.Destroy(n1.gameObject);
+        if (n2) Object.Destroy(n2.gameObject);
+
+        transform.CreateNumbers(number);
+    }
 }

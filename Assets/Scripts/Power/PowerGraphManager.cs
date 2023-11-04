@@ -7,7 +7,7 @@ using System.Linq;
 public static class PowerGraphManager {
     public static List<PowerGraph> graphs = new();
 
-    public struct Connection {
+    public class Connection {
         public PowerModule powerable;
         public bool isRanged;
 
@@ -15,8 +15,6 @@ public static class PowerGraphManager {
             this.powerable = powerable;
             this.isRanged = isRanged;
         }
-
-        public bool IsValid() => powerable != null;
     };
 
     public static List<Connection> GetConnections(this Block block) {
@@ -24,19 +22,15 @@ public static class PowerGraphManager {
         int rangedConnections = 0;
 
         Vector2 blockPosition = block.GetPosition();
-
         List<Connection> connections = new();
 
-        if (range > 0) {
-            // Get the closest powerable from each graph and check if it's valid
-            foreach (PowerGraph graph in graphs) {
-                PowerModule closest = graph.GetClosestTo(blockPosition, out float distance);
+        // Get the closest powerable from each graph and check if it's valid
+        foreach (PowerGraph graph in graphs) {
+            PowerModule closest = graph.GetClosestInRange(blockPosition, range);
+            if (closest == null) continue;
 
-                if (distance <= range) {
-                    connections.Add(new(closest, true));
-                    rangedConnections++;
-                }
-            }
+            connections.Add(new(closest, true));
+            rangedConnections++;
         }
 
         // Get all the adjacent powerables to discard ranged connections
@@ -45,7 +39,7 @@ public static class PowerGraphManager {
         foreach (PowerModule powerable in adjacentConnections) {
             Connection other = GetConnection(powerable);
   
-            if (other.IsValid()) {
+            if (other != null) {
                 // If the connection was added already, set it to not ranged
                 other.isRanged = false;
                 rangedConnections--;
@@ -76,17 +70,17 @@ public static class PowerGraphManager {
         return connections;
 
         Connection GetConnection(PowerModule powerable) {
-            foreach (Connection connection in connections) if (connection.powerable == powerable) return connection;
-            return new Connection();
+            foreach (Connection connection in connections) if (connection.powerable.Equals(powerable)) return connection;
+            return null;
         }
 
         bool ContainsGraph(PowerGraph graph) {
-            foreach (Connection connection in connections) if (connection.powerable.GetGraph() == graph) return true;
+            foreach (Connection connection in connections) if (connection.powerable.GetGraph().Equals(graph)) return true;
             return false;
         }
     }
 
-    public static void HandleIPowerable(PowerModule powerable) {
+    public static void HandlePowerModule(PowerModule powerable) {
         List<PowerModule> connections = powerable.GetConnections();
         List<PowerGraph> connectedPowerGraphs = new();
 
@@ -94,6 +88,8 @@ public static class PowerGraphManager {
             PowerGraph connectionGraph = connection.GetGraph();
             if (connectionGraph != null) connectedPowerGraphs.Add(connectionGraph);
         }
+
+        Debug.Log("Final connections: " + connections.Count);
 
         if (connectedPowerGraphs.Count == 0) {
             // Not connected to anyone, should create a new graph
@@ -125,7 +121,7 @@ public static class PowerGraphManager {
             if (connection.GetGraph() != graph) continue;
 
             // Create new graph
-            PowerGraph newGraph = new(connection);
+            PowerGraph newGraph = new PowerGraph(connection);
 
             // A queue with all the nodes that need to be evaluated
             Queue<PowerModule> queue = new();

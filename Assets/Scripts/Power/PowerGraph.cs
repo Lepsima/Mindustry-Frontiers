@@ -4,26 +4,42 @@ using UnityEngine;
 using System.Linq;
 
 public class PowerGraph {
+    public static uint ids = 0;
     public List<PowerModule> powerConsumers = new();
     public List<PowerModule> powerGenerators = new();
     public List<PowerModule> powerStorages = new();
     public List<PowerModule> all = new();
+    public uint id = 0;
 
-    public PowerGraph() { 
-    
+    public PowerGraph() {
+        id = ids;
+        ids++;
     }
 
     public PowerGraph(PowerModule powerable) {
+        id = ids;
+        ids++;
         Handle(powerable);
     }
 
-    public PowerModule GetClosestTo(Vector2 position, out float closestDistance) {
-        closestDistance = float.MaxValue;
+    public PowerModule GetClosestInRange(Vector2 position, float range) {
+        float closestDistance = float.MaxValue;
         PowerModule closest = null;
 
         foreach(PowerModule powerable in all) {
-            float distance = Vector2.Distance(powerable.GetPosition(), position);
+            if (powerable.GetFreeConections() <= 0) continue;
 
+            Vector2 otherPosition = powerable.GetPosition();
+            float realRange = Mathf.Max(powerable.GetConnectionDistance(), range);
+
+            // Check range in a square distance
+            if (!(position.x + realRange >= otherPosition.x || position.x - realRange <= otherPosition.x || position.y + realRange >= otherPosition.y || position.y - realRange <= otherPosition.y)) continue;
+
+            // Check range in a circle distance
+            float distance = Vector2.Distance(powerable.GetPosition(), position);
+            if (distance > realRange) continue;
+
+            // If is smaller than previous, set this as the closest
             if (distance < closestDistance) {
                 closestDistance = distance;
                 closest = powerable;
@@ -55,6 +71,10 @@ public class PowerGraph {
         foreach(PowerModule powerable in other.all) powerable.SetGraph(this);
 
         PowerGraphManager.graphs.Remove(other);
+    }
+
+    public bool Equals(PowerGraph powerGraph) {
+        return id == powerGraph.id;
     }
 
     public bool Contains(PowerModule powerable) {

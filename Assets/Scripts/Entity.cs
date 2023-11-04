@@ -44,6 +44,10 @@ public abstract class Entity : SyncronizableObject, IDamageable, IMessager {
         return Type.name;
     }
 
+    public int GetID() {
+        return id;
+    }
+
     public void ApplyUpgrade(UpgradeType upgrade) {
         if (appliedUpgrades.Contains(upgrade.id)) return;
         ApplyUpgrageMultiplier(upgrade);

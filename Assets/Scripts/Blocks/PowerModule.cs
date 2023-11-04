@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Frontiers.Content;
 using Frontiers.Assets;
 using static PowerGraphManager;
 
@@ -81,7 +82,9 @@ public class PowerModule {
         this.block = block;
         powerUsage = usage;
         powerStorage = storage;
+    }
 
+    public void Initialize() {
         List<Connection> connections = block.GetConnections();
         this.connections = new List<PowerModule>(connections.Count);
 
@@ -90,7 +93,7 @@ public class PowerModule {
             ConnectTo(connection.powerable);
         }
 
-        HandleIPowerable(this);
+        HandlePowerModule(this);
     }
 
     public void Destroy() {
@@ -98,6 +101,10 @@ public class PowerModule {
 
         for (int i = connections.Count - 1; i >= 0; i--) DisconnectFrom(connections[i]);
         for (int i = powerLineRenderers.Count - 1; i >= 0; i--) powerLineRenderers[i].Destroy();
+    }
+
+    public bool Equals(PowerModule powerable) {
+        return powerable.block.GetID() == block.GetID();
     }
 
     void ConnectTo(PowerModule powerable) {
@@ -128,6 +135,10 @@ public class PowerModule {
 
     public bool TransfersPower() {
         return block.Type.transfersPower;
+    }
+
+    public float GetConnectionDistance() {
+        return block.Type.powerConnectionRange;
     }
 
     public float GetPowerConsumption() {
@@ -183,6 +194,7 @@ public class PowerModule {
 
     public void SetGraph(PowerGraph graph) {
         this.graph = graph;
+        block.transform.ChangeNumbers((int)graph.id);
     }
 
     /// <summary>

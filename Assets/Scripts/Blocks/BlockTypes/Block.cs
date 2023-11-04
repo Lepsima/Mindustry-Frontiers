@@ -62,7 +62,10 @@ public class Block : Entity {
         GetComponent<BoxCollider2D>().size = Vector2.one * Type.size;
         size = Type.size;
 
-        if (Type.usesPower) powerModule = new(this, Type.powerUsage, Type.powerStorage);
+        if (Type.usesPower) {
+            powerModule = new(this, Type.powerUsage, Type.powerStorage);
+            powerModule.Initialize();
+        }
 
         syncs = Type.syncs;
         syncValues = 1; // The amount of values sent each sync (do not change)
