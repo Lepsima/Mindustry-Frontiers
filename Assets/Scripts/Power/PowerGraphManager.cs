@@ -147,5 +147,8 @@ public static class PowerGraphManager {
                 }
             }
         }
+
+        // How the actual fuck did i forget to add this
+        graphs.Remove(graph);
     }
 }
