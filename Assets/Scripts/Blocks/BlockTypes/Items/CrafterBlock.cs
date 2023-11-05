@@ -17,6 +17,7 @@ public class CrafterBlock : ItemBlock {
     private float warmup;
 
     private bool itemPass = true, fluidPass = true;
+    private bool checkItemPass = true, checkFluidPass = true;
 
     #region - Upgradable Stats -
 
@@ -46,11 +47,13 @@ public class CrafterBlock : ItemBlock {
         craftProduction = MaterialList.Multiply(newCraftPlan.production, craftProductionMult);
         craftConsumption = MaterialList.Multiply(newCraftPlan.consumption, craftConsumptionMult);
 
-        if (craftConsumption.items == null && craftProduction.items == null) itemPass = true;
-        else UpdateItemPass();
+        checkItemPass = craftConsumption.items != null || craftProduction.items != null;
+        itemPass = !checkItemPass;
+        UpdateItemPass();
 
-        if (craftConsumption.fluids == null && craftProduction.fluids == null) fluidPass = true;
-        else UpdateFluidPass();
+        checkFluidPass = craftConsumption.fluids != null || craftProduction.fluids != null;
+        fluidPass = !checkFluidPass;
+        UpdateFluidPass();
     }
 
     /// <summary>
@@ -144,8 +147,8 @@ public class CrafterBlock : ItemBlock {
                 }
 
                 if (hasFluidInventory) {
-                    if (craftPlan.consumption.fluids != null) allowedInputFluids.AddRange(FluidStack.ToFluids(Type.craftPlan.consumption.fluids).ToList());
-                    if (craftPlan.production.fluids != null) allowedOutputFluids.AddRange(FluidStack.ToFluids(Type.craftPlan.production.fluids).ToList());
+                    if (craftPlan.consumption.fluids != null) allowedInputFluids.AddRange(FluidStack.ToFluids(craftPlan.consumption.fluids).ToList());
+                    if (craftPlan.production.fluids != null) allowedOutputFluids.AddRange(FluidStack.ToFluids(craftPlan.production.fluids).ToList());
 
                     fluidPass = false;
                 }
@@ -158,6 +161,8 @@ public class CrafterBlock : ItemBlock {
             this.allowedOutputItems = allowedOutputItems.ToArray();
             this.allowedInputFluids = allowedInputFluids.ToArray();
             this.allowedOutputFluids = allowedOutputFluids.ToArray();
+
+            SetCraftPlan(Type.craftPlans[0]);
 
         } else {
             SetCraftPlan(Type.craftPlan);
@@ -183,19 +188,23 @@ public class CrafterBlock : ItemBlock {
     }
 
     public override void OnInventoryValueChange(object sender, EventArgs e) {
+        UpdateMultiCraftPlan();
         UpdateItemPass();
     }
 
     public override void OnVolumeChanged(object sender, EventArgs e) {
+        UpdateMultiCraftPlan();
         UpdateFluidPass();
     }
 
     private void UpdateItemPass() {
+        if (!checkItemPass) return;
         itemPass = !hasItemInventory || inventory.Has(craftConsumption.items) && inventory.Fits(craftProduction.items);
         CraftState(itemPass && fluidPass);
     }
 
     private void UpdateFluidPass() {
+        if (!checkFluidPass) return;
         fluidPass = !hasFluidInventory || fluidInventory.Has(craftConsumption.fluids) && fluidInventory.CanRecive(craftProduction.fluids);
         CraftState(itemPass && fluidPass);
     }
