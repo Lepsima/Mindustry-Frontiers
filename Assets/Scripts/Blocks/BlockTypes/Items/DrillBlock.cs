@@ -53,8 +53,8 @@ public class DrillBlock : ItemBlock {
 
         nextDrillTime = Time.time + drillTime;
 
-        outputItems = new Item[1] { drillItem };
-        inventory.SetAllowedItems(outputItems);
+        allowedOutputItems = new Item[1] { drillItem };
+        inventory.SetAllowedItems(allowedOutputItems);
 
         maxRotorVelocity = yieldPercent * 150f;
     }

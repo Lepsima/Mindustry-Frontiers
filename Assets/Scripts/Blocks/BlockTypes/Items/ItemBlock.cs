@@ -16,8 +16,8 @@ public abstract class ItemBlock : Block, IInventory {
     protected int[] reciverBlockOrientations;
     public int reciverBlockIndex;
 
-    protected Item[] acceptedItems;
-    protected Item[] outputItems;
+    protected Item[] allowedInputItems;
+    protected Item[] allowedOutputItems;
 
     protected Fluid[] allowedInputFluids;
     protected Fluid[] allowedOutputFluids;
@@ -83,7 +83,7 @@ public abstract class ItemBlock : Block, IInventory {
         return allowedInputFluids == null || allowedInputFluids.Contains(fluid);
     }
 
-    public virtual bool IsAcceptedItem(Item item) => acceptedItems == null || acceptedItems.Length == 0 || acceptedItems.Contains(item);
+    public virtual bool IsAcceptedItem(Item item) => allowedInputItems == null || allowedInputItems.Length == 0 || allowedInputItems.Contains(item);
 
     public Inventory GetInventory() => inventory;
 
@@ -108,10 +108,10 @@ public abstract class ItemBlock : Block, IInventory {
     }
 
     public virtual void OutputItems() {
-        if (reciverBlocks == null || reciverBlocks.Length == 0 || (outputItems != null && (outputItems.Length == 0 || inventory.Empty(outputItems)))) return;
+        if (reciverBlocks == null || reciverBlocks.Length == 0 || (allowedOutputItems != null && (allowedOutputItems.Length == 0 || inventory.Empty(allowedOutputItems)))) return;
         int reciverBlockCount = reciverBlocks.Length;
 
-        Item currentItem = outputItems == null ? inventory.First() : inventory.First(outputItems);
+        Item currentItem = allowedOutputItems == null ? inventory.First() : inventory.First(allowedOutputItems);
         if (currentItem == null || !inventory.Has(currentItem, 1)) return;
 
         int offset = reciverBlockIndex;
@@ -119,7 +119,7 @@ public abstract class ItemBlock : Block, IInventory {
         for (int io = offset; io < reciverBlockCount + offset; io++) {
             int i = io % reciverBlockCount;
 
-            Item item = inventory.Has(currentItem, 1) ? currentItem : (outputItems == null ? inventory.First() : inventory.First(outputItems));
+            Item item = inventory.Has(currentItem, 1) ? currentItem : (allowedOutputItems == null ? inventory.First() : inventory.First(allowedOutputItems));
             if (item == null) break;
 
             ItemBlock itemBlock = reciverBlocks[i];
