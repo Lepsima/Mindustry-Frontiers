@@ -1220,9 +1220,9 @@ namespace Frontiers.Content {
 
                 health = 35f,
 
-                powerConnectionRange = 7.5f,
+                powerConnectionRange = 8.5f,
                 powerStorage = 150f,
-                maxPowerConnections = 4,
+                maxPowerConnections = 10,
             };
 
             battery = new PowerBankBlockType("battery", typeof(Block)) {

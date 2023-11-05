@@ -16,7 +16,7 @@ public class PowerModule {
         public PowerModule powerable2;
 
         public SpriteRenderer spriteRenderer1, spriteRenderer2, spriteRenderer3;
-        public static Color color;
+        public static Color unpoweredColor, poweredColor;
 
         public PowerLineRenderer(PowerModule powerable1, PowerModule powerable2) {
             this.powerable1 = powerable1;
@@ -76,12 +76,13 @@ public class PowerModule {
 
         public static void CalculateColor(float velocity) {
             float alpha = (Mathf.Sin(Time.time * velocity) * 0.5f + 1f) * 0.5f + 0.25f;
-            Debug.Log(alpha);
-            //color = new(1f, 0.7013682f, 0.3349057f, alpha);
-            color = new(1f, 1f, 1f, alpha);
+
+            unpoweredColor = new(1f, 0.3160377f, 0.3160377f);
+            poweredColor = new(1f, 1f, 1f, alpha);
         }
 
-        public void HandleGlow() {
+        public void HandleGlow(bool powered) {
+            Color color = powered ? poweredColor : unpoweredColor;
             spriteRenderer1.color = color;
             spriteRenderer2.color = color;
             spriteRenderer3.color = color;
@@ -105,9 +106,8 @@ public class PowerModule {
     }
 
     public void UpdatePowerLines() {
-        foreach(PowerLineRenderer powerLineRenderer in powerLineRenderers) {
-            powerLineRenderer.HandleGlow();
-        }
+        bool powered = graph.powerUsage > 0f;
+        foreach (PowerLineRenderer powerLineRenderer in powerLineRenderers) powerLineRenderer.HandleGlow(powered);
     }
 
     public void Initialize() {
@@ -222,7 +222,7 @@ public class PowerModule {
 
     public void SetGraph(PowerGraph graph) {
         this.graph = graph;
-        //block.transform.ChangeNumbers((int)graph.id);
+        block.transform.ChangeNumbers((int)graph.id);
     }
 
     /// <summary>

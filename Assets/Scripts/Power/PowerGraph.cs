@@ -11,6 +11,10 @@ public class PowerGraph {
     public List<PowerModule> all = new();
     public uint id = 0;
 
+    public float powerUsage;
+    public float powerStored;
+    public float maxPowerStorable;
+
     public PowerGraph() {
         id = ids;
         ids++;
@@ -31,7 +35,7 @@ public class PowerGraph {
         PowerModule closest = null;
 
         foreach(PowerModule powerable in all) {
-            if (powerable.GetFreeConections() <= 0) continue;
+            if (powerable.GetFreeConections() <= 0 || (range == 0 && powerable.GetConnectionDistance() == 0)) continue;
 
             Vector2 otherPosition = powerable.GetPosition();
             float realRange = Mathf.Max(powerable.GetConnectionDistance(), range);
@@ -57,8 +61,11 @@ public class PowerGraph {
         if (powerable.ConsumesPower()) powerConsumers.Add(powerable);
         if (powerable.GeneratesPower()) powerGenerators.Add(powerable);
         if (powerable.StoresPower()) powerStorages.Add(powerable);
+
         all.Add(powerable);
         powerable.SetGraph(this);
+
+        UpdateStaticValues();
     }
 
     public void Handle(PowerGraph other) {
@@ -73,8 +80,13 @@ public class PowerGraph {
         all.AddRange(other.all);
 
         foreach(PowerModule powerable in other.all) powerable.SetGraph(this);
-
         PowerGraphManager.graphs.Remove(other);
+
+        UpdateStaticValues();
+    }
+
+    public void UpdateStaticValues() {
+        maxPowerStorable = GetPowerCapacity();
     }
 
     public bool Equals(PowerGraph powerGraph) {
@@ -100,6 +112,7 @@ public class PowerGraph {
 
         // Haha conditional tower
         float coverage = generated == 0 && needed == 0 ? 0 : needed == 0 ? 1f : Mathf.Min(1, generated / needed);
+        powerUsage = generated - needed;
 
         foreach (PowerModule powerable in powerConsumers) {
             powerable.SetPowerPercent(coverage);
@@ -120,16 +133,15 @@ public class PowerGraph {
     }
 
     public float ChargeStorages(float amount) {
-        float capacity = GetPowerCapacity();
-        if (capacity == 0f || amount == 0f) return 0f;
+        if (maxPowerStorable == 0f || amount == 0f) return 0f;
 
-        float chargePercentage = Mathf.Min(1f, amount / capacity);
+        float chargePercentage = Mathf.Min(1f, amount / maxPowerStorable);
 
         foreach (PowerModule powerable in powerStorages) {
             powerable.ChargePower(chargePercentage);
         }
 
-        return Mathf.Min(capacity, amount);
+        return Mathf.Min(maxPowerStorable, amount);
     }
 
     public float PowerNeeded() {

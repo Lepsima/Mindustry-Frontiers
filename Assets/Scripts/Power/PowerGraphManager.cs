@@ -37,7 +37,7 @@ public static class PowerGraphManager {
         List<PowerModule> adjacentConnections = MapManager.Map.GetAdjacentPowerBlocks(block);
 
         foreach (PowerModule powerable in adjacentConnections) {
-            Connection other = GetConnection(powerable);
+            Connection other = GetGraphEqualConnection(powerable);
   
             if (other != null) {
                 // If the connection was added already, set it to not ranged
@@ -49,9 +49,10 @@ public static class PowerGraphManager {
                 connections.Add(new(powerable, false));
             }
         }
-        
+
         // Positive if is higher than expected
-        int diff = rangedConnections - block.Type.maxPowerConnections;
+        int maxConnections = block.Type.maxPowerConnections == 0 ? 99 : block.Type.maxPowerConnections;
+        int diff = rangedConnections - maxConnections;
 
         // return if the connection amount is below expected
         if (diff <= 0) return connections;
@@ -71,6 +72,11 @@ public static class PowerGraphManager {
 
         Connection GetConnection(PowerModule powerable) {
             foreach (Connection connection in connections) if (connection.powerable.Equals(powerable)) return connection;
+            return null;
+        }
+
+        Connection GetGraphEqualConnection(PowerModule powerable) {
+            foreach (Connection connection in connections) if (connection.powerable.GetGraph().Equals(powerable.GetGraph())) return connection;
             return null;
         }
 
