@@ -818,7 +818,7 @@ namespace Frontiers.Content {
         public bool updates = false, syncs = true, breakable = true, solid = true;
         public int size = 1;
 
-        public bool usesPower = false, transfersPower = false;
+        public bool usesPower = false, transfersPower = false, consumesPower = false, generatesPower = false;
         //PowerUsage => negative: consumes, positive: generates
         public float powerUsage = 0f, powerStorage = 0f, powerConnectionRange = 0f;
         public int maxPowerConnections = 0;
@@ -1104,6 +1104,7 @@ namespace Frontiers.Content {
             canGetOnFire = true;
             usesPower = true;
             transfersPower = true;
+            generatesPower = true;
         }
     }
 
@@ -1249,7 +1250,6 @@ namespace Frontiers.Content {
                 health = 95f,
 
                 powerStorage = 120f,
-                powerUsage = 60f,
 
                 hasFluidInventory = true,
                 fluidInputOnly = true,
@@ -1310,7 +1310,6 @@ namespace Frontiers.Content {
                 size = 2,
 
                 powerStorage = 320f,
-                powerUsage = 210f,
 
                 hasFluidInventory = true,
                 fluidInputOnly = true,
@@ -1371,7 +1370,6 @@ namespace Frontiers.Content {
                 size = 2,
 
                 powerStorage = 250f,
-                powerUsage = 650f,
 
                 hasFluidInventory = true,
                 fluidInputOnly = true,
@@ -1413,7 +1411,6 @@ namespace Frontiers.Content {
                 size = 3,
 
                 powerStorage = 350f,
-                powerUsage = 1575f,
 
                 hasFluidInventory = true,
                 fluidInputOnly = true,
@@ -1718,6 +1715,7 @@ namespace Frontiers.Content {
 
                 usesPower = true,
                 transfersPower = true,
+                consumesPower = true,
                 loopSound = Sounds.smelter,
 
                 health = 95,

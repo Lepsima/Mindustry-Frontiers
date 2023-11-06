@@ -147,11 +147,11 @@ public class PowerModule {
     }
 
     public bool ConsumesPower() {
-        return block.Type.powerUsage < 0;
+        return block.Type.consumesPower;
     }
 
     public bool GeneratesPower() {
-        return block.Type.powerUsage > 0;
+        return block.Type.generatesPower;
     }
 
     public bool StoresPower() {

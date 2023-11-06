@@ -59,7 +59,13 @@ public class CrafterBlock : ItemBlock {
         UpdateFluidPass();
 
         // If doesnt use power or generates it, set the power requirement to 100% archived
-        if (newCraftPlan.powerUsage >= 0) powerPercent = 1f; 
+        if (newCraftPlan.powerUsage >= 0) {
+            powerPercent = 1f;
+            powerModule.powerUsage = 0f;
+        } else { 
+            // If consumes power, set the target power consumption to the power module
+            powerModule.powerUsage = newCraftPlan.powerUsage; 
+        }
     }
 
     /// <summary>
@@ -107,7 +113,7 @@ public class CrafterBlock : ItemBlock {
 
         // Warmup
         bool isCrafting = IsCrafting();
-        warmup = Mathf.Clamp01((isCrafting ? 0.5f : -0.5f) * Time.deltaTime + warmup);
+        warmup = Mathf.Clamp01((isCrafting && powerPercent > 0 ? 0.5f : -0.5f) * Time.deltaTime + warmup);
         float mult = warmup * powerPercent;
         
         // Update top sprite
@@ -121,10 +127,10 @@ public class CrafterBlock : ItemBlock {
             if (craftTimer <= 0) Craft();
         }
 
-        // Set the power generation value
         if (craftPowerUsage > 0f) {
+            // Set the power generation value
             powerModule.powerUsage = isCrafting ? craftPowerUsage * mult : 0f;
-        }
+        } 
 
         OutputItems();
     }
