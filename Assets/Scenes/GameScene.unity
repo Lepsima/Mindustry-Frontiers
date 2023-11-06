@@ -1896,8 +1896,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: ContentSelectorUI, Assembly-CSharp
+      - m_Target: {fileID: 3691849905229784414}
+        m_TargetAssemblyTypeName: PlayerManager, Assembly-CSharp
         m_MethodName: AddItems
         m_Mode: 3
         m_Arguments:
@@ -2123,6 +2123,7 @@ MonoBehaviour:
   shardCorePosition: {x: 48, y: 255}
   cruxCorePosition: {x: 464, y: 255}
   spriteRenderer: {fileID: 1736676532}
+  hasQuack: 1
 --- !u!114 &447536436
 MonoBehaviour:
   m_ObjectHideFlags: 0

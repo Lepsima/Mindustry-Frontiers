@@ -111,7 +111,6 @@ public class PlayerManager : MonoBehaviour {
     }
 
     public void AddItems(int amount) {
-        Debug.Log("Do i even get here¿?");
         Content selectedContent = PlayerContentSelector.SelectedContent;
         if (selectedContent == null || !selectedContent.GetType().EqualsOrInherits(typeof(Element)) || selectedEntity == null) return;
 

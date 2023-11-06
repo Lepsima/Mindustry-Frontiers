@@ -99,10 +99,9 @@ public class PowerModule {
     public float powerUsage; // The amount of power this block uses, negative = consumes, positive = generates
     public float powerStorage; // The amount of power this block can store
 
-    public PowerModule(Block block, float usage, float storage) {
+    public PowerModule(Block block) {
         this.block = block;
-        powerUsage = usage;
-        powerStorage = storage;
+        powerStorage = block.Type.powerStorage;
     }
 
     public void UpdatePowerLines() {
@@ -148,15 +147,15 @@ public class PowerModule {
     }
 
     public bool ConsumesPower() {
-        return powerUsage < 0;
+        return block.Type.powerUsage < 0;
     }
 
     public bool GeneratesPower() {
-        return powerUsage > 0;
+        return block.Type.powerUsage > 0;
     }
 
     public bool StoresPower() {
-        return powerStorage > 0;
+        return block.Type.powerStorage > 0;
     }
 
     public bool TransfersPower() {

@@ -579,7 +579,7 @@ namespace Frontiers.Content.Upgrades {
     public class BlockUpgradeMultipliers : EntityUpgradeMultipliers {
         public float powerUsage, powerStorage;
         public float drill_hardness, drill_rate;
-        public float crafter_craftTime, crafter_craftCost, crafter_craftReturn;
+        public float crafter_craftTime, crafter_powerUsage, crafter_craftCost, crafter_craftReturn;
         public float generator_consumeTime, generator_consumeAmount;
         public float conveyor_itemSpeed;
 

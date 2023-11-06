@@ -14,7 +14,7 @@ public class CrafterBlock : ItemBlock {
     private Transform topTransform;
 
     private bool hasTop = false, isMulticrafter = false;
-    private float warmup;
+    private float warmup, powerPercent;
 
     private bool itemPass = true, fluidPass = true;
     private bool checkItemPass = true, checkFluidPass = true;
@@ -22,6 +22,7 @@ public class CrafterBlock : ItemBlock {
     #region - Upgradable Stats -
 
     protected float craftTime;
+    protected float craftPowerUsage;
     protected float craftProductionMult = 1f;
     protected float craftConsumptionMult = 1f;
     protected MaterialList craftProduction;
@@ -35,6 +36,7 @@ public class CrafterBlock : ItemBlock {
         BlockUpgradeMultipliers mult = upgrade.properties as BlockUpgradeMultipliers;
 
         craftTime += craftTime * mult.crafter_craftTime;
+        craftPowerUsage += craftPowerUsage * mult.crafter_powerUsage;
         craftProductionMult += craftProductionMult * mult.crafter_craftReturn;
         craftConsumptionMult += craftConsumptionMult * mult.crafter_craftCost;
 
@@ -44,6 +46,7 @@ public class CrafterBlock : ItemBlock {
 
     public virtual void SetCraftPlan(CraftPlan newCraftPlan) {
         craftTime = newCraftPlan.craftTime;
+        craftPowerUsage = newCraftPlan.powerUsage;
         craftProduction = MaterialList.Multiply(newCraftPlan.production, craftProductionMult);
         craftConsumption = MaterialList.Multiply(newCraftPlan.consumption, craftConsumptionMult);
 
@@ -93,17 +96,31 @@ public class CrafterBlock : ItemBlock {
 
     protected override void Update() {
         base.Update();
-
-        bool isCrafting = IsCrafting();
-        warmup = Mathf.Clamp01((isCrafting ? 0.5f : -0.5f) * Time.deltaTime + warmup);
-
-        if (hasTop) {
-            topTransform.localScale = (Mathf.Abs(Mathf.Sin(Time.time * 1.3f) * warmup) + 0.5f * warmup) * Vector3.one;
+        
+        // Get the power consumption value
+        if (craftPowerUsage < 0f) {
+            powerPercent = powerModule.powerPercent;
         }
 
+        // Warmup
+        bool isCrafting = IsCrafting();
+        warmup = Mathf.Clamp01((isCrafting ? 0.5f : -0.5f) * Time.deltaTime + warmup);
+        float mult = warmup * powerPercent;
+        
+        // Update top sprite
+        if (hasTop) {
+            topTransform.localScale = (Mathf.Abs(Mathf.Sin(Time.time * 1.3f) * mult) + 0.5f * mult) * Vector3.one;
+        }
+
+        // Update craft progress
         if (isCrafting) {
-            craftTimer = Mathf.Clamp(craftTimer - (warmup * Time.deltaTime), 0, craftTime);
+            craftTimer = Mathf.Clamp(craftTimer - (mult * Time.deltaTime), 0, craftTime);
             if (craftTimer <= 0) Craft();
+        }
+
+        // Set the power generation value
+        if (craftPowerUsage > 0f) {
+            powerModule.powerUsage = isCrafting ? craftPowerUsage * mult : 0f;
         }
 
         OutputItems();
@@ -188,12 +205,12 @@ public class CrafterBlock : ItemBlock {
     }
 
     public override void OnInventoryValueChange(object sender, EventArgs e) {
-        UpdateMultiCraftPlan();
+        if (isMulticrafter) UpdateMultiCraftPlan();
         UpdateItemPass();
     }
 
     public override void OnVolumeChanged(object sender, EventArgs e) {
-        UpdateMultiCraftPlan();
+        if (isMulticrafter) UpdateMultiCraftPlan();
         UpdateFluidPass();
     }
 

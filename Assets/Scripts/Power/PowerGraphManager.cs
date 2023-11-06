@@ -151,4 +151,11 @@ public static class PowerGraphManager {
         // How the actual fuck did i forget to add this
         graphs.Remove(graph);
     }
+
+    public static void UpdatePowerGraphs() {
+        foreach (PowerGraph powerGraph in graphs) { 
+            powerGraph.Update();
+            //Debug.Log(powerGraph.powerUsage);
+        }
+    }
 }

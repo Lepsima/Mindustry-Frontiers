@@ -77,6 +77,7 @@ public class MapManager : MonoBehaviour {
         if (Map == null) return;
 
         // I have no idea for where to put this, so here it goes, good luck anyone trying to find it
+        PowerGraphManager.UpdatePowerGraphs();
         PowerLineRenderer.CalculateColor(4f);
 
         Content selectedContent = PlayerContentSelector.SelectedContent;

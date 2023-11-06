@@ -63,7 +63,7 @@ public class Block : Entity {
         size = Type.size;
 
         if (Type.usesPower) {
-            powerModule = new(this, Type.powerUsage, Type.powerStorage);
+            powerModule = new(this);
             powerModule.Initialize();
         }
 

@@ -1249,8 +1249,7 @@ namespace Frontiers.Content {
                 health = 95f,
 
                 powerStorage = 120f,
-                powerConnectionRange = 5f,
-                maxPowerConnections = 1,
+                powerUsage = 60f,
 
                 hasFluidInventory = true,
                 fluidInputOnly = true,
@@ -1303,7 +1302,7 @@ namespace Frontiers.Content {
                 },
             };
 
-            combustionGeneratorLarge = new PowerGeneratorBlockType("large-combustion-generator", typeof(CrafterBlock)) {
+            combustionGeneratorLarge = new PowerGeneratorBlockType("combustion-generator-large", typeof(CrafterBlock)) {
                 buildCost = ItemStack.With(Items.copper, 15, Items.nickel, 20, Items.graphite, 10),
                 flags = new Flag[] { FlagTypes.powerable, FlagTypes.powerGenerator },
 
@@ -1311,9 +1310,7 @@ namespace Frontiers.Content {
                 size = 2,
 
                 powerStorage = 320f,
-                powerUsage = 350f,
-                powerConnectionRange = 7.5f,
-                maxPowerConnections = 1,
+                powerUsage = 210f,
 
                 hasFluidInventory = true,
                 fluidInputOnly = true,
@@ -1366,7 +1363,7 @@ namespace Frontiers.Content {
                 },
             };
 
-            turbineGenerator = new CrafterBlockType("turbine", typeof(CrafterBlock)) {
+            turbineGenerator = new PowerGeneratorBlockType("turbine", typeof(CrafterBlock)) {
                 buildCost = ItemStack.With(Items.copper, 15, Items.nickel, 20, Items.graphite, 10),
                 flags = new Flag[] { FlagTypes.powerable, FlagTypes.powerGenerator },
 
@@ -1375,8 +1372,6 @@ namespace Frontiers.Content {
 
                 powerStorage = 250f,
                 powerUsage = 650f,
-                powerConnectionRange = 4f,
-                maxPowerConnections = 1,
 
                 hasFluidInventory = true,
                 fluidInputOnly = true,
@@ -1410,7 +1405,7 @@ namespace Frontiers.Content {
                 },
             };
 
-            turbineGeneratorLarge = new CrafterBlockType("large-turbine", typeof(CrafterBlock)) {
+            turbineGeneratorLarge = new PowerGeneratorBlockType("large-turbine", typeof(CrafterBlock)) {
                 buildCost = ItemStack.With(Items.copper, 15, Items.nickel, 20, Items.graphite, 10),
                 flags = new Flag[] { FlagTypes.powerable, FlagTypes.powerGenerator },
 
@@ -1419,8 +1414,6 @@ namespace Frontiers.Content {
 
                 powerStorage = 350f,
                 powerUsage = 1575f,
-                powerConnectionRange = 6f,
-                maxPowerConnections = 1,
 
                 hasFluidInventory = true,
                 fluidInputOnly = true,
@@ -1719,9 +1712,12 @@ namespace Frontiers.Content {
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.silicon, 2)),
                     consumption = new MaterialList(ItemStack.With(Items.sand, 3, Items.coal, 2)),
-                    craftTime = 1f
+                    craftTime = 1f,
+                    powerUsage = -60f,
                 },
 
+                usesPower = true,
+                transfersPower = true,
                 loopSound = Sounds.smelter,
 
                 health = 95,

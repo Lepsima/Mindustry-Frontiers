@@ -66,6 +66,8 @@ public class PowerGraph {
         powerable.SetGraph(this);
 
         UpdateStaticValues();
+
+        //Debug.Log("Consumers: " + powerConsumers.Count + " Generators: " + powerGenerators.Count + " Storages: " + powerStorages.Count + " Total: " + all.Count);
     }
 
     public void Handle(PowerGraph other) {
@@ -102,6 +104,9 @@ public class PowerGraph {
         float generated = PowerGenerated();
         float needed = PowerNeeded();
 
+        // Get the power usage of the graph without counting storages
+        powerUsage = generated - needed;
+
         if (generated > 0) {
             // If there is excess power, store it
             generated -= ChargeStorages(generated - needed);
@@ -112,7 +117,6 @@ public class PowerGraph {
 
         // Haha conditional tower
         float coverage = generated == 0 && needed == 0 ? 0 : needed == 0 ? 1f : Mathf.Min(1, generated / needed);
-        powerUsage = generated - needed;
 
         foreach (PowerModule powerable in powerConsumers) {
             powerable.SetPowerPercent(coverage);

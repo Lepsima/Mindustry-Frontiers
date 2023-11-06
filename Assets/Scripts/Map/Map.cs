@@ -589,7 +589,6 @@ namespace Frontiers.Content.Maps {
                 if (from.powerModule.TransfersPower() || block.powerModule.TransfersPower()) adjacentBlocks.Add(block.powerModule);
             }
 
-            Debug.Log("Adjacent connections: " + adjacentBlocks.Count);
             return adjacentBlocks;
         }
 
