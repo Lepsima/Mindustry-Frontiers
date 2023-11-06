@@ -57,6 +57,9 @@ public class CrafterBlock : ItemBlock {
         checkFluidPass = craftConsumption.fluids != null || craftProduction.fluids != null;
         fluidPass = !checkFluidPass;
         UpdateFluidPass();
+
+        // If doesnt use power or generates it, set the power requirement to 100% archived
+        if (newCraftPlan.powerUsage >= 0) powerPercent = 1f; 
     }
 
     /// <summary>
