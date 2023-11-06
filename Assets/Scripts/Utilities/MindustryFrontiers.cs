@@ -3386,7 +3386,7 @@ namespace Frontiers.Content {
             this.name = name ?? GetDefaultName();
             BulletLoader.HandleBullet(this);
 
-            sprite = AssetLoader.GetSprite(name, true);
+            sprite = AssetLoader.GetSprite(this.name, true);
 
             pool = GetPool();
             if (pool != null) pool.OnGameObjectCreated += OnPoolObjectCreated;        
@@ -3498,7 +3498,7 @@ namespace Frontiers.Content {
         }
 
         public override string GetDefaultName() {
-            return "beam-prefab";
+            return "beam";
         }
 
         public override float GetRange() {
