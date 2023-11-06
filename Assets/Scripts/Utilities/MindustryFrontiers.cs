@@ -3067,7 +3067,7 @@ namespace Frontiers.Content {
             };
 
             flameWeapon = new WeaponType("flame-weapon") {
-                bulletType = new BulletType("fast-tracer-prefab") {
+                bulletType = new BulletType("fast-tracer") {
                     damage = 5f,
                     lifeTime = 0.5f,
                     velocity = 150f
@@ -3082,7 +3082,7 @@ namespace Frontiers.Content {
             };
 
             blazeWeapon = new WeaponType("blaze-weapon") {
-                bulletType = new BulletType("rail-tracer-prefab") {
+                bulletType = new BulletType("rail-tracer") {
                     damage = 5.35f,
                     lifeTime = 0.7f,
                     velocity = 150f,
@@ -3245,7 +3245,7 @@ namespace Frontiers.Content {
             };
 
             spreadWeapon = new WeaponType("spread-weapon") {
-                bulletType = new BulletType("white-tracer-prefab") {
+                bulletType = new BulletType("white-tracer") {
                     damage = 7.5f,
                     lifeTime = 2f,
                     velocity = 75f
@@ -3269,7 +3269,7 @@ namespace Frontiers.Content {
             };
 
             cycloneWeapon = new WeaponType("cyclone-weapon") {
-                bulletType = new BulletType("wide-tracer-prefab") {
+                bulletType = new BulletType("wide-tracer") {
                     damage = 15f,
                     lifeTime = 1.5f,
                     velocity = 100f
@@ -3300,7 +3300,7 @@ namespace Frontiers.Content {
 
             deviationWeapon = new WeaponType("deviation-weapon") {
                 // TODO Flak bullet type
-                bulletType = new BulletType("white-tracer-prefab") {
+                bulletType = new BulletType("white-tracer") {
                     damage = 7.5f,
                     lifeTime = 2f,
                     velocity = 75f
@@ -3397,11 +3397,11 @@ namespace Frontiers.Content {
         }
 
         public virtual string GetDefaultName() {
-            return "tracer-prefab";
+            return "tracer";
         }
 
         public virtual GameObjectPool GetPool() {
-            return PoolManager.GetOrCreatePool(AssetLoader.GetPrefab(name), 100);
+            return PoolManager.GetOrCreatePool(AssetLoader.GetPrefab(name + "-prefab"), 100);
         }
 
         public virtual Bullet NewBullet(Weapon weapon, Transform transform) {
@@ -3444,7 +3444,7 @@ namespace Frontiers.Content {
         }
 
         public override string GetDefaultName() {
-            return "missile-prefab";
+            return "missile";
         }
 
         public override Bullet NewBullet(Weapon weapon, Transform transform) {
@@ -3462,7 +3462,7 @@ namespace Frontiers.Content {
         }
 
         public override string GetDefaultName() {
-            return "bomb-prefab";
+            return "bomb";
         }
 
         public override Bullet NewBullet(Weapon weapon, Transform transform) {
