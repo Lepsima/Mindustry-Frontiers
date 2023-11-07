@@ -297,8 +297,7 @@ public class Barrel {
 
         transform = new GameObject("barrel", typeof(SpriteRenderer)).transform;
         transform.parent = parent.transform;
-        transform.localPosition = Vector3.zero;
-        transform.localRotation = Quaternion.identity;
+        transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
 
         shootFX = transform.CreateEffect(parent.Type.shootFX, GetOffset(), Quaternion.identity, parent.Type.shootFXSize);
         if (shootFX) shootFX.transform.CreateEffect(parent.Type.casingFX, new Vector2(0f, parent.Type.casingFXOffset), Quaternion.identity, parent.Type.casingFXSize);
