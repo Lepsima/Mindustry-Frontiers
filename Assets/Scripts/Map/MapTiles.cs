@@ -119,13 +119,13 @@ namespace Frontiers.Content.Maps {
         public static TileType daciteWall, dirtWall, duneWall, iceWall, saltWall, sandWall, shaleWall, grassWall, snowWall, stoneWall;
 
         public static void Load() {
-            darksandWater = new TileType("darksand-water", 1, Fluids.petroleum) {
+            darksandWater = new TileType("darksand-water", 1, Fluids.water) {
                 isWater = true,
             };
 
             darksand = new TileType("darksand", 3, Items.sand);
 
-            deepWater = new TileType("deep-water", 1, Fluids.petroleum) {
+            deepWater = new TileType("deep-water", 1, Fluids.water) {
                 allowBuildings = false,
                 isWater = true,
             };
