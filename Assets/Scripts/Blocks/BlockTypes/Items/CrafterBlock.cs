@@ -70,7 +70,7 @@ public class CrafterBlock : ItemBlock {
         // If doesnt use power or generates it, set the power requirement to 100% archived
         if (newCraftPlan.powerUsage >= 0) {
             powerPercent = 1f;
-            powerModule.powerUsage = 0f;
+            if (powerModule != null) powerModule.powerUsage = 0f;
         } else { 
             // If consumes power, set the target power consumption to the power module
             powerModule.powerUsage = newCraftPlan.powerUsage; 
