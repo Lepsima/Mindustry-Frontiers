@@ -154,7 +154,7 @@ namespace Frontiers.Content.Maps {
 
             stone = new TileType("stone", 3);
 
-            water = new TileType("water", 1, Fluids.petroleum) {
+            water = new TileType("water", 1, Fluids.water) {
                 allowBuildings = false,
                 isWater = true,
             };
