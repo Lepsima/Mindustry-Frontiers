@@ -241,7 +241,7 @@ public class CrafterBlock : ItemBlock {
 
     private void UpdateFluidPass() {
         if (!checkFluidPass) return;
-        fluidPass = !hasFluidInventory || fluidInventory.Has(craftConsumption.fluids) && fluidInventory.CanRecive(craftProduction.fluids);
+        fluidPass = (Type.fluidOutputOnly || !hasFluidInventory || fluidInventory.Has(craftConsumption.fluids)) && (Type.fluidInputOnly || fluidInventory.CanRecive(craftProduction.fluids));
         CraftState(itemPass && fluidPass);
     }
 
