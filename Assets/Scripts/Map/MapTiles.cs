@@ -132,7 +132,8 @@ namespace Frontiers.Content.Maps {
 
             grass = new TileType("grass", 3);
 
-            ice = new TileType("ice", 3);
+            // Testing only
+            ice = new TileType("ice", 3, Fluids.water);
 
             metalFloor = new TileType("metal-floor");
 
@@ -148,7 +149,8 @@ namespace Frontiers.Content.Maps {
                 isWater = true,
             };
 
-            shale = new TileType("shale", 3);
+            // This makes a bit more sense, but it's only for testing
+            shale = new TileType("shale", 3, Fluids.petroleum);
 
             snow = new TileType("snow", 3);
 
