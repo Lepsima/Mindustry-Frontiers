@@ -11,125 +11,20 @@ public class CopterUnit : AircraftUnit {
     public float maxRotorOutput;
     public float wreckSpinVelocity = 0f;
 
-    public class Rotor {
-        public RotorBlade[] blades;
-
-        public Transform transform;
-        public Rotator Type;
-
-        public float velocity;
-        public float position;
-
-        public Rotor(Transform parent, Rotator Type) {
-            this.Type = Type;
-            velocity = Type.velocity;
-
-            // Create rotor top
-            transform = new GameObject("Rotor-Top", typeof(SpriteRenderer)).transform;
-            transform.parent = parent;
-            transform.localPosition = Type.offset;
-            transform.localRotation = Quaternion.identity;
-            transform.localScale = Vector3.one;
-
-            if (Type.topSprite != null) {
-                // Set the top sprite
-                SpriteRenderer topSpriteRenderer = transform.GetComponent<SpriteRenderer>();
-                topSpriteRenderer.sprite = Type.topSprite;
-                topSpriteRenderer.sortingLayerName = "Units";
-                topSpriteRenderer.sortingOrder = 12;
-            }
-
-            // Create all the blades
-            blades = new RotorBlade[Type.blades.Length];
-            for (int i = 0; i < Type.blades.Length; i++) blades[i] = new(transform, Type, Type.blades[i]);
-        }
-
-        public void Update(float power, float deltaTime) {
-            float deltaVel = Mathf.Sign(power) * Type.velocityIncrease * deltaTime;
-            velocity = Mathf.Clamp(velocity + deltaVel, 0, Type.velocity);
-            position += velocity * deltaTime;
-
-            // Prevent large numbers
-            if (position > 1f) position--;
-
-            // Update each blade
-            for (int i = 0; i < blades.Length; i++) blades[i].Update(position, velocity);
-        }
-
-        public float Output() {
-            return velocity / Type.velocity;
-        }
-
-        public class RotorBlade {
-            public SpriteRenderer spriteRenderer;
-            public SpriteRenderer blurSpriteRenderer;
-
-            public Transform transform;
-            public Rotator Type;
-
-            public float modifier;
-            public float offset;
-
-            public RotorBlade(Transform parent, Rotator Type, RotatorBlade rotorBladeType) {
-                this.Type = Type;
-                modifier = rotorBladeType.counterClockwise ? -360f : 360f;
-                offset = rotorBladeType.offset;
-
-                // Create the rotor transform
-                transform = new GameObject("Rotor", typeof(SpriteRenderer)).transform;
-                transform.parent = parent;
-                transform.localPosition = Vector3.zero;
-                transform.localRotation = Quaternion.identity;
-                transform.localScale = Vector3.one;
-
-                // Set the rotor sprite
-                spriteRenderer = transform.GetComponent<SpriteRenderer>();
-                spriteRenderer.sprite = Type.sprite;
-                spriteRenderer.sortingLayerName = "Units";
-                spriteRenderer.sortingOrder = 10;
-
-                // Create the rotor blur transform
-                Transform blurTransform = new GameObject("Rotor-blur", typeof(SpriteRenderer)).transform;
-                blurTransform.parent = transform;
-                blurTransform.localPosition = Vector3.zero;
-                blurTransform.localRotation = Quaternion.identity;
-                blurTransform.localScale = Vector3.one;
-
-                // Set the rotor blur transform
-                blurSpriteRenderer = blurTransform.GetComponent<SpriteRenderer>();
-                blurSpriteRenderer.sprite = Type.blurSprite;
-                blurSpriteRenderer.sortingLayerName = "Units";
-                blurSpriteRenderer.sortingOrder = 11;
-            }
-
-            public void Update(float position, float velocity) {
-                // Update rotation
-                transform.localEulerAngles = new Vector3(0f, 0f, position * modifier + offset);
-
-                // Update sprite blur
-                float blurValue = Type.BlurValue(velocity);
-                spriteRenderer.color = new Color(1f, 1f, 1f, 1f - blurValue);
-                blurSpriteRenderer.color = new Color(1f, 1f, 1f, blurValue);
-            }
-        }
-    }
-
     protected override void CreateTransforms() {
         base.CreateTransforms();
         rotors = new Rotor[Type.rotors.Length];
 
         for (int i = 0; i < Type.rotors.Length; i++) {
             Rotator rotorData = Type.rotors[i];
-            Rotor rotor = new(transform, rotorData);
+            Rotor rotor = new(transform, rotorData, "Units");
             rotors[i] = rotor;
         }
     }
 
     protected override void Update() {
         base.Update();
-
-        float power = isLanded ? -1f : 1f;
-        UpdateRotors(power, Time.deltaTime);
+        UpdateRotors(isLanded ? -1f : 1f);
     }
 
     protected override void WreckBehaviour() {
@@ -137,12 +32,12 @@ public class CopterUnit : AircraftUnit {
         transform.eulerAngles += new Vector3(0, 0, wreckSpinVelocity * Time.deltaTime);
     }
 
-    public void UpdateRotors(float power, float deltaTime) {
+    public void UpdateRotors(float power) {
         power = (power - 0.5f) * 2f; // Allow negative values
         float output = 0f;
 
         for (int i = 0; i < rotors.Length; i++) { 
-            rotors[i].Update(power, deltaTime);
+            rotors[i].Update(power);
             output += rotors[i].Output();
         }
 

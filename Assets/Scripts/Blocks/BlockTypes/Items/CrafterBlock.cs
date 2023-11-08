@@ -12,6 +12,7 @@ public class CrafterBlock : ItemBlock {
 
     private float craftTimer = -1f;
     private Transform topTransform;
+    private Rotor rotor;
 
     private bool hasTop = false, isMulticrafter = false;
     private float warmup, powerPercent;
@@ -29,6 +30,14 @@ public class CrafterBlock : ItemBlock {
     protected MaterialList craftConsumption;
 
     #endregion
+
+    public override void Set<T>(Vector2 position, Quaternion rotation, T type, int id, byte teamCode) {
+        base.Set(position, rotation, type, id, teamCode);
+
+        if (Type.rotator.IsValid()) {
+            rotor = new Rotor(transform, Type.rotator, "Blocks");
+        }
+    }
 
     protected override void ApplyUpgrageMultiplier(UpgradeType upgrade) {
         base.ApplyUpgrageMultiplier(upgrade);
@@ -117,9 +126,10 @@ public class CrafterBlock : ItemBlock {
         float mult = warmup * powerPercent;
         
         // Update top sprite
-        if (hasTop) {
-            topTransform.localScale = (Mathf.Abs(Mathf.Sin(Time.time * 1.3f) * mult) + 0.5f * mult) * Vector3.one;
-        }
+        if (hasTop) topTransform.localScale = (Mathf.Abs(Mathf.Sin(Time.time * 1.3f) * mult) + 0.5f * mult) * Vector3.one;
+
+        // Update rotor
+        if (rotor != null) rotor.Update(isCrafting ? 1 : -1);
 
         // Update craft progress
         if (isCrafting) {
