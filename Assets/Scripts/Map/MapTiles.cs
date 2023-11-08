@@ -144,7 +144,7 @@ namespace Frontiers.Content.Maps {
 
             sandFloor = new TileType("sand-floor", 3, Items.sand);
 
-            sandWater = new TileType("sand-water", 1, Fluids.petroleum) {
+            sandWater = new TileType("sand-water", 1, Fluids.water) {
                 isWater = true,
             };
 
