@@ -1384,7 +1384,7 @@ namespace Frontiers.Content {
                 hasItemInventory = true,
                 itemCapacity = 10,
 
-                rotator = new Rotator("turbine-rotator", Vector2.zero, 5f, 1.2f, 2f, 3f, new RotatorBlade(0f, false)),
+                rotator = new Rotator("turbine-rotator", Vector2.zero, 3f, 0.8f, 1f, 2f, new RotatorBlade(0f)),
 
                 craftPlans = new CraftPlan[] {
                     new CraftPlan() {
@@ -1425,7 +1425,7 @@ namespace Frontiers.Content {
                 hasItemInventory = true,
                 itemCapacity = 20,
 
-                rotator = new Rotator("large-turbine-rotator", Vector2.zero, 5f, 1.2f, 2f, 3f, new RotatorBlade(0f, false)),
+                rotator = new Rotator("large-turbine-rotator", Vector2.zero, 5f, 1.6f, 2f, 3f, new RotatorBlade(0f)),
 
                 craftPlans = new CraftPlan[] {
                     new CraftPlan() {
@@ -2088,6 +2088,8 @@ namespace Frontiers.Content {
                     consumption = new MaterialList(FluidStack.With(Fluids.nitrogen, 1f, Fluids.kerosene, 3f)),
                     craftTime = 1f
                 },
+
+                rotator = new Rotator("fuel-mixer-rotator", Vector2.zero, 1f, 0.4f, 2f, 2f, new RotatorBlade(0f)),
 
                 health = 290,
                 size = 2,
