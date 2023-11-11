@@ -14,7 +14,7 @@ using Frontiers.Teams;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class Launcher : MonoBehaviourPunCallbacks {
-    public const string VERSION = "v0.4demo";
+    public const string VERSION = "v0.4.1 dev";
     public static Launcher Instance;
     private static Dictionary<string, RoomInfo> cachedRoomList = new();
 

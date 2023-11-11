@@ -23,13 +23,10 @@ public class DiscordActivities {
     }
 
     public static Activity GetActivity() {
-        bool inEditor = Application.isEditor && DiscordController.overrideStatus;
+        bool inEditor = Application.isEditor && !DiscordController.buildStatus;
         bool isPrivate = false;
 
-        string largeText = "Mindustry Frontiers";
-        string versionText = " | " + Launcher.VERSION;
-
-        largeText += versionText;
+        string largeText = Application.isEditor ? "Unity Editor" : Launcher.VERSION;
 
         string details = "";
         string state = "";
@@ -38,7 +35,8 @@ public class DiscordActivities {
         if (!inEditor) {
             switch (gameState) {
                 case State.MainMenu:
-                    details = "In main menu";
+                    details = "In Multiplayer Menu";
+                    state = Launcher.VERSION;
                     break;
 
                 case State.SearchingRoom:
@@ -51,13 +49,13 @@ public class DiscordActivities {
                     break;
 
                 case State.InRoom:
-                    details = "In room" + (isPrivate ? "" : ": " + PhotonNetwork.CurrentRoom.Name);
+                    details = isPrivate ? "-Private Room-" : "In room: " + PhotonNetwork.CurrentRoom.Name;
                     state = "Sandbox";
 
                     break;
 
                 case State.InGame:
-                    details = "In game" + (isPrivate ? "" : ": " + TryGetMapName());
+                    details = isPrivate ? "-Private Room-" : TryGetMapName();
                     state = "Sandbox";
                     break;
             }
