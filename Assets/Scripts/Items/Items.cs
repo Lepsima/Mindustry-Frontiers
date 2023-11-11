@@ -21,7 +21,7 @@ namespace Frontiers.Content {
         public static Item
             coal, cocaine, copper, depletedThorium, gold, graphite, 
             heavyAlloy, iron, lightAlloy, lithium, magnesium, nickel, 
-            plastanium, quartz, reflectiveFabric, resistor, salt, sand, 
+            plastanium, quartz, reflectiveFabric, capacitor, salt, sand, 
             silicon, superconductor, thoriumDust, thoriumFuel, thorium;
 
         public static void Load() {
@@ -100,7 +100,7 @@ namespace Frontiers.Content {
                 cost = 4f,
             };
 
-            resistor = new("resistor-item") {
+            capacitor = new("capacitor-item") {
                 hardness = 3,
                 cost = 3f,
             };

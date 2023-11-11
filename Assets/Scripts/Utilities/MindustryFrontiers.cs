@@ -1235,7 +1235,7 @@ namespace Frontiers.Content {
             };
 
             batteryLarge = new PowerBankBlockType("large-battery", typeof(Block)) {
-                buildCost = ItemStack.With(Items.copper, 10, Items.iron, 25, Items.resistor, 20),
+                buildCost = ItemStack.With(Items.copper, 10, Items.iron, 25, Items.capacitor, 20),
                 flags = new Flag[] { FlagTypes.powerable, FlagTypes.powerBank },
 
                 health = 215f,
@@ -1744,16 +1744,22 @@ namespace Frontiers.Content {
                     new CraftPlan() {
                         production = new MaterialList(ItemStack.With(Items.lightAlloy, 3)),
                         consumption = new MaterialList(ItemStack.With(Items.copper, 3, Items.nickel, 2)),
-                        craftTime = 2.5f
+                        craftTime = 2.5f,
+                        powerUsage = 160
                     },
 
                     // Heavy alloy
                     new CraftPlan() {
                         production = new MaterialList(ItemStack.With(Items.heavyAlloy, 4)),
                         consumption = new MaterialList(ItemStack.With(Items.copper, 3, Items.graphite, 2, Items.iron, 4)),
-                        craftTime = 4f
+                        craftTime = 4f,
+                        powerUsage = 280
                     },
                 },
+
+                usesPower = true,
+                transfersPower = true,
+                consumesPower = true,
 
                 health = 210,
                 size = 3,
@@ -1764,15 +1770,17 @@ namespace Frontiers.Content {
                 buildCost = ItemStack.With(Items.iron, 125, Items.silicon, 65, Items.lithium, 25),
                 craftPlans = new CraftPlan[] {
                     new CraftPlan() {
-                        production = new MaterialList(ItemStack.With(Items.resistor, 3)),
+                        production = new MaterialList(ItemStack.With(Items.capacitor, 3)),
                         consumption = new MaterialList(ItemStack.With(Items.copper, 2, Items.silicon, 3, Items.lithium, 4)),
-                        craftTime = 3.5f
+                        craftTime = 3.5f,
+                        powerUsage = 280
                     },
 
                     new CraftPlan() {
-                        production = new MaterialList(ItemStack.With(Items.resistor, 2)),
+                        production = new MaterialList(ItemStack.With(Items.superconductor, 2)),
                         consumption = new MaterialList(ItemStack.With(Items.lithium, 1, Items.gold, 2)),
-                        craftTime = 1.5f
+                        craftTime = 1.5f,
+                        powerUsage = 280
                     },
                 },
 
@@ -1856,7 +1864,7 @@ namespace Frontiers.Content {
             };
 
             thoriumReprocessor = new CrafterBlockType("thorium-reprocessor", typeof(CrafterBlock), 2) {
-                buildCost = ItemStack.With(Items.iron, 65, Items.thorium, 25, Items.resistor, 30),
+                buildCost = ItemStack.With(Items.iron, 65, Items.thorium, 25, Items.capacitor, 30),
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.thoriumDust, 4)),
                     consumption = new MaterialList(ItemStack.With(Items.depletedThorium, 2), FluidStack.With(Fluids.water, 12f)),
@@ -1881,7 +1889,7 @@ namespace Frontiers.Content {
             };
 
             crystalizer = new CrafterBlockType("crystalizer", typeof(CrafterBlock), 3) {
-                buildCost = ItemStack.With(Items.copper, 125, Items.nickel, 65, Items.magnesium, 40, Items.superconductor, 25, Items.resistor, 30),
+                buildCost = ItemStack.With(Items.copper, 125, Items.nickel, 65, Items.magnesium, 40, Items.superconductor, 25, Items.capacitor, 30),
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.quartz, 2)),
                     consumption = new MaterialList(ItemStack.With(Items.salt, 4, Items.silicon, 2), FluidStack.With(Fluids.oxigen, 8f)),
@@ -1906,10 +1914,10 @@ namespace Frontiers.Content {
             };
 
             reflectiveFabricWeaver = new CrafterBlockType("reflective-fabric-weaver", typeof(CrafterBlock), 3) {
-                buildCost = ItemStack.With(Items.heavyAlloy, 200, Items.lightAlloy, 125, Items.nickel, 80, Items.superconductor, 55, Items.resistor, 15),
+                buildCost = ItemStack.With(Items.heavyAlloy, 200, Items.lightAlloy, 125, Items.nickel, 80, Items.superconductor, 55, Items.capacitor, 15),
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.reflectiveFabric, 3)),
-                    consumption = new MaterialList(ItemStack.With(Items.resistor, 2, Items.gold, 1), FluidStack.With(Fluids.oxigen, 4f)),
+                    consumption = new MaterialList(ItemStack.With(Items.capacitor, 2, Items.gold, 1), FluidStack.With(Fluids.oxigen, 4f)),
                     craftTime = 5f
                 },
 
