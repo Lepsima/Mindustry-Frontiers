@@ -40,7 +40,7 @@ namespace Frontiers.Content {
                 cost = 1.5f,
             };
 
-            depletedThorium = new("depletedThorium-item") {
+            depletedThorium = new("depleted-thorium-item") {
                 hardness = 3,
                 cost = 3f,
             };
@@ -55,7 +55,7 @@ namespace Frontiers.Content {
                 cost = 2f,
             };
 
-            heavyAlloy = new("heavyAlloy-item") {
+            heavyAlloy = new("heavy-alloy-item") {
                 hardness = 4,
                 cost = 2.5f,
             };
@@ -65,7 +65,7 @@ namespace Frontiers.Content {
                 cost = 2f,
             };
 
-            lightAlloy = new("lightAlloy-item") {
+            lightAlloy = new("light-alloy-item") {
                 hardness = 3,
                 cost = 1.75f,
             };
@@ -95,7 +95,7 @@ namespace Frontiers.Content {
                 cost = 4f,
             };
 
-            reflectiveFabric = new("reflectiveFabric-item") {
+            reflectiveFabric = new("reflective-fabric-item") {
                 hardness = 3,
                 cost = 4f,
             };
@@ -125,12 +125,12 @@ namespace Frontiers.Content {
                 cost = 4f,
             };
 
-            thoriumDust = new("thoriumDust-item") {
+            thoriumDust = new("thorium-dust-item") {
                 hardness = 1,
                 cost = 2f,
             };
 
-            thoriumFuel = new("thoriumFuel-item") {
+            thoriumFuel = new("thorium-fuel-item") {
                 hardness = 3,
                 cost = 3f,
             };
