@@ -11,10 +11,9 @@ public class CrafterBlock : ItemBlock {
     public new CrafterBlockType Type { get => (CrafterBlockType)base.Type; protected set => base.Type = value; }
 
     private float craftTimer = -1f;
-    private Transform topTransform;
     private Rotor rotor;
 
-    private bool hasTop = false, isMulticrafter = false;
+    private bool isMulticrafter = false;
     private float warmup, powerPercent;
 
     private bool itemPass = true, fluidPass = true;
@@ -105,11 +104,6 @@ public class CrafterBlock : ItemBlock {
 
     protected override void SetSprites() {
         base.SetSprites();
-
-        if (Type.topSprite != null) { 
-            topTransform = transform.Find("Top");
-            hasTop = true;
-        }
     }
 
     protected override void Update() {
@@ -124,10 +118,7 @@ public class CrafterBlock : ItemBlock {
         bool isCrafting = IsCrafting();
         warmup = Mathf.Clamp01((isCrafting && powerPercent > 0 ? 0.5f : -0.5f) * Time.deltaTime + warmup);
         float mult = warmup * powerPercent;
-        
-        // Update top sprite
-        if (hasTop) topTransform.localScale = (Mathf.Abs(Mathf.Sin(Time.time * 1.3f) * mult) + 0.5f * mult) * Vector3.one;
-
+       
         // Update rotor
         if (rotor != null) rotor.Update(isCrafting ? 1 : -1);
 

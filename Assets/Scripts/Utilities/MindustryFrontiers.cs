@@ -1037,6 +1037,8 @@ namespace Frontiers.Content {
     }
 
     public class CrafterBlockType : ItemBlockType {
+        public Sprite smeltSprite;
+
         public CraftPlan craftPlan;
         public CraftPlan[] craftPlans;
 
@@ -1049,6 +1051,7 @@ namespace Frontiers.Content {
         public CrafterBlockType(string name, Type type, int tier = 1) : base(name, type, tier) {
             updates = true;
             canGetOnFire = true;
+            smeltSprite = AssetLoader.GetSprite(name + "-smelt", true);
         }
     }
 
@@ -2146,7 +2149,7 @@ namespace Frontiers.Content {
                 transfersPower = true,
                 consumesPower = true,
 
-                rotator = new Rotator("fuel-mixer-rotator", Vector2.zero, 1f, 0.4f, 2f, 2f, new RotatorBlade(0f)),
+                rotator = new Rotator("fuel-mixer-rotator", Vector2.zero, 1f, 0.4f, 2f, 2f, new RotatorBlade(0f), 6),
 
                 health = 290,
                 size = 2,
@@ -3826,6 +3829,8 @@ namespace Frontiers.Content {
         [JsonIgnore] public Sprite sprite, blurSprite, topSprite;
         public RotatorBlade[] blades;
         public Vector2 offset;
+        public int layer;
+        public bool useShader;
         public float
             velocity,        // The maximum rotor angular velocity
             velocityIncrease, // The maximum velocity gain per second
@@ -3836,7 +3841,7 @@ namespace Frontiers.Content {
         /// Creates a rotor container
         /// </summary>
         /// <param name="unitName">The name of the unit and the rotor, example "flare-rotor"</param>
-        public Rotator(string unitName, Vector2 offset, float velocity, float velocityIncrease, float blurStart, float blurEnd, RotatorBlade[] blades) {
+        public Rotator(string unitName, Vector2 offset, float velocity, float velocityIncrease, float blurStart, float blurEnd, RotatorBlade[] blades, int layer = 12, bool useShader = false) {
             sprite = AssetLoader.GetSprite($"{unitName}");
             blurSprite = AssetLoader.GetSprite($"{unitName}-blur");
             topSprite = AssetLoader.GetSprite($"{unitName}-top");
@@ -3848,13 +3853,15 @@ namespace Frontiers.Content {
             this.velocityIncrease = velocityIncrease;
             this.blurStart = blurStart;
             this.blurEnd = blurEnd;
+            this.layer = layer;
+            this.useShader = useShader;
         }
 
         /// <summary>
         /// Creates a rotor container
         /// </summary>
         /// <param name="unitName">The name of the unit and the rotor, example "flare-rotor"</param>
-        public Rotator(string unitName, Vector2 offset, float velocity, float velocityIncrease, float blurStart, float blurEnd, RotatorBlade blade) {
+        public Rotator(string unitName, Vector2 offset, float velocity, float velocityIncrease, float blurStart, float blurEnd, RotatorBlade blade, int layer = 12, bool useShader = false) {
             sprite = AssetLoader.GetSprite($"{unitName}");
             blurSprite = AssetLoader.GetSprite($"{unitName}-blur");
             topSprite = AssetLoader.GetSprite($"{unitName}-top");
@@ -3866,26 +3873,8 @@ namespace Frontiers.Content {
             this.velocityIncrease = velocityIncrease;
             this.blurStart = blurStart;
             this.blurEnd = blurEnd;
-        }
-
-        /// <summary>
-        /// Creates a rotor container
-        /// </summary>
-        /// <param name="unitName">The name of the unit and the rotor, example "flare-rotor"</param>
-        public Rotator(string unitName, Vector2 offset, float velocity, float velocityIncrease, float blurStart, float blurEnd, int blades = 1) {
-            sprite = AssetLoader.GetSprite($"{unitName}");
-            blurSprite = AssetLoader.GetSprite($"{unitName}-blur");
-            topSprite = AssetLoader.GetSprite($"{unitName}-top");
-
-            this.blades = new RotatorBlade[blades];
-            for (int i = 0; i < blades; i++) this.blades[i] = new(360f / blades * i);
-
-            this.offset = offset;
-
-            this.velocity = velocity;
-            this.velocityIncrease = velocityIncrease;
-            this.blurStart = blurStart;
-            this.blurEnd = blurEnd;
+            this.layer = layer;
+            this.useShader = useShader;
         }
 
         public float BlurValue(float velocity) {
@@ -3932,7 +3921,7 @@ namespace Frontiers.Content {
                 SpriteRenderer topSpriteRenderer = transform.GetComponent<SpriteRenderer>();
                 topSpriteRenderer.sprite = Type.topSprite;
                 topSpriteRenderer.sortingLayerName = layerName;
-                topSpriteRenderer.sortingOrder = 12;
+                topSpriteRenderer.sortingOrder = Type.layer;
             }
 
             // Create all the blades
@@ -3961,6 +3950,7 @@ namespace Frontiers.Content {
         }
 
         public class RotorBlade {
+            public static Material shaderMaterial = AssetLoader.GetAsset<Material>("RotationShader");
             public SpriteRenderer spriteRenderer;
             public SpriteRenderer blurSpriteRenderer;
 
@@ -3988,7 +3978,8 @@ namespace Frontiers.Content {
                 spriteRenderer = transform.GetComponent<SpriteRenderer>();
                 spriteRenderer.sprite = Type.sprite;
                 spriteRenderer.sortingLayerName = layerName;
-                spriteRenderer.sortingOrder = 10;
+                spriteRenderer.sortingOrder = Type.layer - 2;
+                if (Type.useShader) spriteRenderer.material = new Material(shaderMaterial);
 
                 hasBlurSprite = Type.blurSprite != null;
                 if (!hasBlurSprite) return;
@@ -4004,7 +3995,8 @@ namespace Frontiers.Content {
                 blurSpriteRenderer = blurTransform.GetComponent<SpriteRenderer>();
                 blurSpriteRenderer.sprite = Type.blurSprite;
                 blurSpriteRenderer.sortingLayerName = layerName;
-                blurSpriteRenderer.sortingOrder = 11;
+                blurSpriteRenderer.sortingOrder = Type.layer - 1;
+                if (Type.useShader) blurSpriteRenderer.material = new Material(shaderMaterial);
             }
 
             public void Update(float position, float velocity) {
@@ -4013,8 +4005,14 @@ namespace Frontiers.Content {
 
                 // Update sprite blur
                 float blurValue = Type.BlurValue(velocity);
+
                 spriteRenderer.color = new Color(1f, 1f, 1f, 1f - blurValue);
-                if (hasBlurSprite) blurSpriteRenderer.color = new Color(1f, 1f, 1f, blurValue);
+                spriteRenderer.enabled = 1f - blurValue != 0f;
+
+                if (hasBlurSprite) { 
+                    blurSpriteRenderer.color = new Color(1f, 1f, 1f, blurValue);
+                    blurSpriteRenderer.enabled = blurValue != 0f;
+                }
             }
         }
     }

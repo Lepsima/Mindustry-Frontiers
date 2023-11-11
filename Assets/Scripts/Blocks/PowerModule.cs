@@ -221,7 +221,6 @@ public class PowerModule {
 
     public void SetGraph(PowerGraph graph) {
         this.graph = graph;
-        block.transform.ChangeNumbers((int)graph.id);
     }
 
     /// <summary>

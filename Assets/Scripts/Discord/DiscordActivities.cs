@@ -35,44 +35,59 @@ public class DiscordActivities {
         if (!inEditor) {
             switch (gameState) {
                 case State.MainMenu:
-                    details = "In Multiplayer Menu";
-                    state = Launcher.VERSION;
+                    details = Launcher.VERSION; 
+                    state = "In Multiplayer Menu";
                     break;
 
                 case State.SearchingRoom:
-                    details = "Searching rooms";
-                    state = Launcher.Instance.GetRoomCount() + " Listed rooms";
+                    details = Launcher.Instance.GetRoomCount() + " Listed rooms";
+                    state = "Searching rooms";
                     break;
 
                 case State.CreatingRoom:
-                    details = "Creating room";
+                    state = "Creating room";
                     break;
 
                 case State.InRoom:
-                    details = isPrivate ? "-Private Room-" : "In room: " + PhotonNetwork.CurrentRoom.Name;
-                    state = "Sandbox";
+                    details = "Sandbox";
+                    state = isPrivate ? "-Private Room-" : PhotonNetwork.CurrentRoom.Name;
 
                     break;
 
                 case State.InGame:
-                    details = isPrivate ? "-Private Room-" : TryGetMapName();
-                    state = "Sandbox";
+                    details = "Sandbox";
+                    state = isPrivate ? "-Private Room-" : TryGetMapName();
                     break;
             }
 
-            return new() {
+ 
+
+            Activity act = new() {
                 Details = details,
                 State = state,
 
                 Assets = {
-                LargeImage = largeImage,
-                LargeText = largeText,
-            },
+                    LargeImage = largeImage,
+                    LargeText = largeText,
+
+                },
 
                 Timestamps = {
-                Start = DiscordController.startTime,
-            }
+                    Start = DiscordController.startTime,
+                }
             };
+
+            ActivityParty party = DiscordController.GetParty(out bool exists);
+            if (exists) {
+                act.Party = party;
+                act.Secrets = new ActivitySecrets() {
+                    Join = party.Id + "-join",
+                    Spectate = party.Id + "-spectate",
+                    Match = party.Id + "-match",
+                };
+            }
+
+            return act;
 
         } else {
             return new() {

@@ -33,7 +33,7 @@ namespace Frontiers.Content.VisualEffects {
         public static Effect 
             build, bulletHit, casing, despawn, smallExplosion, explosion, 
             bigExplosion, hitSmoke, muzzle, takeoff, waterDeviation, rcs, 
-            weldSparks, craftSmoke, smeltSmoke, rockSparks, combustion, factorySmoke;
+            weldSparks, craftSmoke, smeltSmoke, rockSparks, combustion, factorySmoke, smeltTop;
 
         public static void Load() {
             build = new("buildFX");
@@ -54,6 +54,7 @@ namespace Frontiers.Content.VisualEffects {
             rockSparks = new("rockSparksFX");
             combustion = new("combustionFX");
             factorySmoke = new("factorySmokeFX");
+            smeltTop = new("smeltTopFX");
         }
     }
 }

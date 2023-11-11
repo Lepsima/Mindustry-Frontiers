@@ -29,4 +29,12 @@ public static class MoreExtensions {
     public static char ToChar(this TileType tileType) => Convert.ToChar(tileType == null ? 255 : tileType.id);
 
     public static TileType ToType(this char data) => TileLoader.GetTileTypeById(Convert.ToInt16(data));
+
+    const string AllowedChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#@$^*()";
+
+    public static string GetRandomString(int lenght) {
+        string returnString = "";
+        for (int i = 0; i < lenght; i++) returnString += AllowedChars[UnityEngine.Random.Range(0, AllowedChars.Length)];
+        return returnString;
+    }
 }

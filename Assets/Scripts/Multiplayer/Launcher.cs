@@ -59,8 +59,8 @@ public class Launcher : MonoBehaviourPunCallbacks {
         SetState("Generating Default Map Files");
         MapLoader.GenerateDefaultMapFiles();
 
-        DontDestroyOnLoad(new GameObject("Discord rich presence", typeof(DiscordController)));
         DiscordActivities.SetState(DiscordActivities.State.MainMenu);
+        DontDestroyOnLoad(new GameObject("Discord rich presence", typeof(DiscordController)));
     }
 
     public static void SetState(string value) {
@@ -95,13 +95,21 @@ public class Launcher : MonoBehaviourPunCallbacks {
     public override void OnJoinedLobby() {
         SetState("Joined Lobby");
         MenuManager.Instance.OpenMenu("TitleMenu");
+        DiscordActivities.SetState(DiscordActivities.State.MainMenu);
     }
 
     public void CreateRoom() {
         if (string.IsNullOrEmpty(roomNameInputField.text)) return;
 
+        RoomOptions roomOptions = new() {
+            IsVisible = true,
+            IsOpen = true,
+            MaxPlayers = 4,
+            EmptyRoomTtl = 5000,
+        };
+
         SetState("Creating Room...");
-        PhotonNetwork.CreateRoom(roomNameInputField.text);
+        PhotonNetwork.CreateRoom(roomNameInputField.text, roomOptions);
         MenuManager.Instance.OpenMenu("LoadingMenu");
     }
 
@@ -170,18 +178,24 @@ public class Launcher : MonoBehaviourPunCallbacks {
     }
 
     public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged) {
-        if (!propertiesThatChanged.ContainsKey("_map")) return;
-        mapNameText.text = (string)propertiesThatChanged.GetValueOrDefault("_map");
+        if (propertiesThatChanged.ContainsKey("_map")) mapNameText.text = (string)propertiesThatChanged.GetValueOrDefault("_map");
+        if (propertiesThatChanged.ContainsKey("_code")) DiscordController.SetParty((string)propertiesThatChanged.GetValueOrDefault("_code"));
     }
 
     public override void OnMasterClientSwitched(Player newMasterClient) {
         startGameButton.SetActive(PhotonNetwork.IsMasterClient);
     }
 
+    public override void OnCreatedRoom() {
+        string partyCode = MoreExtensions.GetRandomString(12);
+        PhotonNetwork.CurrentRoom.SetCustomProperties(new Hashtable { { "_code", partyCode } });
+    }
+
     public override void OnCreateRoomFailed(short returnCode, string message) {
         SetState("Room Creation Has Failed");
         errorText.text = "Room Creation Failed: " + message;
         MenuManager.Instance.OpenMenu("ErrorMenu");
+        DiscordActivities.SetState(DiscordActivities.State.MainMenu);
     }
 
     public void StartGame() {
@@ -204,6 +218,7 @@ public class Launcher : MonoBehaviourPunCallbacks {
         SetState("Left Room");
         MenuManager.Instance.OpenMenu("TitleMenu");
         cachedRoomList.Clear();
+        DiscordActivities.SetState(DiscordActivities.State.MainMenu);
     }
 
     public override void OnRoomListUpdate(List<RoomInfo> roomList) {
