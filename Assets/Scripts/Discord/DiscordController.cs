@@ -5,6 +5,7 @@ using System.Diagnostics;
 
 public class DiscordController : MonoBehaviour {
     public static long startTime;
+    public static bool overrideStatus = true;
     public Discord.Discord discord;
 
     void Awake() {
@@ -40,6 +41,6 @@ public class DiscordController : MonoBehaviour {
     }
 
     private void OnApplicationQuit() {
-        if (!Application.isEditor) discord.Dispose();
+        if (!Application.isEditor || overrideStatus) discord.Dispose();
     }
 }

@@ -190,13 +190,13 @@ public class CrafterBlock : ItemBlock {
                 }
             }
 
-            allowedInputItems.AddRange(allowedOutputItems);
-            inventory.SetAllowedItems(allowedInputItems.ToArray());
-
             this.allowedInputItems = allowedInputItems.ToArray();
             this.allowedOutputItems = allowedOutputItems.ToArray();
             this.allowedInputFluids = allowedInputFluids.ToArray();
             this.allowedOutputFluids = allowedOutputFluids.ToArray();
+
+            allowedInputItems.AddRange(allowedOutputItems);
+            inventory.SetAllowedItems(allowedInputItems.ToArray());
 
             SetCraftPlan(Type.craftPlans[0]);
 

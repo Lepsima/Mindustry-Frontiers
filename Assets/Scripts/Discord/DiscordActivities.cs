@@ -23,10 +23,13 @@ public class DiscordActivities {
     }
 
     public static Activity GetActivity() {
-        bool inEditor = Application.isEditor;
+        bool inEditor = Application.isEditor && DiscordController.overrideStatus;
         bool isPrivate = false;
 
         string largeText = "Mindustry Frontiers";
+        string versionText = " | " + Launcher.VERSION;
+
+        largeText += versionText;
 
         string details = "";
         string state = "";

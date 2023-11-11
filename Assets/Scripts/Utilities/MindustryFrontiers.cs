@@ -1745,7 +1745,7 @@ namespace Frontiers.Content {
                         production = new MaterialList(ItemStack.With(Items.lightAlloy, 3)),
                         consumption = new MaterialList(ItemStack.With(Items.copper, 3, Items.nickel, 2)),
                         craftTime = 2.5f,
-                        powerUsage = 160
+                        powerUsage = -160
                     },
 
                     // Heavy alloy
@@ -1753,7 +1753,7 @@ namespace Frontiers.Content {
                         production = new MaterialList(ItemStack.With(Items.heavyAlloy, 4)),
                         consumption = new MaterialList(ItemStack.With(Items.copper, 3, Items.graphite, 2, Items.iron, 4)),
                         craftTime = 4f,
-                        powerUsage = 280
+                        powerUsage = -280
                     },
                 },
 
@@ -1773,14 +1773,14 @@ namespace Frontiers.Content {
                         production = new MaterialList(ItemStack.With(Items.capacitor, 3)),
                         consumption = new MaterialList(ItemStack.With(Items.copper, 2, Items.silicon, 3, Items.lithium, 4)),
                         craftTime = 3.5f,
-                        powerUsage = 280
+                        powerUsage = -120
                     },
 
                     new CraftPlan() {
                         production = new MaterialList(ItemStack.With(Items.superconductor, 2)),
                         consumption = new MaterialList(ItemStack.With(Items.lithium, 1, Items.gold, 2)),
                         craftTime = 1.5f,
-                        powerUsage = 280
+                        powerUsage = -220
                     },
                 },
 
@@ -1823,6 +1823,10 @@ namespace Frontiers.Content {
                 health = 255,
                 size = 2,
                 itemCapacity = 30,
+
+                usesPower = true,
+                transfersPower = true,
+                consumesPower = true,
             };
 
             thoriumCrusher = new CrafterBlockType("thorium-crusher", typeof(CrafterBlock), 2) {
@@ -1843,8 +1847,13 @@ namespace Frontiers.Content {
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.thoriumFuel, 1)),
                     consumption = new MaterialList(ItemStack.With(Items.thoriumDust, 5), FluidStack.With(Fluids.nitrogen, 6f)),
-                    craftTime = 1.5f
+                    craftTime = 1.5f,
+                    powerUsage = -92
                 },
+
+                usesPower = true,
+                transfersPower = true,
+                consumesPower = true,
 
                 health = 375,
                 size = 3,
@@ -1868,8 +1877,13 @@ namespace Frontiers.Content {
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.thoriumDust, 4)),
                     consumption = new MaterialList(ItemStack.With(Items.depletedThorium, 2), FluidStack.With(Fluids.water, 12f)),
-                    craftTime = 2f
+                    craftTime = 2f,
+                    powerUsage = -230
                 },
+
+                usesPower = true,
+                transfersPower = true,
+                consumesPower = true,
 
                 health = 275,
                 size = 2,
@@ -1893,8 +1907,13 @@ namespace Frontiers.Content {
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.quartz, 2)),
                     consumption = new MaterialList(ItemStack.With(Items.salt, 4, Items.silicon, 2), FluidStack.With(Fluids.oxigen, 8f)),
-                    craftTime = 3f
+                    craftTime = 3f,
+                    powerUsage = -200
                 },
+
+                usesPower = true,
+                transfersPower = true,
+                consumesPower = true,
 
                 health = 405,
                 size = 3,
@@ -1950,8 +1969,13 @@ namespace Frontiers.Content {
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(FluidStack.With(Fluids.petroleum, 6f)),
                     consumption = new MaterialList(ItemStack.With(Items.coal, 2), FluidStack.With(Fluids.co2, 0.5f)),
-                    craftTime = 1f
+                    craftTime = 1f,
+                    powerUsage = -120
                 },
+
+                usesPower = true,
+                transfersPower = true,
+                consumesPower = true,
 
                 health = 175,
                 size = 2,
@@ -1979,8 +2003,13 @@ namespace Frontiers.Content {
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.coal, 4)),
                     consumption = new MaterialList(FluidStack.With(Fluids.petroleum, 12f)),
-                    craftTime = 2.5f
+                    craftTime = 2.5f,
+                    powerUsage = -60
                 },
+
+                usesPower = true,
+                transfersPower = true,
+                consumesPower = true,
 
                 health = 225,
                 size = 2,
@@ -2010,8 +2039,13 @@ namespace Frontiers.Content {
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(ItemStack.With(Items.plastanium, 6)),
                     consumption = new MaterialList(ItemStack.With(Items.sand, 12), FluidStack.With(Fluids.petroleum, 24f)),
-                    craftTime = 9f
+                    craftTime = 9f,
+                    powerUsage = -140
                 },
+
+                usesPower = true,
+                transfersPower = true,
+                consumesPower = true,
 
                 health = 225,
                 size = 2,
@@ -2038,8 +2072,13 @@ namespace Frontiers.Content {
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(FluidStack.With(Fluids.kerosene, 4f)),
                     consumption = new MaterialList(FluidStack.With(Fluids.petroleum, 3f)),
-                    craftTime = 0.75f
+                    craftTime = 0.75f,
+                    powerUsage = -180
                 },
+
+                usesPower = true,
+                transfersPower = true,
+                consumesPower = true,
 
                 health = 355,
                 size = 3,
@@ -2065,8 +2104,13 @@ namespace Frontiers.Content {
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(FluidStack.With(Fluids.hydrogen, 30f, Fluids.oxigen, 15f)),
                     consumption = new MaterialList(ItemStack.With(Items.salt, 1), FluidStack.With(Fluids.water, 15f)),
-                    craftTime = 3f
+                    craftTime = 3f,
+                    powerUsage = -150
                 },
+
+                usesPower = true,
+                transfersPower = true,
+                consumesPower = true,
 
                 health = 310,
                 size = 3,
@@ -2094,8 +2138,13 @@ namespace Frontiers.Content {
                 craftPlan = new CraftPlan() {
                     production = new MaterialList(FluidStack.With(Fluids.fuel, 3.5f)),
                     consumption = new MaterialList(FluidStack.With(Fluids.nitrogen, 1f, Fluids.kerosene, 3f)),
-                    craftTime = 1f
+                    craftTime = 1f,
+                    powerUsage = -80
                 },
+
+                usesPower = true,
+                transfersPower = true,
+                consumesPower = true,
 
                 rotator = new Rotator("fuel-mixer-rotator", Vector2.zero, 1f, 0.4f, 2f, 2f, new RotatorBlade(0f)),
 
