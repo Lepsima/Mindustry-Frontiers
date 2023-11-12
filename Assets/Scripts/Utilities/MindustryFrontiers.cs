@@ -3170,7 +3170,11 @@ namespace Frontiers.Content {
                 returnSpeed = 1f,
                 clipSize = 3,
                 shootTime = 0.2f,
-                reloadTime = 2f
+                reloadTime = 2f,
+
+                shootFX = Effects.smokeMuzzle,
+                shootFXSize = 2f,
+                casingFX = null,
             };
 
             fotonWeapon = new WeaponType("foton-missiles") {
@@ -3181,7 +3185,11 @@ namespace Frontiers.Content {
                 returnSpeed = 1f,
                 clipSize = 2,
                 shootTime = 0.4f,
-                reloadTime = 4f
+                reloadTime = 4f,
+
+                shootFX = Effects.smokeMuzzle,
+                shootFXSize = 3f,
+                casingFX = null,
             };
 
             daggerWeapon = new WeaponType("dagger-weapon") {
@@ -3235,7 +3243,9 @@ namespace Frontiers.Content {
                 reloadTime = 1.5f,
                 rotateSpeed = 115f,
 
-                shootFX = Effects.rcs
+                shootFX = Effects.smokeMuzzle,
+                shootFXSize = 2f,
+                casingFX = null,
             };
 
             tempestWeapon = new WeaponType("tempest-weapon") {
