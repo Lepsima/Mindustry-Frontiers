@@ -33,28 +33,30 @@ namespace Frontiers.Content.VisualEffects {
         public static Effect 
             build, bulletHit, casing, despawn, smallExplosion, explosion, 
             bigExplosion, hitSmoke, muzzle, takeoff, waterDeviation, rcs, 
-            weldSparks, craftSmoke, smeltSmoke, rockSparks, combustion, factorySmoke, smeltTop;
+            weldSparks, craftSmoke, smeltSmoke, rockSparks, combustion, 
+            factorySmoke, smeltTop, smokeMuzzle;
 
         public static void Load() {
-            build = new("buildFX");
-            bulletHit = new("bulletHitFX");
-            casing = new("casingFX");
-            despawn = new("despawnFX");
-            smallExplosion = new("smallExplosionFX");
-            explosion = new("explosionFX");
-            bigExplosion = new("bigExplosionFX");
-            hitSmoke = new("hitSmokeFX");
-            muzzle = new("muzzleFX");
-            takeoff = new("takeoffFX");
-            waterDeviation = new("waterDeviationFX");
-            rcs = new("rcsFX");
-            weldSparks = new("weldSparkFX");
-            craftSmoke = new("craftSmokeFX");
-            smeltSmoke = new("smeltSmokeFX");
-            rockSparks = new("rockSparksFX");
-            combustion = new("combustionFX");
-            factorySmoke = new("factorySmokeFX");
-            smeltTop = new("smeltTopFX");
+            build = new("buildFX"); // Block placed, glow particles
+            bulletHit = new("bulletHitFX"); // Bullet hitting entity, smoke and sparks
+            casing = new("casingFX"); // Casing ejection, single particle
+            despawn = new("despawnFX"); // Small shockwave
+            smallExplosion = new("smallExplosionFX"); // Small explosion, smoke, shockwave and sparks
+            explosion = new("explosionFX"); // Explosion, smoke, shockwave and sparks
+            bigExplosion = new("bigExplosionFX"); // Big explosion, reverse shockwave, smoke, shockwave and sparks
+            hitSmoke = new("hitSmokeFX"); // Looping smoke with light
+            muzzle = new("muzzleFX"); // Muzze shoot with flash, smoke and sparks
+            takeoff = new("takeoffFX"); // Smoke particles
+            waterDeviation = new("waterDeviationFX"); // Water colored particles ejected from 2 sides
+            rcs = new("rcsFX"); // Small jet pulse of white smoke particles
+            weldSparks = new("weldSparkFX"); // Looping sparks
+            craftSmoke = new("craftSmokeFX"); // Small amount of white smoke particles
+            smeltSmoke = new("smeltSmokeFX"); // Small amount of long lasting white smoke particles
+            rockSparks = new("rockSparksFX"); // Sparks and brown colored smoke
+            combustion = new("combustionFX"); // Small smoke explosion
+            factorySmoke = new("factorySmokeFX"); // "Isometric" looping smoke
+            smeltTop = new("smeltTopFX"); // Custom effect for smelters
+            smokeMuzzle = new("smokeMuzzleFX"); // Muzze effect without flash
         }
     }
 }
