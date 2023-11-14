@@ -337,7 +337,7 @@ public abstract class Unit : Entity, IArmed, IMessager {
         SetWeapons();
 
         transform.SetPositionAndRotation(position, rotation);
-        homePosition = TeamUtilities.GetClosestAllyCoreBlock(transform.position).GetPosition();
+        homePosition = TeamUtilities.GetClosestCoreBlock(transform.position, teamCode).GetPosition();
         FloorTile = null;
 
         OnTargetChanged += OnTargetValueChange;
