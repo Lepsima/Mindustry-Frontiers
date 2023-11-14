@@ -26,6 +26,7 @@ public class TurretBlock : ItemBlock, IArmed {
         Weapon weapon = weaponGameObject.AddComponent<Weapon>();
         weapon.Set(this, weaponMount.weapon, weaponMount.onTop);
         installedWeapon = weapon;
+        ammo = 99999f;
     }
 
     public override bool CanReciveItem(Item item, int orientation = 0) {
