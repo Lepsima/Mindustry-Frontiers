@@ -112,9 +112,8 @@ public class MissileBullet : Bullet {
         // Move forward
         transform.position += Time.deltaTime * Type.velocity * transform.up;
 
-        Collider2D collider2D = Physics2D.OverlapCircle(transform.position, Type.size, mask);
-
-        if (collider2D) Return(collider2D.GetComponent<Entity>());
+        // Return if collided or lifetime ended
+        if (Physics2D.OverlapCircle(transform.position, Type.size, mask) != null) Return(null);
         else if (ShouldDespawn()) Return(null);
     }
 

@@ -1184,7 +1184,7 @@ namespace Frontiers.Content {
             spread, deviation, //3x3
 
             // Multi purpose turrets
-            tempest; //2x2, 3x3
+            tempest, path; //2x2, 3x3
 
         public static BlockType // Item factories
             siliconSmelter, graphitePress, crystalizer, componentAssembler, superconductorAssembler,
@@ -1643,9 +1643,16 @@ namespace Frontiers.Content {
                 }
             };
 
-
-
             // Turrets
+            path = new TurretBlockType("path", typeof(TurretBlock), 1) {
+                mount = new WeaponMount(Weapons.pathWeapon, Vector2.zero),
+
+                health = 200f,
+                size = 2,
+
+                canGetOnFire = true,
+            };
+
             tempest = new TurretBlockType("tempest", typeof(TurretBlock), 1) {
                 mount = new WeaponMount(Weapons.tempestWeapon, Vector2.zero),
 
@@ -2721,8 +2728,8 @@ namespace Frontiers.Content {
                 rotationSpeed = 70f,
                 bankAmount = 20f,
 
-                range = 15f,
-                searchRange = 20f,
+                range = 30,
+                searchRange = 50f,
                 fov = 90f,
                 groundHeight = 12f,
 
@@ -2801,8 +2808,8 @@ namespace Frontiers.Content {
                 rotationSpeed = 60f,
                 bankAmount = 0f,
 
-                range = 12f,
-                searchRange = 17.5f,
+                range = 25f,
+                searchRange = 42f,
                 fov = 360f,
                 groundHeight = 12f,
 
@@ -2848,8 +2855,8 @@ namespace Frontiers.Content {
                 rotationSpeed = 35f,
                 bankAmount = 0f,
 
-                range = 12f,
-                searchRange = 25.5f,
+                range = 35f,
+                searchRange = 60f,
                 fov = 360f,
                 groundHeight = 15f,
 
@@ -3163,7 +3170,16 @@ namespace Frontiers.Content {
             };
 
             sonarWeapon = new WeaponType("sonar-missiles") {
-                bulletType = Bullets.missileBullet,
+                bulletType = new MissileBulletType() {
+                    damage = 20f,
+                    minBlastDamage = 5f,
+                    blastRadius = 1.05f,
+                    buildingDamageMultiplier = 3f,
+                    velocity = 40f,
+                    lifeTime = 2f,
+                    homingStrength = 55f,
+                },
+
                 shootOffset = new Vector2(0, 0.4f),
 
                 recoil = 0.2f,
@@ -3178,7 +3194,16 @@ namespace Frontiers.Content {
             };
 
             fotonWeapon = new WeaponType("foton-missiles") {
-                bulletType = Bullets.missileBullet,
+                bulletType = new MissileBulletType() {
+                    damage = 32f,
+                    minBlastDamage = 8.5f,
+                    blastRadius = 1.6f,
+                    buildingDamageMultiplier = 3.5f,
+                    velocity = 25f,
+                    lifeTime = 3.5f,
+                    homingStrength = 90f,
+                },
+
                 shootOffset = new Vector2(0, 0.37f),
 
                 recoil = 0.5f,
@@ -3231,7 +3256,15 @@ namespace Frontiers.Content {
             };
 
             zenithMissiles = new WeaponType("zenith-missiles") {
-                bulletType = Bullets.missileBullet,
+                bulletType = new MissileBulletType() {
+                    damage = 25.6f,
+                    minBlastDamage = 12.3f,
+                    blastRadius = 1.4f,
+                    buildingDamageMultiplier = 2.5f,
+                    velocity = 25f,
+                    lifeTime = 3f,
+                    homingStrength = 60f,
+                },
 
                 shootOffset = new Vector2(0, 0.25f),
 
@@ -3246,6 +3279,31 @@ namespace Frontiers.Content {
                 shootFX = Effects.smokeMuzzle,
                 shootFXSize = 2f,
                 casingFX = null,
+            };
+
+            pathWeapon = new WeaponType("path-weapon") {
+                bulletType = new BulletType() {
+                    damage = 5f,
+                    buildingDamageMultiplier = 0.1f,
+                    velocity = 120f,
+                    size = 0.025f,
+                    lifeTime = 0.25f,
+                    despawnFX = null,
+                },
+
+                barrels = new WeaponBarrel[1] { new WeaponBarrel("path-weapon", 1, new Vector2(0f, 1f), 1), },
+
+                independent = true,
+
+                recoil = 0.25f,
+                returnSpeed = 20f,
+
+                ammoPerShot = 0.1f,    
+                clipSize = 20,
+                shootTime = 0.05f,
+                reloadTime = 3f,
+
+                rotateSpeed = 80f,
             };
 
             tempestWeapon = new WeaponType("tempest-weapon") {
@@ -3297,23 +3355,6 @@ namespace Frontiers.Content {
                 shootTime = 0.3f,
                 reloadTime = 4f,
                 rotateSpeed = 60f,
-            };
-
-            pathWeapon = new WeaponType("path-weapon") {
-                bulletType = new BulletType() {
-                    damage = 3f,
-                    lifeTime = 0.35f,
-                    velocity = 150f
-                },
-                shootOffset = new Vector2(0, 0.75f),
-
-                independent = true,
-                animations = new SpriteAnimation[1] { new SpriteAnimation("-belt", 3, SpriteAnimation.Case.Shoot) },
-                recoil = 0.02f,
-                clipSize = 50,
-                shootTime = 0.03f,
-                reloadTime = 6f,
-                rotateSpeed = 120f,
             };
 
             spreadWeapon = new WeaponType("spread-weapon") {
@@ -3780,11 +3821,13 @@ namespace Frontiers.Content {
         [JsonIgnore] public Sprite barrelSprite;
         [JsonIgnore] public Sprite barrelOutlineSprite;
         public Vector2 shootOffset;
+        public int sortingOrder;
 
-        public WeaponBarrel(string name, int barrelNum, Vector2 shootOffset) {
+        public WeaponBarrel(string name, int barrelNum, Vector2 shootOffset, int sortingOrder = 3) {
             barrelSprite = AssetLoader.GetSprite(name + "-barrel" + barrelNum);
             barrelOutlineSprite = AssetLoader.GetSprite(name + "-barrel" + "-outline" + barrelNum);
             this.shootOffset = shootOffset;
+            this.sortingOrder = sortingOrder;
         }
     }
 

@@ -305,7 +305,7 @@ public class Barrel {
         SpriteRenderer barrelRenderer = transform.GetComponent<SpriteRenderer>();
         barrelRenderer.sprite = weaponBarrel.barrelSprite;
         barrelRenderer.sortingLayerName = "Units";
-        barrelRenderer.sortingOrder = 3;
+        barrelRenderer.sortingOrder = weaponBarrel.sortingOrder;
 
         Transform barrelOutlineTransform = new GameObject("outline", typeof(SpriteRenderer)).transform;
         barrelOutlineTransform.parent = transform;
