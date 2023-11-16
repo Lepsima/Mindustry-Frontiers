@@ -225,13 +225,13 @@ public class Client : MonoBehaviourPunCallbacks {
 
 
 
-    public static void CreateSquadron(byte id, string name) {
-        Instance.photonView.RPC(nameof(RPC_CreateSquadron), RpcTarget.All, id, name);
+    public static void CreateSquadron(byte teamCode, byte id, string name) {
+        Instance.photonView.RPC(nameof(RPC_CreateSquadron), RpcTarget.All, teamCode, id, name);
     }
 
     [PunRPC]
-    public void RPC_CreateSquadron(byte id, string name) {
-        SquadronHandler.CreateSquadron(name, id);
+    public void RPC_CreateSquadron(byte teamCode, byte id, string name) {
+        SquadronHandler.CreateSquadron(teamCode, name, id);
     }
 
 
@@ -242,25 +242,35 @@ public class Client : MonoBehaviourPunCallbacks {
 
     [PunRPC]
     public void RPC_RequestSquadrons(int actorNumber) {
-        Squadron[] squadrons = SquadronHandler.squadrons;
         Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNumber);
 
-        for (int i = 0; i < SquadronHandler.squadrons.Length; i++) {
-            Squadron squadron = SquadronHandler.squadrons[i];
+        for (int i = 0; i < SquadronHandler.team1Squadrons.Length; i++) {
+            Squadron squadron = SquadronHandler.team1Squadrons[i];
             if (squadron == null) continue;
 
             byte id = squadron.squadronID;
             string name = squadron.name;
             short[] members = squadron.GetMembersSyncIDs();
 
-            Instance.photonView.RPC(nameof(RPC_CreateSquadron), player, id, name, members);
+            Instance.photonView.RPC(nameof(RPC_ReciveSquadron), player, squadron.teamCode, id, name, members);
+        }
+
+        for (int i = 0; i < SquadronHandler.team2Squadrons.Length; i++) {
+            Squadron squadron = SquadronHandler.team2Squadrons[i];
+            if (squadron == null) continue;
+
+            byte id = squadron.squadronID;
+            string name = squadron.name;
+            short[] members = squadron.GetMembersSyncIDs();
+
+            Instance.photonView.RPC(nameof(RPC_ReciveSquadron), player, squadron.teamCode, id, name, members);
         }
     }
 
     [PunRPC]
-    public void RPC_ReciveSquadron(byte id, string name, short[] members) {
-        SquadronHandler.CreateSquadron(name, id);
-        Squadron squadron = SquadronHandler.GetSquadronByID(id);
+    public void RPC_ReciveSquadron(byte teamCode, byte id, string name, short[] members) {
+        SquadronHandler.CreateSquadron(teamCode, name, id);
+        Squadron squadron = SquadronHandler.GetSquadronByID(teamCode == 1, id);
 
         for (int i = 0; i < members.Length; i++) {
             Unit unit = (Unit)syncObjects[members[i]];
@@ -271,12 +281,13 @@ public class Client : MonoBehaviourPunCallbacks {
 
 
     public static void AddMemeberToSquadron(Squadron squadron, Unit unit) {
-        Instance.photonView.RPC(nameof(RPC_AddMemberToSquadron), RpcTarget.All, squadron.squadronID, unit.SyncID);
+        if (squadron.teamCode != unit.GetTeam()) return;
+        Instance.photonView.RPC(nameof(RPC_AddMemberToSquadron), RpcTarget.All, squadron.teamCode, squadron.squadronID, unit.SyncID);
     }
 
     [PunRPC]
-    public void RPC_AddMemberToSquadron(byte id, short unitID) {
-        Squadron squadron = SquadronHandler.GetSquadronByID(id);
+    public void RPC_AddMemberToSquadron(byte teamCode, byte id, short unitID) {
+        Squadron squadron = SquadronHandler.GetSquadronByID(teamCode == 1, id);
         Unit unit = (Unit)syncObjects[unitID];
         squadron.Add(unit);
     }
@@ -284,12 +295,13 @@ public class Client : MonoBehaviourPunCallbacks {
 
 
     public static void RemoveMemeberFromSquadron(Squadron squadron, Unit unit) {
-        Instance.photonView.RPC(nameof(RPC_RemoveMemberFromSquadron), RpcTarget.All, squadron.squadronID, unit.SyncID);
+        if (squadron.teamCode != unit.GetTeam()) return;
+        Instance.photonView.RPC(nameof(RPC_RemoveMemberFromSquadron), RpcTarget.All, squadron.teamCode, squadron.squadronID, unit.SyncID);
     }
 
     [PunRPC]
-    public void RPC_RemoveMemberFromSquadron(byte id, short unitID) {
-        Squadron squadron = SquadronHandler.GetSquadronByID(id);
+    public void RPC_RemoveMemberFromSquadron(byte teamCode, byte id, short unitID) {
+        Squadron squadron = SquadronHandler.GetSquadronByID(teamCode == 1, id);
         Unit unit = (Unit)syncObjects[unitID];
         squadron.Remove(unit);
     }
@@ -297,13 +309,13 @@ public class Client : MonoBehaviourPunCallbacks {
 
 
     public static void ChangeSquadronAction(Squadron squadron, Frontiers.Squadrons.Action action) {
-        Instance.photonView.RPC(nameof(RPC_ChangeSquadronAction), RpcTarget.All, squadron.squadronID, action.action, action.radius, action.position);
+        Instance.photonView.RPC(nameof(RPC_ChangeSquadronAction), RpcTarget.All, squadron.teamCode, squadron.squadronID, action.action, action.radius, action.position);
     }
 
     [PunRPC]
-    public void RPC_ChangeSquadronAction(byte id, int actionID, float radius, Vector2 position) {
+    public void RPC_ChangeSquadronAction(byte teamCode, byte id, int actionID, float radius, Vector2 position) {
         Frontiers.Squadrons.Action action = new(actionID, radius, position);
-        Squadron squadron = SquadronHandler.GetSquadronByID(id);
+        Squadron squadron = SquadronHandler.GetSquadronByID(teamCode == 1, id);
         squadron.SetAction(action);
     }
 

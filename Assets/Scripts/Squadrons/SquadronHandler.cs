@@ -22,6 +22,7 @@ namespace Frontiers.Squadrons {
     }
 
     public class Squadron {
+        public byte teamCode;
         public string name;
         public Action action;
 
@@ -30,10 +31,14 @@ namespace Frontiers.Squadrons {
 
         public byte squadronID;
 
-        public Squadron(string name, byte id) {
+        public Squadron(byte teamCode, string name, byte id) {
             this.name = name;
+            this.teamCode = teamCode;
             squadronID = id;
-            uiItem = SquadronUI.Instance.Create(this);
+
+            if (teamCode == Teams.TeamUtilities.GetLocalTeam()) {
+                uiItem = SquadronUI.Instance.Create(this);
+            }
         }
 
         public void Add(Unit unit) {
@@ -75,22 +80,29 @@ namespace Frontiers.Squadrons {
             for (int i = 0; i < members.Count; i++) arr[i] = members[i].SyncID;
             return arr;
         }
+
+        public bool IsTeam1() {
+            return teamCode == 1;
+        }
     }
 
     public static class SquadronHandler {
         public static string[] squadronNames = new string[] { "Red", "Blue", "Black", "Gold", "Silver", "Razor", "Echo"};
         public const int maxSquadrons = 16;
 
-        public static List<Unit> nonMemberUnits = new();
-        public static Squadron[] squadrons = new Squadron[maxSquadrons];
+        public static Squadron[] team1Squadrons = new Squadron[maxSquadrons];
+        public static Squadron[] team2Squadrons = new Squadron[maxSquadrons];
 
-        public static Squadron GetSquadronByID(byte id) {
-            return squadrons[id];
+        public static List<Unit> nonMemberUnits = new();
+
+        public static Squadron GetSquadronByID(bool team1, byte id) {
+            return team1 ? team1Squadrons[id] : team2Squadrons[id];
         }
 
         public static void CreateSquadrons() {
             for (int i = 0; i < squadronNames.Length; i++) {
-                CreateSquadron(squadronNames[i]);
+                CreateSquadron(1, squadronNames[i]);
+                CreateSquadron(2, squadronNames[i]);
             }
         }
 
@@ -102,27 +114,27 @@ namespace Frontiers.Squadrons {
             }
         }
 
-        public static void CreateSquadron(string name) {
+        public static void CreateSquadron(byte teamCode, string name) {
             byte id = 255;
 
             for (int i = 0; i < maxSquadrons; i++) {
-                if (squadrons[i] == null) {
+                if ((teamCode == 1 ? team1Squadrons : team2Squadrons)[i] == null) {
                     id = (byte)i;
                     break;
                 }
             }
 
             if (id == 255) return;
-            Client.CreateSquadron(id, name);
+            Client.CreateSquadron(teamCode, id, name);
         }
 
-        public static void CreateSquadron(string name, byte id) {
-            Squadron squadron = new(name, id);
-            squadrons[id] = squadron;
+        public static void CreateSquadron(byte teamCode, string name, byte id) {
+            Squadron squadron = new(teamCode, name, id);
+            (teamCode == 1 ? team1Squadrons : team2Squadrons)[id] = squadron;
         }
 
-        public static void RemoveSquadron(Squadron squadron) {
-            squadrons[squadron.squadronID] = null;
+        public static void RemoveSquadron(byte teamCode, Squadron squadron) {
+            (teamCode == 1 ? team1Squadrons : team2Squadrons)[squadron.squadronID] = null;
             SquadronUI.Instance.Remove(squadron);
         }
     }
