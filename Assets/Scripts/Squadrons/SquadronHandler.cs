@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 namespace Frontiers.Squadrons {
 
@@ -27,8 +28,16 @@ namespace Frontiers.Squadrons {
         public List<Unit> members = new();
         public SquadronUIItem uiItem;
 
+        public byte squadronID;
+
         public Squadron(string name) {
             this.name = name;
+            uiItem = SquadronUI.Instance.Create(this);
+        }
+
+        public Squadron(string name, byte id) {
+            this.name = name;
+            squadronID = id;
             uiItem = SquadronUI.Instance.Create(this);
         }
 
@@ -65,13 +74,24 @@ namespace Frontiers.Squadrons {
             Remove(sender as Unit);
             // Message the player about the destruction of a unit
         }
+
+        public short[] GetMembersSyncIDs() {
+            short[] arr = new short[members.Count];
+            for (int i = 0; i < members.Count; i++) arr[i] = members[i].SyncID;
+            return arr;
+        }
     }
 
     public static class SquadronHandler {
         public static string[] squadronNames = new string[] { "Red", "Blue", "Black", "Gold", "Silver", "Razor", "Echo"};
+        public const int maxSquadrons = 16;
 
         public static List<Unit> nonMemberUnits = new();
-        public static List<Squadron> squadrons = new();
+        public static Squadron[] squadrons = new Squadron[maxSquadrons];
+
+        public static Squadron GetSquadronByID(byte id) {
+            return squadrons[id];
+        }
 
         public static void CreateSquadrons() {
             for (int i = 0; i < squadronNames.Length; i++) {
@@ -88,12 +108,27 @@ namespace Frontiers.Squadrons {
         }
 
         public static void CreateSquadron(string name) {
+            byte id = 255;
+
+            for (int i = 0; i < maxSquadrons; i++) {
+                if (squadrons[i] == null) {
+                    id = (byte)i;
+                    break;
+                }
+            }
+
+            if (id == 255) return;
+            Client.CreateSquadron(new(name, id));
+        }
+
+        public static void CreateSquadron(string name, byte id) {
             Squadron squadron = new(name);
-            squadrons.Add(squadron);
+            squadron.squadronID = id;
+            squadrons[id] = squadron;
         }
 
         public static void RemoveSquadron(Squadron squadron) {
-            squadrons.Remove(squadron);
+            squadrons[squadron.squadronID] = null;
             SquadronUI.Instance.Remove(squadron);
         }
     }

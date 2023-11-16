@@ -55,7 +55,7 @@ public class SquadronUI : MonoBehaviour {
         float radius = radiusSlider.value * (maxRadius - minRadius) + minRadius;
 
         Action action = new(actionIndex, radius, position);
-        selected.SetAction(action);
+        Client.ChangeSquadronAction(selected, action);
 
         selected.uiItem.OnDeselect();
         selected = null;
@@ -70,8 +70,8 @@ public class SquadronUI : MonoBehaviour {
         }
 
         if (entity is Unit unit && selected != null) {
-            if (selected.members.Contains(unit)) selected.Remove(unit);
-            else selected.Add(unit);
+            if (selected.members.Contains(unit)) Client.RemoveMemeberFromSquadron(selected, unit);
+            else Client.AddMemeberToSquadron(selected, unit);      
         }
     }
 

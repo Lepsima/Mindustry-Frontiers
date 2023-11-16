@@ -86,10 +86,6 @@ public class PlayerManager : MonoBehaviour {
                 SelectEntity(GetEntityInPos(mousePos));
             }
 
-            if (Input.GetKeyDown(KeyCode.N)) {
-                SquadronHandler.CreateSquadron("Squadron " + SquadronHandler.squadrons.Count);
-            }
-
             float delta = Input.mouseScrollDelta.y;
             float change = delta * zoomSpeed * ( delta < 0f ? zoomOutMultiplier : zoomInMultiplier) * Time.deltaTime;
             if (!forceFollow) virtualCamera.m_Lens.OrthographicSize = Mathf.Clamp(virtualCamera.m_Lens.OrthographicSize - change, zoomClampMin, zoomClampMax);
