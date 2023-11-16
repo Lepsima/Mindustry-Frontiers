@@ -11,6 +11,8 @@ public class DiscordController : MonoBehaviour {
     public static bool buildStatus = true;
     public Discord.Discord discord;
 
+    ActivityManager activityManager;
+
     void Awake() {
         if (Process.GetProcessesByName("Discord").Length <= 0) {
             Destroy(gameObject);
@@ -19,20 +21,22 @@ public class DiscordController : MonoBehaviour {
 
         discord = new Discord.Discord(1139523769984110635L, (ulong)CreateFlags.NoRequireDiscord);
         startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+
+        activityManager = discord.GetActivityManager();
     }
 
     void Update() {
         try {
             discord.RunCallbacks();
-        } catch {   
+        } catch {
+            Clear();
             Destroy(gameObject);
         }
     }
 
     private void LateUpdate() {
         try {
-            var activityManager = discord.GetActivityManager();
-            var activity = DiscordActivities.GetActivity();
+            Activity activity = DiscordActivities.GetActivity();
 
             activityManager.UpdateActivity(activity, (res) => {
                 if (res != Result.Ok) UnityEngine.Debug.LogWarning("Failed connecting to Discord!");
@@ -65,7 +69,7 @@ public class DiscordController : MonoBehaviour {
     public static ActivityParty GetParty(out bool exists) {
         Room room = PhotonNetwork.CurrentRoom;
 
-        exists = partyID != null;
+        exists = partyID != null && room != null;
         if (!exists) return new();
 
         return new ActivityParty() {

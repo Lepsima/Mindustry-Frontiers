@@ -54,18 +54,7 @@ public class RoomManager : MonoBehaviourPunCallbacks {
     #region - Room -
 
     public override void OnJoinedRoom() {
-        if (!TeamUtilities.IsMaster()) return;
-        PhotonNetwork.LocalPlayer.JoinTeam(TeamUtilities.GetDefaultTeam());    
-    }
-
-    public override void OnPlayerEnteredRoom(Player newPlayer) {
-        if (!TeamUtilities.IsMaster()) return;
-        newPlayer.JoinTeam(TeamUtilities.GetDefaultTeam());
-    }
-
-    public override void OnPlayerLeftRoom(Player otherPlayer) {
-        if (!TeamUtilities.IsMaster()) return;
-        otherPlayer.LeaveCurrentTeam();
+        if (PhotonNetwork.LocalPlayer.GetPhotonTeam() == null) PhotonNetwork.LocalPlayer.JoinTeam(TeamUtilities.GetDefaultTeam());
     }
 
     public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps) {

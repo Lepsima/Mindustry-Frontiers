@@ -50,7 +50,7 @@ public class DiscordActivities {
 
                 case State.InRoom:
                     details = "Sandbox";
-                    state = isPrivate ? "-Private Room-" : PhotonNetwork.CurrentRoom.Name;
+                    state = isPrivate ? "-Private Room-" : PhotonNetwork.CurrentRoom == null ? "-Room Name Not Found-" : PhotonNetwork.CurrentRoom.Name;
 
                     break;
 

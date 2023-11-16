@@ -61,6 +61,8 @@ public class Launcher : MonoBehaviourPunCallbacks {
 
         DiscordActivities.SetState(DiscordActivities.State.MainMenu);
         DontDestroyOnLoad(new GameObject("Discord rich presence", typeof(DiscordController)));
+
+        PhotonNetwork.NickName = "Player " + (PhotonNetwork.CountOfPlayers * 100 + UnityEngine.Random.Range(0, 100)).ToString("000");
     }
 
     public static void SetState(string value) {
@@ -88,7 +90,6 @@ public class Launcher : MonoBehaviourPunCallbacks {
     public override void OnConnectedToMaster() {
         SetState("Connected To Master And Joining Lobby...");
         PhotonNetwork.JoinLobby();
-        PhotonNetwork.NickName = "Player " + PhotonNetwork.CountOfPlayers.ToString("000");
         PhotonNetwork.AutomaticallySyncScene = true;
     }
 
