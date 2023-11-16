@@ -39,12 +39,23 @@ public class DiscordController : MonoBehaviour {
             });
 
         } catch {
+            Clear();
             Destroy(gameObject);
         }
     }
 
+    private void OnDestroy() {
+        Clear();
+    }
+
     private void OnApplicationQuit() {
-        if (!Application.isEditor || buildStatus) discord.Dispose();
+        if ((!Application.isEditor || buildStatus)) Clear();
+    }
+
+    private void Clear() {
+        if (discord == null) return;
+        discord.Dispose();
+        discord = null;
     }
 
     public static void SetParty(string id) {

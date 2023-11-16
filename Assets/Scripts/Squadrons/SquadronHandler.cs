@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using Frontiers.Teams;
 
 namespace Frontiers.Squadrons {
 
@@ -36,7 +37,7 @@ namespace Frontiers.Squadrons {
             this.teamCode = teamCode;
             squadronID = id;
 
-            if (teamCode == Teams.TeamUtilities.GetLocalTeam()) {
+            if (teamCode == TeamUtilities.GetLocalTeam()) {
                 uiItem = SquadronUI.Instance.Create(this);
             }
         }
@@ -100,10 +101,12 @@ namespace Frontiers.Squadrons {
         }
 
         public static void CreateSquadrons() {
-            for (int i = 0; i < squadronNames.Length; i++) {
-                CreateSquadron(1, squadronNames[i]);
-                CreateSquadron(2, squadronNames[i]);
-            }
+            if (TeamUtilities.IsMaster()) {
+                for (int i = 0; i < squadronNames.Length; i++) {
+                    CreateSquadron(1, squadronNames[i]);
+                    CreateSquadron(2, squadronNames[i]);
+                }
+            } else Client.RequestSquadrons();       
         }
 
         public static void RefreshNonMemberList() {
