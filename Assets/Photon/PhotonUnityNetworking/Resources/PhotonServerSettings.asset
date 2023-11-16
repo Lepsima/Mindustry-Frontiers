@@ -80,6 +80,12 @@ MonoBehaviour:
   - RPC_Explosion
   - RPC_ReciveSyncData
   - RPC_ReciveUnitData
+  - RPC_CreateSquadron
+  - RPC_AddMemberToSquadron
+  - RPC_ChangeSquadronAction
+  - RPC_ReciveSquadron
+  - RPC_RequestSquadrons
+  - RPC_RemoveMemberFromSquadron
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

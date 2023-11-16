@@ -225,8 +225,8 @@ public class Client : MonoBehaviourPunCallbacks {
 
 
 
-    public static void CreateSquadron(Squadron newSquadron) {
-        Instance.photonView.RPC(nameof(RPC_CreateSquadron), RpcTarget.All, newSquadron.squadronID, newSquadron.name);
+    public static void CreateSquadron(byte id, string name) {
+        Instance.photonView.RPC(nameof(RPC_CreateSquadron), RpcTarget.All, id, name);
     }
 
     [PunRPC]

@@ -30,11 +30,6 @@ namespace Frontiers.Squadrons {
 
         public byte squadronID;
 
-        public Squadron(string name) {
-            this.name = name;
-            uiItem = SquadronUI.Instance.Create(this);
-        }
-
         public Squadron(string name, byte id) {
             this.name = name;
             squadronID = id;
@@ -118,12 +113,11 @@ namespace Frontiers.Squadrons {
             }
 
             if (id == 255) return;
-            Client.CreateSquadron(new(name, id));
+            Client.CreateSquadron(id, name);
         }
 
         public static void CreateSquadron(string name, byte id) {
-            Squadron squadron = new(name);
-            squadron.squadronID = id;
+            Squadron squadron = new(name, id);
             squadrons[id] = squadron;
         }
 
