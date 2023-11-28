@@ -1,22 +1,22 @@
-using CI.QuickSave;
-using Frontiers.Animations;
-using Frontiers.Assets;
-using Frontiers.Content.Flags;
-using Frontiers.Content.Maps;
-using Frontiers.Content.SoundEffects;
-using Frontiers.Content.Upgrades;
-using Frontiers.Content.VisualEffects;
-using Frontiers.FluidSystem;
-using Frontiers.Pooling;
 using Frontiers.Teams;
+using Frontiers.Assets;
+using Frontiers.Pooling;
+using Frontiers.Animations;
+using Frontiers.FluidSystem;
+using Frontiers.Content.Maps;
+using Frontiers.Content.Flags;
+using Frontiers.Content.Upgrades;
+using Frontiers.Content.SoundEffects;
+using Frontiers.Content.VisualEffects;
+using CI.QuickSave;
 using Newtonsoft.Json;
 using Photon.Pun;
 using Photon.Pun.UtilityScripts;
 using Photon.Realtime;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using SpriteAnimation = Frontiers.Animations.SpriteAnimation;
@@ -3291,7 +3291,7 @@ namespace Frontiers.Content {
                     despawnFX = null,
                 },
 
-                barrels = new WeaponBarrel[1] { new WeaponBarrel("path-weapon", 1, new Vector2(0f, 1f), 1), },
+                barrels = new WeaponBarrel[1] { new WeaponBarrel("path-weapon", -1, new Vector2(0f, 1f), 1), },
 
                 independent = true,
 
@@ -3824,8 +3824,11 @@ namespace Frontiers.Content {
         public int sortingOrder;
 
         public WeaponBarrel(string name, int barrelNum, Vector2 shootOffset, int sortingOrder = 3) {
-            barrelSprite = AssetLoader.GetSprite(name + "-barrel" + barrelNum);
-            barrelOutlineSprite = AssetLoader.GetSprite(name + "-barrel" + "-outline" + barrelNum);
+            string barrelSuffix = barrelNum == -1 ? "" : barrelNum.ToString();
+
+            barrelSprite = AssetLoader.GetSprite(name + "-barrel" + barrelSuffix);
+            barrelOutlineSprite = AssetLoader.GetSprite(name + "-barrel" + "-outline" + barrelSuffix);
+
             this.shootOffset = shootOffset;
             this.sortingOrder = sortingOrder;
         }
