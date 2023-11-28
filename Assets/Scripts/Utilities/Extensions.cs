@@ -37,4 +37,15 @@ public static class MoreExtensions {
         for (int i = 0; i < lenght; i++) returnString += AllowedChars[UnityEngine.Random.Range(0, AllowedChars.Length)];
         return returnString;
     }
+
+    public static int LineCount(this string str, int lineLenght) {
+        string[] splits = str.Split("\n");
+        int lines = splits.Length;
+
+        for (int i = 0; i < splits.Length; i++) {
+            if (splits[i].Length > lineLenght) lines++;
+        }
+
+        return lines;
+    }
 }
