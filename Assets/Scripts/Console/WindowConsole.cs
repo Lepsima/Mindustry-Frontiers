@@ -61,7 +61,7 @@ namespace Frontiers.Windows {
             // This might be a bad way to implement commands, but i dont want to start debugging the debug console just for +1ms
             switch(command) {
                 case "help":
-                    Queue("List of commands:" +
+                    Queue("List of commands (case insensitive):" +
                         "\n Help: shows a list of commands" +
                         "\n ImConnected: returns the network status" +
                         "\n ListPlayers: returns the list of players in the same room" +
