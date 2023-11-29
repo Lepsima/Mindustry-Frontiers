@@ -42,7 +42,7 @@ namespace Frontiers.Windows {
                 return;
             }
 
-            window.Open(this, nextWindowID);
+            //window.Open(this, nextWindowID);
             nextWindowID++;
         }
 
