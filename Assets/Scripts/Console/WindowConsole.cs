@@ -2,6 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using Photon.Realtime;
+using Photon.Pun;
+using Frontiers.Teams;
+using System.Linq;
 
 namespace Frontiers.Windows {
     public class WindowConsole : Window {
@@ -9,7 +13,7 @@ namespace Frontiers.Windows {
         public TMP_InputField inputField;
 
         public int maxCharacters = 2500;
-        public float characterTimeSpacing = 0.01f;
+        public float characterTimeSpacing = 0.015f;
 
         public string queuedText = "";
         [HideInInspector] public string displayText = "";
@@ -49,35 +53,53 @@ namespace Frontiers.Windows {
 
             inputField.text = "";
 
-            text = text.Trim();
+            text = text.Trim().ToLower();
 
             string[] parameters = text.Split(" ");
             string command = parameters[0];
 
             // This might be a bad way to implement commands, but i dont want to start debugging the debug console just for +1ms
             switch(command) {
-                case "Hello":
-                    Queue("Hi!");
+                case "help":
+                    Queue("List of commands:" +
+                        "\n Help: shows a list of commands" +
+                        "\n ImConnected: returns the network status" +
+                        "\n ListPlayers: returns the list of players in the same room" +
+                        "\n ExitMatch: alt + F4 but cooler, mostly for some laptop users" +
+                        "\n InstantConsole [boolean]: enables/disables the text animation" +
+                        "\n Clear: clears all the text in the console and queue" +
+                        "\n ClearQueue: clears all the text that is waiting to be displayed");
                     break;
 
-                case "Clear":
+                case "imconnected":
+                    Queue(PhotonNetwork.IsConnected ? "You are connected!" : "You are offline!");
+                    break;
+
+                case "listplayers":
+                    if (!PhotonNetwork.IsConnected || !PhotonNetwork.InRoom) {
+                        Queue("ERROR: You are not in a room, join or create one to see the list of players");
+                        break;
+                    }
+
+                    foreach (Player player in PhotonNetwork.PlayerList) {
+                        Queue(player.NickName + " => " + (TeamUtilities.TryGetTeamMembers(0).Contains(player) ? "Team 0" : "Team 1") + "\n");
+                    }
+                    break;
+
+                case "exitmatch":
+                    break;
+
+                case "instantconsole":
+                    bool state = bool.Parse(parameters[1]);
+                    characterTimeSpacing = state ? 0.00000000001f : 0.015f;
+                    break;
+
+                case "clear":
                     Clear();
                     break;
 
-                case "ClearQueue":
+                case "clearqueue":
                     ClearQueue();
-                    break;
-
-                case "CoolAnimation":
-                    Queue("Loading " +
-                        "\n.               " +
-                        "\n.               " +
-                        "\n.               " +
-                        "\n.               " +
-                        "\n.               " +
-                        "\n.               " +
-                        "\n.               " +
-                        "\nFinished Loading!");
                     break;
             }
         }
