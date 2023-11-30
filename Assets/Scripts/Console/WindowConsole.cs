@@ -4,11 +4,10 @@ using TMPro;
 using UnityEngine;
 using Photon.Realtime;
 using Photon.Pun;
-using Frontiers.Teams;
-using System.Linq;
+using Photon.Pun.UtilityScripts;
 
 namespace Frontiers.Windows {
-    public class WindowConsole : Window {
+    public class WindowConsole : MonoBehaviour {
         public TMP_Text textRenderer;
         public TMP_InputField inputField;
 
@@ -20,13 +19,7 @@ namespace Frontiers.Windows {
 
         float prevTime = 0f;
 
-        public override void Open(WindowHandler handler, short id, string name) {
-            base.Open(handler, id, name);
-        }
-
-        protected override void Update() {
-            base.Update();
-
+        private void Update() {
             float time = Time.deltaTime + prevTime;
             int characters = Mathf.Min(queuedText.Length, Mathf.FloorToInt(time / characterTimeSpacing));
 
@@ -49,7 +42,7 @@ namespace Frontiers.Windows {
             string displayText = text;
 
             if (!EndsInNewLine()) displayText = "\n" + displayText;
-            Queue(displayText + "\n");
+            Queue(" > " + displayText + "\n");
 
             inputField.text = "";
 
@@ -65,7 +58,11 @@ namespace Frontiers.Windows {
                         "\n Help: shows a list of commands" +
                         "\n ImConnected: returns the network status" +
                         "\n ListPlayers: returns the list of players in the same room" +
-                        "\n ExitMatch: alt + F4 but cooler, mostly for some laptop users" +
+                        "\n ListPlayersTeam: returns the list of players and their team" +
+                        "\n ImAdmin: returns whether if you are the room's admin" +
+                        "\n Ping: gets the roundtrip time in milliseconds" +
+                        "\n Version: displays the current game version" +
+                        "\n ExitMatch: mostly for some laptop users" +
                         "\n InstantConsole [boolean]: enables/disables the text animation" +
                         "\n Clear: clears all the text in the console and queue" +
                         "\n ClearQueue: clears all the text that is waiting to be displayed");
@@ -82,10 +79,44 @@ namespace Frontiers.Windows {
                     }
 
                     foreach (Player player in PhotonNetwork.PlayerList) {
-                        Queue(player.NickName + " => " + (TeamUtilities.TryGetTeamMembers(0).Contains(player) ? "Team 0" : "Team 1") + "\n");
+                        Queue(player.NickName + " : " +  player.UserId);
                     }
                     break;
 
+                case "listplayersteam":
+                    if (!PhotonNetwork.IsConnected || !PhotonNetwork.InRoom) {
+                        Queue("ERROR: You are not in a room, join or create one to see the list of players");
+                        break;
+                    }
+
+                    foreach (Player player in PhotonNetwork.PlayerList) {
+                        Queue(player.NickName + " : " + player.GetPhotonTeam().Name + "\n");
+                    }
+                    break;
+
+                case "imadmin":
+                    if (!PhotonNetwork.IsConnected || !PhotonNetwork.InRoom) {
+                        Queue("ERROR: You are not in a room, join or create one to see the list of players");
+                        break;
+                    }
+
+                    Queue(PhotonNetwork.IsMasterClient ? "You are the room's admin" : "You aren't the room's admin");
+                    break;
+
+                case "ping":
+                    if (!PhotonNetwork.IsConnected) {
+                        Queue("ERROR: You are not connected, you need to be connected to see your ping");
+                        break;
+                    }
+
+                    Queue(PhotonNetwork.GetPing() + "ms");
+
+                    break;
+
+                case "version":
+                    Queue(PhotonNetwork.AppVersion);
+                    break;
+                    
                 case "exitmatch":
                     break;
 
