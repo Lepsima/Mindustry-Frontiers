@@ -39,10 +39,10 @@ namespace Frontiers.Windows {
         }
 
         public void UserInputText(string text) {
-            string displayText = text;
+            string displayText = "User> " + text;
 
             if (!EndsInNewLine()) displayText = "\n" + displayText;
-            Queue(" > " + displayText + "\n");
+            Queue(displayText + "\n");
 
             inputField.text = "";
 
@@ -149,6 +149,16 @@ namespace Frontiers.Windows {
 
         public bool EndsInNewLine() {
             return queuedText.Length > 0 ? queuedText.EndsWith("\n") : displayText.EndsWith("\n");
+        }
+
+        public void Open() {
+            Clear();
+            gameObject.SetActive(true);
+        }
+
+        public void Close() {
+            Clear();
+            gameObject.SetActive(false);
         }
     }
 }
