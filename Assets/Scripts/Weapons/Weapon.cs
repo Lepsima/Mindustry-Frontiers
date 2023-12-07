@@ -31,10 +31,15 @@ public class Weapon : MonoBehaviour {
     // Timers
     private float targetSearchTimer = 0f, avilableShootTimer = 0f, chargeShotCooldownTimer = -1f;
 
-    private bool isReloading = false, isActive = false, mirrored = false, hasMultiBarrel = false, hasHeat = false;
+    private bool isReloading = false, isActive = false, mirrored = false, hasMultiBarrel = false, hasHeat = false, hasBarrelHeat = false;
     private int currentRounds, barrelIndex, chargeUpProgress;
 
+    private float cameraShakeTime;
+    private float cameraShakeDecrease;
+
     private void Update() {
+        if (cameraShakeTime > Time.time) CameraController.Instance.CameraShake(transform.position, Type.cameraShakeRange, Type.cameraShakeIntensity, cameraShakeTime, cameraShakeDecrease);
+
         if (isReloading && hasAnimations) {
             animator.NextFrame(SpriteAnimation.Case.Reload); 
         }
@@ -60,7 +65,10 @@ public class Weapon : MonoBehaviour {
         }
 
         UpdateRecoil();
+
+        // Update heat renderers color
         if (hasHeat) ChangeHeat(-Type.heatFadeTime * Time.deltaTime);
+        if (hasBarrelHeat) foreach (Barrel barrel in barrels) barrel.ChangeHeat(-Type.heatFadeTime * Time.deltaTime, Type.heatSpriteAlpha);
     }
 
     private void UpdateRecoil() {
@@ -239,35 +247,55 @@ public class Weapon : MonoBehaviour {
 
 
     public void Shoot() {
+        // Consume ammo
         currentRounds--;
-        if (hasHeat) ChangeHeat(Type.heatIncrease);
         float time = Type.shootTime;
 
+
+        // Charge-up ability
         if (Type.chargesUp) {
             if (chargeUpProgress < Type.shotsToChargeUp) chargeUpProgress++;
             time = Mathf.Lerp(Type.shootTime, Type.chargedShootTime, (float)chargeUpProgress / Type.shotsToChargeUp);
         }
 
+        // Shoot spacing
         avilableShootTimer = Time.time + time;
 
+        // Shoot animations
         if (hasAnimations) animator.NextFrame(SpriteAnimation.Case.Shoot);
+
+        // Ammo consumption
         iArmed.ConsumeAmmo(Type.ammoPerShot);
 
+        // Camera shake
+        cameraShakeTime = Type.cameraShakeTime + Time.time;
+        cameraShakeDecrease = Type.cameraShakeDecrease == -1 ? cameraShakeTime : Type.cameraShakeDecrease + Time.time;
+
         if (hasMultiBarrel) {
+            // Add recoil to the weapon body
             transform.position += transform.up * -Type.recoil / (barrels.Length * 2f);
 
+            // Change index
             barrelIndex++;
             if (barrelIndex >= barrels.Length) barrelIndex = 0;
 
+            // Shoot barrel
             barrels[barrelIndex].Shoot(this);
+            barrels[barrelIndex].ChangeHeat(Type.heatIncrease, Type.heatSpriteAlpha);
         } else {
+            // Add recoil
             transform.position += transform.up * -Type.recoil;
 
+            // Get bullet position and angle
             Vector2 bulletOriginPoint = transform.position + GetOffset();
             float bulletAngle = transform.eulerAngles.z + Random.Range(-Type.spread, Type.spread);
 
+            // Play effects and shoot bullet
             if (shootFX) shootFX.Play();
             this.ShootBullet(bulletOriginPoint, bulletAngle);
+
+            // Heat sprite
+            if (hasHeat) ChangeHeat(Type.heatIncrease);
         }
     }
 
@@ -291,6 +319,9 @@ public class Barrel {
     public Vector2 shootOffset;
     public Transform transform;
     public ParticleSystem shootFX;
+
+    readonly SpriteRenderer heatRenderer;
+    private float currentHeat;
 
     public Barrel(Weapon parent, WeaponBarrel weaponBarrel) {
         shootOffset = weaponBarrel.shootOffset;
@@ -316,11 +347,26 @@ public class Barrel {
         outlineRenderer.sprite = weaponBarrel.barrelOutlineSprite;
         outlineRenderer.sortingLayerName = "Units";
         outlineRenderer.sortingOrder = -1;
+
+        // Skip if there's no heat sprite
+        if (weaponBarrel.barrelHeatSprite == null) return;
+
+        Transform barrelHeatTransform = new GameObject("heat", typeof(SpriteRenderer)).transform;
+        barrelHeatTransform.parent = transform;
+        barrelHeatTransform.localPosition = Vector3.zero;
+        barrelHeatTransform.localRotation = Quaternion.identity;
+
+        heatRenderer = barrelOutlineTransform.GetComponent<SpriteRenderer>();
+        heatRenderer.sprite = weaponBarrel.barrelOutlineSprite;
+        heatRenderer.sortingLayerName = "Units";
+        heatRenderer.sortingOrder = weaponBarrel.sortingOrder + 1;
     }
 
     public Bullet Shoot(Weapon weapon) {
         if (shootFX) shootFX.Play();
         transform.position += transform.up * -weapon.Type.recoil;
+
+
 
         float bulletAngle = transform.eulerAngles.z + Random.Range(-weapon.Type.spread, weapon.Type.spread);
         return weapon.ShootBullet(transform.position + GetOffset(), bulletAngle);
@@ -328,5 +374,12 @@ public class Barrel {
 
     public Vector3 GetOffset() {
         return (shootOffset.x * transform.right) + (shootOffset.y * transform.up);
+    }
+
+    public void ChangeHeat(float value, float alpha) {
+        if (heatRenderer == null) return;
+
+        currentHeat = Mathf.Clamp01(currentHeat + value);
+        heatRenderer.color = new Color(1f, 1f, 1f, currentHeat * alpha);
     }
 }

@@ -32,19 +32,21 @@ public class CoreBlock : StorageBlock {
         GameObject instance = Instantiate(animationPrefab, GetPosition(), Quaternion.identity);
 
         // Subscribe to event
-        instance.GetComponentInChildren<ThrusterAnimationTrigger>().OnAnimationEnd += OnAnimationEnd;
+        AnimationInfo animationInfo = instance.GetComponentInChildren<AnimationInfo>();
+        animationInfo.OnAnimationEnd += OnAnimationEnd;
 
         // Disable loading screen
         PlayerUI.Instance.EnableLoadingScreen(false);
 
         // Follow animation
-        PlayerManager.Instance.FixFollow(instance.transform.GetChild(0), 25f);
+        CameraController.Instance.FixFollow(instance.transform.GetChild(0), 25f);
+        CameraController.Instance.CameraShake(7f, animationInfo.length * 0.9f, animationInfo.length * 0.75f, 0f);
     }
 
     public void OnAnimationEnd(object sender, System.EventArgs e) {
-        Destroy(((ThrusterAnimationTrigger)sender).transform.root.gameObject);
+        Destroy(((AnimationInfo)sender).transform.root.gameObject);
         ShowSprites(true);
-        PlayerManager.Instance.UnFollow(GetPosition());
+        CameraController.Instance.UnFollow(GetPosition());
     }
 
     public override void OnDestroy() {

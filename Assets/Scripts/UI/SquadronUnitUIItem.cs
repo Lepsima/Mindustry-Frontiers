@@ -24,7 +24,7 @@ public class SquadronUnitUIItem : MonoBehaviour {
     }
 
     public void OnClick() {
-        PlayerManager.Instance.Follow(unit.transform);
+        CameraController.Instance.Follow(unit.transform);
     }
 
     public void OnQuitClick() {

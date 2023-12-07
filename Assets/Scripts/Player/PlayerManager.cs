@@ -1,40 +1,20 @@
-using Photon.Pun;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
-using Frontiers.Content.Maps;
-using Frontiers.Content.Upgrades;
-using Frontiers.Content;
-using Frontiers.Assets;
-using Frontiers.Teams;
 using UnityEngine.EventSystems;
 using System;
-using Cinemachine;
-using UnitMode = Unit.UnitMode;
 using Frontiers.FluidSystem;
 using Frontiers.Squadrons;
+using Frontiers.Content;
 
 public class PlayerManager : MonoBehaviour {
-    [SerializeField] float moveSpeed = 2f;
-    [SerializeField] float zoomSpeed = 30f;
-    [SerializeField] float zoomInMultiplier = 2f;
-    [SerializeField] float zoomOutMultiplier = 1f;
-    [SerializeField] [Range(1, 50)] float zoomClampMin = 10f;
-    [SerializeField] [Range(1, 50)] float zoomClampMax = 50f;
-
     public static PlayerManager Instance;
-    public Entity selectedEntity;
+    public static Vector3 mousePos;
 
     public event EventHandler<Entity.EntityArg> OnEntitySelected;
 
-    private CinemachineVirtualCamera virtualCamera;
-    private Transform playerTransform;
-
-    public bool buildMode = false, forceFollow = false;
-    public int unitFollowIndex = 0;
-
-    public static Vector3 mousePos;
+    public Entity selectedEntity;
+    public CameraController cameraController;
+  
+    public bool buildMode = false;
 
     private void Awake() {
         Instance = this;
@@ -42,34 +22,28 @@ public class PlayerManager : MonoBehaviour {
 
     private void Start() {
         PlayerContentSelector.OnSelectedContentChanged += Instance.OnSelectedContentChanged;
-
-        playerTransform = transform.GetChild(0);
-        playerTransform.parent = null;
-
-        virtualCamera = GetComponent<CinemachineVirtualCamera>();
-        Follow(playerTransform);
+        cameraController = GetComponent<CameraController>();
 
         PlayerUI.Instance.EnableLoadingScreen(true);
         SquadronHandler.CreateSquadrons();
     }
 
-    public bool IsFollowingPlayer() {
-        return virtualCamera.Follow == playerTransform;
-    }
-
-    public void Update() {
-        if (!forceFollow) playerTransform.position += Time.deltaTime * virtualCamera.m_Lens.OrthographicSize * new Vector3(Input.GetAxis("Horizontal") * moveSpeed, Input.GetAxis("Vertical") * moveSpeed, 0);
+    private void Update() {
         mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
         if (buildMode) HandleBuildMode();
         else HandleMainMode();
 
         if (Input.GetKeyDown(KeyCode.Q)) {
-            ChangeFollowingUnit(-1);
+            cameraController.ChangeFollowingUnit(-1);
         }
 
         if (Input.GetKeyDown(KeyCode.E)) {
-            ChangeFollowingUnit(1);
+            cameraController.ChangeFollowingUnit(1);
+        }
+
+        if (Input.GetKeyDown(KeyCode.K)) {
+            cameraController.CameraShake(2, 5, 2.5f, 0f);
         }
     }
 
@@ -86,9 +60,7 @@ public class PlayerManager : MonoBehaviour {
                 SelectEntity(GetEntityInPos(mousePos));
             }
 
-            float delta = Input.mouseScrollDelta.y;
-            float change = delta * zoomSpeed * ( delta < 0f ? zoomOutMultiplier : zoomInMultiplier) * Time.deltaTime;
-            if (!forceFollow) virtualCamera.m_Lens.OrthographicSize = Mathf.Clamp(virtualCamera.m_Lens.OrthographicSize - change, zoomClampMin, zoomClampMax);
+            cameraController.ChangeCameraSize(Input.mouseScrollDelta.y);
         }
     }
 
@@ -132,51 +104,7 @@ public class PlayerManager : MonoBehaviour {
         if (buildMode) {
             selectedEntity = null;
             InventoryViewer.Instance.SetInventory(null);
-            Follow(playerTransform);
+            cameraController.Follow(null);
         }
-    }
-
-    public void ChangeFollowingUnit(int increment) {
-        if (MapManager.Map.units.Count == 0) return;
-
-        unitFollowIndex += increment;
-
-        if (unitFollowIndex >= MapManager.Map.units.Count) unitFollowIndex = 0;
-        if (unitFollowIndex < 0) unitFollowIndex = MapManager.Map.units.Count - 1;
-        
-        Unit unit = MapManager.Map.units[unitFollowIndex];
-        Transform unitTransform = unit.transform;
-
-        unit.OnDestroyed += OnFollowingUnitDestroyed;
-
-        Follow(unitTransform);
-    }
-
-    public void OnFollowingUnitDestroyed(object sender, Entity.EntityArg e) {
-        // If there's a registered killer, follow that entity
-        Follow(e.other != null ? e.other.transform : null);
-    }
-
-    public void FixFollow(Transform target, float fovSize) {
-        virtualCamera.Follow = target == null ? playerTransform : target;
-        virtualCamera.m_Lens.OrthographicSize = fovSize;
-        forceFollow = true;
-    }
-
-    public void Follow(Transform target, bool forceFollow = false) {
-        if (this.forceFollow && virtualCamera.Follow != null) return;
-
-        virtualCamera.Follow = target == null ? playerTransform : target;
-        this.forceFollow = forceFollow;
-    }
-
-    public void UnFollow(Vector2 position) {
-        forceFollow = false;
-        playerTransform.position = position;
-        Follow(playerTransform);
-    }
-
-    public void CameraShake() {
-
     }
 }

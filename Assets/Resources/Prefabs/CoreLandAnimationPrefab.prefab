@@ -24750,6 +24750,7 @@ GameObject:
   - component: {fileID: 4504741993897760023}
   - component: {fileID: 2642587489298079257}
   - component: {fileID: 2147477712775960536}
+  - component: {fileID: 2660116935843589541}
   m_Layer: 0
   m_Name: core-shard
   m_TagString: Untagged
@@ -24847,6 +24848,19 @@ Animation:
   m_PlayAutomatically: 1
   m_AnimatePhysics: 0
   m_CullingType: 0
+--- !u!114 &2660116935843589541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6983840620801244855}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c25cbf5b107c6f43a223348de637ecb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  length: 7
 --- !u!1 &7362849465577558499
 GameObject:
   m_ObjectHideFlags: 0

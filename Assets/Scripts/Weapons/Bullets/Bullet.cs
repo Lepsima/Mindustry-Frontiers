@@ -15,6 +15,8 @@ public class Bullet {
     Vector2 startPosition, hitPosition;
     float distance, startingDistance;
 
+    int pierces;
+
     public bool active;
 
     public Bullet(Weapon weapon, Transform transform) {

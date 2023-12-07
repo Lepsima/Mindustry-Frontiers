@@ -135,18 +135,18 @@ public class Client : MonoBehaviourPunCallbacks {
         unit.patrolPosition = point;
     }
 
-    public static void BulletHit(Entity entity, BulletType bulletType) {
+
+
+    public static void SetHealth(Entity entity, float health) {
         if (!PhotonNetwork.IsMasterClient) return;
-        Instance.photonView.RPC(nameof(RPC_BulletHit), RpcTarget.All, entity.SyncID, bulletType.id);
     }
 
     [PunRPC]
-    public void RPC_BulletHit(short syncID, short bulletID) {
+    public void RPC_SetHealth(short syncID, float health) {
         if (isRecivingMap || syncObjects[syncID] == null) return;
 
         Entity entity = (Entity)syncObjects[syncID];
-        BulletType bulletType = BulletLoader.loadedBullets[bulletID];
-        DamageHandler.BulletHit(bulletType, entity);     
+        entity.SetHealth(health);
     }
 
 
@@ -161,19 +161,6 @@ public class Client : MonoBehaviourPunCallbacks {
         if (isRecivingMap) return;
         Entity entity = (Entity)syncObjects[syncID];
         DamageHandler.Damage(new(damage), entity);
-    }
-
-
-
-    public static void Explosion(BulletType bulletType, Vector2 position, int mask) {
-        if (!PhotonNetwork.IsMasterClient) return;
-        Instance.photonView.RPC(nameof(RPC_Explosion), RpcTarget.All, bulletType.id, position, mask);
-    }
-
-    [PunRPC]
-    public void RPC_Explosion(short bulletID, Vector2 position, int mask) {
-        if (isRecivingMap) return;
-        DamageHandler.BulletExplode(BulletLoader.loadedBullets[bulletID], position, mask);
     }
 
 

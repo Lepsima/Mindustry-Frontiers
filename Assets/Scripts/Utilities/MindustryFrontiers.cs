@@ -3058,10 +3058,14 @@ namespace Frontiers.Content {
         public float heatSpriteAlpha = 0.3f; // The max alpha value for the heat sprite
         public float heatIncrease = 0.33f; // The heat increase per shot, 1 = max heat
 
+        public float cameraShakeRange = 10f; // The range the camera shake modifier will be applied
+        public float cameraShakeIntensity = 0.5f; // The intensity of the camera shake
+        public float cameraShakeTime = 0.5f; // The time the modifier lasts
+        public float cameraShakeDecrease = -1f; // The time to start decreasing in intensity
+
         public WeaponType(string name) : base(name) {
             outlineSprite = AssetLoader.GetSprite(name + "-outline", true);
             heatSprite = AssetLoader.GetSprite(name + "-heat", true);
-            if (heatSprite != null) Debug.Log("Has heat sprite");
         }
 
         public float GetDPS(bool buildings) {
@@ -3085,7 +3089,7 @@ namespace Frontiers.Content {
         public const Weapon none = null;
 
         // Base weapons
-        public static WeaponType smallAutoWeapon, tempestWeapon, windstormWeapon, stingerWeapon, pathWeapon, spreadWeapon, cycloneWeapon, deviationWeapon, lasertWeapon;
+        public static WeaponType smallAutoWeapon, tempestWeapon, windstormWeapon, stingerWeapon, pathWeapon, spreadWeapon, cycloneWeapon, deviationWeapon, lasertWeapon, typhoonWeapon;
 
         //Unit weapons
         public static WeaponType 
@@ -3466,6 +3470,9 @@ namespace Frontiers.Content {
                 rotateSpeed = 45f,
             };
 
+            typhoonWeapon = new WeaponType("typoon-weapon") {
+            };
+
             missileRack = new WeaponType("missileRack") {
                 bulletType = Bullets.missileBullet,
                 shootOffset = new Vector2(0, 0.5f),
@@ -3490,6 +3497,9 @@ namespace Frontiers.Content {
 
         public float damage = 10f, buildingDamageMultiplier = 1f, velocity = 100f, lifeTime = 1f, size = 0.05f;
         public float blastRadius = -1f, blastRadiusFalloff = -1f, minBlastDamage = 0f;
+
+        public int piercePower = -1; // The limit on targets pierced
+        public float pierceDamage = 0.5f; // The multiplier applied to the damage for each pierced target
 
         public bool explodeOnDespawn = false;
 
@@ -3744,7 +3754,7 @@ namespace Frontiers.Content {
 
     #endregion
 
-    #region - Structures - 
+    #region - Structs - 
 
     public struct SerializableItemList {
         public ItemStack[] itemStacks;
@@ -3820,6 +3830,7 @@ namespace Frontiers.Content {
     public struct WeaponBarrel {
         [JsonIgnore] public Sprite barrelSprite;
         [JsonIgnore] public Sprite barrelOutlineSprite;
+        [JsonIgnore] public Sprite barrelHeatSprite;
         public Vector2 shootOffset;
         public int sortingOrder;
 
@@ -3827,7 +3838,8 @@ namespace Frontiers.Content {
             string barrelSuffix = barrelNum == -1 ? "" : barrelNum.ToString();
 
             barrelSprite = AssetLoader.GetSprite(name + "-barrel" + barrelSuffix);
-            barrelOutlineSprite = AssetLoader.GetSprite(name + "-barrel" + "-outline" + barrelSuffix);
+            barrelOutlineSprite = AssetLoader.GetSprite(name + "-barrel-outline" + barrelSuffix);
+            barrelHeatSprite = AssetLoader.GetSprite(name + "-barrel-heat" + barrelSuffix, true);
 
             this.shootOffset = shootOffset;
             this.sortingOrder = sortingOrder;

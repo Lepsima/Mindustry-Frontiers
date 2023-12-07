@@ -67,7 +67,7 @@ public class AssemblerBlock : Block {
         instance.transform.Find("main-block/block-thruster").GetComponent<SpriteRenderer>().sprite = Type.thrusterSprite; 
 
         // Subscribe to event
-        fairingTrigger.OnAnimationEnd += OnAnimationEnd;
+        instance.transform.GetComponent<AnimationInfo>().OnAnimationEnd += OnAnimationEnd;
     }
 
     public void OnAnimationEnd(object sender, EventArgs e) {

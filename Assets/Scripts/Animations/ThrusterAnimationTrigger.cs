@@ -9,8 +9,6 @@ public class ThrusterAnimationTrigger : MonoBehaviour {
 
     public ParticleSystem crashEffect;
 
-    public EventHandler OnAnimationEnd;
-
     public float duration = 4.8f;
 
     public void SetBlockSize(int size) {
@@ -31,7 +29,6 @@ public class ThrusterAnimationTrigger : MonoBehaviour {
 
     public void PlayCrashEffect() {
         crashEffect.Play();
-        OnAnimationEnd?.Invoke(this, EventArgs.Empty);
     }
 
     public void OnDisable() {
