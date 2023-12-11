@@ -136,6 +136,8 @@ public abstract class Entity : SyncronizableObject, IDamageable, IMessager {
         if (health <= 0) {
             if (this is Unit unit) Client.DestroyUnit(unit, true);
             else if (this is Block block) Client.DestroyBlock(block, true);
+        } else {
+            Client.SetHealth(this, health);
         }
 
         OnDamaged?.Invoke(this, EventArgs.Empty);
