@@ -53,7 +53,8 @@ public class MapEditor : MonoBehaviour {
 
     public static void OnMapLoaded(Map map) {
         MapEditor.map = map;
-        Instance.editorCamera.SetPosition((Vector2)map.size / 2f);
+        MapEditor.Instance.Replace();
+        Instance.editorCamera.SetPosition((Vector3)((Vector2)map.size / 2f) + new Vector3(0, 0, -10));
     }
 
     public void PlaceMode() {
@@ -79,6 +80,25 @@ public class MapEditor : MonoBehaviour {
                 map.UpdatePlaceTile((MapLayer)currentLayer, mouseGridPos, null);
             }
         }
+    }
+
+    public void Replace() {
+        Vector2Int size = map.size;
+        TileType ice = map.GetTileType("ice");
+
+        for (int x = 0; x < size.x; x++) {
+            for (int y = 0; y < size.y; y++) {
+                Vector2Int pos = new(x, y);
+                TileType tile = map.GetMapTileTypeAt(MapLayer.Ground, pos);
+
+                if (tile.name.StartsWith("ore-")) {
+                    map.PlaceTile(MapLayer.Ground, pos, ice);
+                    map.PlaceTile(MapLayer.Ore, pos, tile);
+                }
+            }
+        }
+
+        map.tilemap.UpdateMesh();
     }
 
     public void SaveMap() {

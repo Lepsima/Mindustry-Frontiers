@@ -15,7 +15,7 @@ public class MapEditorCamera : MonoBehaviour {
         Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize + Input.mouseScrollDelta.y * zoomVelocity * Time.deltaTime, minZoom, maxZoom);
     }
 
-    public void SetPosition(Vector2 pos) {
+    public void SetPosition(Vector3 pos) {
         transform.position = pos;
     }
 
