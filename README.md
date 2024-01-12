@@ -1,7 +1,7 @@
 ![logo](Assets/Resources/Sprites/UI/logo.png)
 [![Discord](https://img.shields.io/discord/1062431967536238675?style=for-the-badge&logo=discord&logoColor=ffffff&label=Discord&labelColor=7289da&color=424549)](https://discord.gg/vCzqxDVh2d)
 
-# Not anymore in development
+
 
 # About
 A Mindustry fangame made using Unity and coded in C#. Aiming to give a more cinematic experience with minimal effort from the player
@@ -43,3 +43,5 @@ Gameplay/Mechanics/Other related:
  - Code readability: live with it
 
 > Everything remains subject to change, and most of the non-planned things could be done with help, but just dont expect me to be doing those
+
+# Not anymore in development
